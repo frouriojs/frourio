@@ -1,5 +1,8 @@
+# frourio
+
+<div align="center">Perfectly type-checkable REST framework for TypeScript</div>
 <br />
-<br />
+
 <div align="center">
   <a href="https://www.npmjs.com/package/frourio">
     <img src="https://img.shields.io/npm/v/frourio" alt="npm version" />
@@ -13,18 +16,28 @@
   <a href="https://dependabot.com">
     <img src="https://api.dependabot.com/badges/status?host=github&repo=frouriojs/frourio" alt="Dependabot Status" />
   </a>
-  <a href="https://github.com/frouriojs/frourio/blob/master/LICENSE">
+  <a href="https://github.com/frouriojs/frourio/blob/master/packages/frourio/LICENSE">
     <img src="https://img.shields.io/npm/l/frourio" alt="License" />
   </a>
 </div>
 <br />
 
-<div align="center">Monorepo for frourio and related projects.</div>
-<br />
-<br />
+## Getting Started
 
-## Packages
+### Installation
 
-- [frourio] - Perfectly type-checkable REST framework for TypeScript.
+- Using [npm](https://www.npmjs.com/):
 
-[frourio]: packages/frourio
+  ```sh
+  $ npm install frourio
+  ```
+
+- Using [Yarn](https://yarnpkg.com/):
+
+  ```sh
+  $ yarn add frourio
+  ```
+
+## License
+
+frourio is licensed under a [MIT License](https://github.com/frouriojs/frourio/blob/master/packages/frourio/LICENSE).

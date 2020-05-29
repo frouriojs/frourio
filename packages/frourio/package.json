@@ -1,0 +1,38 @@
+{
+  "name": "frourio",
+  "version": "0.0.4",
+  "description": "Perfectly type-checkable REST framework for TypeScript",
+  "author": "m-mitsuhide <m.mitsuhide@amatelus.com>",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "bin": "bin/index.js",
+  "homepage": "https://github.com/frouriojs/frourio/tree/master/packages/frourio#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/frouriojs/frourio.git"
+  },
+  "bugs": {
+    "url": "https://github.com/frouriojs/frourio/issues"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "typescript",
+    "aspida",
+    "server"
+  ],
+  "dependencies": {
+    "@types/cors": "^2.8.6",
+    "@types/express": "^4.17.6",
+    "@types/express-serve-static-core": "^4.17.7",
+    "@types/helmet": "^0.0.47",
+    "@types/multer": "^1.4.3",
+    "aspida": "^0.16.0",
+    "class-validator": "^0.12.2",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "helmet": "^3.22.0",
+    "multer": "^1.4.2"
+  }
+}

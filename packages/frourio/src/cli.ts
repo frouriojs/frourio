@@ -1,15 +1,11 @@
 import minimist from 'minimist'
-import getConfig, { Config } from '../getConfig'
-import write from '../writeRouteFile'
-import watch from './watchInputDir'
+import getConfig, { Config } from './getConfig'
+import write from './writeRouteFile'
+import watch from 'aspida/dist/cli/watchInputDir'
+import { options } from 'aspida/dist/cli'
 import { Build, Watch, CommandToBuild } from './build'
-import { Command, nullCommand } from './command'
-import { version as versionCommand } from './version'
-
-export const options: minimist.Opts = {
-  string: ['version', 'config', 'build', 'watch'],
-  alias: { v: 'version', c: 'config', b: 'build', w: 'watch' }
-}
+import { Command, nullCommand } from 'aspida/dist/cli/command'
+import { version as versionCommand } from 'aspida/dist/cli/version'
 
 const getBuildCommandFactory = (configs: Config[]) =>
   CommandToBuild.getFactory(configs, { write, watch })

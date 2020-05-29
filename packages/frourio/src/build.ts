@@ -1,6 +1,6 @@
-import { Config } from '../getConfig'
-import build, { Template } from '../buildTemplate'
-import { Command } from './command'
+import { Config } from './getConfig'
+import build, { Template } from './buildServerFile'
+import { Command } from 'aspida/dist/cli/command'
 
 export class CommandToBuild implements Command {
   static getFactory(configs: Config[], io: BuildIO) {
@@ -36,7 +36,9 @@ export type BuildIO = {
 
 export class Build implements BuildCommand {
   run(config: Config, io: BuildIO) {
-    io.write(build(config))
+    build(config).forEach(t => {
+      io.write(t)
+    })
   }
 }
 

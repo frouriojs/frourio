@@ -1,5 +1,5 @@
 import fs from 'fs'
-import { Template } from './buildTemplate'
+import { Template } from './buildServerFile'
 
 export default ({ filePath, text }: Template) => {
   if (fs.existsSync(filePath) && fs.readFileSync(filePath, 'utf8') === text) return
