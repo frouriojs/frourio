@@ -1,0 +1,63 @@
+{
+  "name": "typescript-oss-template",
+  "version": "0.0.1",
+  "description": "TypeScript OSS template",
+  "author": "m-mitsuhide <m.mitsuhide@amatelus.com>",
+  "license": "MIT",
+  "bin": "bin/index.js",
+  "scripts": {
+    "dev": "npm run build && node bin/index.js --build",
+    "build": "npm run rimraf && tsc",
+    "rimraf": "node -e \"require('fs').rmdirSync('dist', { recursive: true })\"",
+    "release": "standard-version --skip.tag",
+    "release:major": "npm run release -- --release-as major",
+    "release:minor": "npm run release -- --release-as minor",
+    "release:patch": "npm run release -- --release-as patch",
+    "lint": "eslint --ext .js,.ts --ignore-path .gitignore .",
+    "lint:fix": "npm run lint -- --fix",
+    "test": "jest",
+    "typecheck": "tsc --noEmit"
+  },
+  "homepage": "https://github.com/foo/baz#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/foo/baz.git"
+  },
+  "bugs": {
+    "url": "https://github.com/foo/baz/issues"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "typescript"
+  ],
+  "dependencies": {
+    "chokidar": "^3.4.0",
+    "minimist": "^1.2.5"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^8.3.5",
+    "@commitlint/config-conventional": "^8.3.4",
+    "@types/jest": "^25.2.3",
+    "@types/minimist": "^1.2.0",
+    "@typescript-eslint/eslint-plugin": "2.34.0",
+    "@typescript-eslint/parser": "^2.34.0",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-config-standard": "^14.1.1",
+    "eslint-plugin-import": "^2.20.2",
+    "eslint-plugin-jest": "^23.13.2",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^3.1.3",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "husky": "^4.2.5",
+    "jest": "^25.5.4",
+    "lint-staged": "^10.2.6",
+    "prettier": "2.0.5",
+    "standard-version": "^8.0.0",
+    "ts-jest": "^25.5.1",
+    "typescript": "^3.9.3"
+  }
+}

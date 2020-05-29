@@ -1,0 +1,19 @@
+version: 1
+
+update_configs:
+  - package_manager: "javascript"
+    directory: "/"
+    update_schedule: "live"
+    target_branch: "develop"
+    version_requirement_updates: "increase_versions"
+    commit_message:
+      prefix: "fix"
+      prefix_development: "chore"
+      include_scope: true
+    automerged_updates:
+      - match:
+          dependency_type: "development"
+          update_type: "semver:minor"
+      - match:
+          dependency_type: "production"
+          update_type: "semver:patch"
