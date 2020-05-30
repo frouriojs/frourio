@@ -32,9 +32,12 @@ jobs:
       - run: yarn lint
       - run: yarn typecheck
       - run: yarn test
+  release:
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'release'
+    steps:
       - run: yarn build
-        if: github.event_name == 'release'
       - run: npm publish
-        if: github.event_name == 'release'
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
