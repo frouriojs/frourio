@@ -1,9 +1,9 @@
-name: Node.js CI
+name: Yarn install
 
-on: [push]
+on: push
 
 jobs:
-  test:
+  install:
     runs-on: ubuntu-latest
 
     steps:
@@ -12,6 +12,7 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: "12.x"
+          registry-url: "https://registry.npmjs.org"
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path
         run: echo "::set-output name=dir::$(yarn cache dir)"
@@ -23,6 +24,3 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
       - run: yarn --frozen-lockfile
-      - run: yarn lint
-      - run: yarn typecheck
-      - run: yarn test
