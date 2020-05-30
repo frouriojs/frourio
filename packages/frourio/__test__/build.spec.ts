@@ -6,7 +6,7 @@ import getConfig from '../src/getConfig'
 const basePath = 'packages/frourio'
 
 test('build', () => {
-  const config = getConfig(`${basePath}/aspida.config.js`)[0]
+  const config = getConfig(`${basePath}/frourio.config.js`)[0]
   const inputDir = `${basePath}/${config.input}`
 
   build({ ...config, input: inputDir }).forEach(t => {
