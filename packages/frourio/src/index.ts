@@ -5,7 +5,7 @@ import {
   HttpStatusOk,
   AspidaMethodParams
 } from 'aspida'
-import express, { RequestHandler, Request } from 'express'
+import express, { RequestHandler } from 'express'
 import { validateOrReject } from 'class-validator'
 
 export * as Validator from 'class-validator'
@@ -85,7 +85,6 @@ type RequestParams<T extends AspidaMethodParams> = {
   query: T['query']
   body: ExcludeBlob<T>
   headers: T['reqHeaders']
-  originalRequest: Request
 }
 
 type FileType<T extends AspidaMethodParams> = T['reqFormat'] extends FormData
@@ -157,7 +156,6 @@ const methodsToHandler = (
       method: req.method as HttpMethod,
       body: req.body,
       headers: req.headers,
-      originalRequest: req,
       params: numberTypeParams.reduce(
         (p, c) => ({
           ...p,
