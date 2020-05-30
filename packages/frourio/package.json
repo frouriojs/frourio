@@ -1,6 +1,6 @@
 {
   "name": "frourio",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Perfectly type-checkable REST framework for TypeScript",
   "author": "m-mitsuhide <m.mitsuhide@amatelus.com>",
   "license": "MIT",
