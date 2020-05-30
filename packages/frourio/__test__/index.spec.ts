@@ -7,8 +7,8 @@ import api from '../apis/$api'
 import { app } from '../apis/server'
 
 const port = 11111
-const config = require('../aspida.config') as any
-const baseURL = `http://localhost:${port}${config.server.basePath ?? ''}`
+const config = require('../frourio.config') as any
+const baseURL = `http://localhost:${port}${config.basePath ?? ''}`
 const client = api(aspida(undefined, { baseURL }))
 let server: Server
 
