@@ -52,7 +52,6 @@ jobs:
             ${{ runner.os }}-yarn-
       - run: yarn --frozen-lockfile
       - run: yarn build
-      - run: cd packages/frourio
-      - run: npm publish
+      - run: cd packages/frourio && npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
