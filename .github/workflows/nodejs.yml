@@ -10,7 +10,6 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v2
       - name: Use Node.js
@@ -31,7 +30,11 @@ jobs:
       - run: yarn --frozen-lockfile
       - run: yarn lint
       - run: yarn typecheck
-      - run: yarn test
+      - run: yarn test --coverage
+      - run: npx codecov
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
   release:
     runs-on: ubuntu-latest
     needs: test
