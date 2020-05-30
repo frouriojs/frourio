@@ -1,11 +1,6 @@
 name: Node.js CI
 
-on:
-  push:
-    branches:
-      - "*"
-  release:
-    types: [published]
+on: push
 
 jobs:
   test:
@@ -16,7 +11,6 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: "12.x"
-          registry-url: "https://registry.npmjs.org"
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path
         run: echo "::set-output name=dir::$(yarn cache dir)"
@@ -38,9 +32,27 @@ jobs:
   release:
     runs-on: ubuntu-latest
     needs: test
-    if: github.event_name == 'release'
+    if: contains(github.ref, 'tags/v')
     steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: "12.x"
+          registry-url: "https://registry.npmjs.org"
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+      - uses: actions/cache@v2
+        id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+      - run: yarn --frozen-lockfile
       - run: yarn build
+      - run: cd packages/frourio
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
