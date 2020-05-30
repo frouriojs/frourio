@@ -1,9 +1,14 @@
-name: Yarn install
+name: Node.js CI
 
-on: push
+on:
+  push:
+    branches:
+      - "*"
+  release:
+    types: [published]
 
 jobs:
-  install:
+  test:
     runs-on: ubuntu-latest
 
     steps:
@@ -24,3 +29,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
       - run: yarn --frozen-lockfile
+      - run: yarn lint
+      - run: yarn typecheck
+      - run: yarn test
+      - run: yarn build
+        if: github.event_name == 'release'
+      - run: npm publish
+        if: github.event_name == 'release'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
