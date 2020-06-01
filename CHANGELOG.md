@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.2.0](https://github.com/frouriojs/frourio/compare/v0.1.2...v0.2.0) (2020-06-01)
+
+
+### Features
+
+* create default files if not exists ([38b9814](https://github.com/frouriojs/frourio/commit/38b981494bc2d92d63849ea6f1c634444e131435))
+
 ### [0.1.2](https://github.com/frouriojs/frourio/compare/v0.1.1...v0.1.2) (2020-05-30)
 
 ### [0.1.1](https://github.com/frouriojs/frourio/compare/v0.1.0...v0.1.1) (2020-05-30)
