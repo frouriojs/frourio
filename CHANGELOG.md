@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.1](https://github.com/frouriojs/frourio/compare/v0.2.0...v0.2.1) (2020-06-01)
+
+
+### Bug Fixes
+
+* clarify for ESLint ([cc2e413](https://github.com/frouriojs/frourio/commit/cc2e41392e9d3abf405d6e6f175ffe9eeac7cefe))
+
 ## [0.2.0](https://github.com/frouriojs/frourio/compare/v0.1.2...v0.2.0) (2020-06-01)
 
 
