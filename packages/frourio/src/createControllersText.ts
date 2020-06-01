@@ -100,7 +100,7 @@ export default (inputDir: string) => {
 
     const childrenDirs = fs
       .readdirSync(input)
-      .filter(d => fs.statSync(path.join(input, d)).isDirectory())
+      .filter(d => fs.statSync(path.join(input, d)).isDirectory() && !d.startsWith('@'))
 
     if (childrenDirs.length) {
       result += `,\n${indent}children: {\n`
