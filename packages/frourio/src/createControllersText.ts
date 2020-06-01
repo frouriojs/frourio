@@ -1,6 +1,7 @@
 import path from 'path'
 import fs from 'fs'
 import parseInterface from 'aspida/dist/parseInterface'
+import createDefaultFiles from './createDefaultFilesIfNotExists'
 
 export default (inputDir: string) => {
   const middlewares: string[] = []
@@ -18,8 +19,9 @@ export default (inputDir: string) => {
         : ''
 
     const valuesPath = path.join(input, '$values.ts')
+    const hasValuesFile = !!(params.length || userPath)
 
-    if (params.length || userPath) {
+    if (hasValuesFile) {
       const text = `/* eslint-disable */\n${
         userPath ? `import { User } from '${userPath}'\n\n` : ''
       }export type Values = {${
@@ -35,65 +37,61 @@ export default (inputDir: string) => {
       fs.unlinkSync(valuesPath)
     }
 
-    if (fs.existsSync(path.join(input, 'index.ts'))) {
-      const text = fs.readFileSync(path.join(input, 'index.ts'), 'utf8')
-      const methods = parseInterface(text, 'Methods')
-      if (methods) {
-        const validateInfo = methods
-          .map(m => {
-            const props: [string, { value: string; hasQuestion: boolean }][] = []
-            if (m.props.query && text.includes(`export class ${m.props.query.value} `)) {
-              props.push(['query', m.props.query])
-            }
-            if (m.props.reqBody && text.includes(`export class ${m.props.reqBody.value} `)) {
-              props.push(['body', m.props.reqBody])
-            }
-            if (m.props.reqHeaders && text.includes(`export class ${m.props.reqHeaders.value} `)) {
-              props.push(['headers', m.props.reqHeaders])
-            }
-            return { method: m.name, props }
-          })
-          .filter(v => v.props.length)
+    createDefaultFiles(input, hasValuesFile)
 
-        if (validateInfo.length) {
-          result += `,\n${indent}validator: {\n${validateInfo
-            .map(
-              v =>
-                `  ${indent}${v.method}: {\n${v.props
-                  .map(
-                    p =>
-                      `    ${indent}${p[0]}: { required: ${!p[1].hasQuestion}, Class: validator${
-                        validates.length
-                      }.${p[1].value} }`
-                  )
-                  .join(',\n')}\n  ${indent}}`
-            )
-            .join(',\n')}\n${indent}}`
-          validates.push(input)
-        }
+    const text = fs.readFileSync(path.join(input, 'index.ts'), 'utf8')
+    const methods = parseInterface(text, 'Methods')
+    if (methods) {
+      const validateInfo = methods
+        .map(m => {
+          const props: [string, { value: string; hasQuestion: boolean }][] = []
+          if (m.props.query && text.includes(`export class ${m.props.query.value} `)) {
+            props.push(['query', m.props.query])
+          }
+          if (m.props.reqBody && text.includes(`export class ${m.props.reqBody.value} `)) {
+            props.push(['body', m.props.reqBody])
+          }
+          if (m.props.reqHeaders && text.includes(`export class ${m.props.reqHeaders.value} `)) {
+            props.push(['headers', m.props.reqHeaders])
+          }
+          return { method: m.name, props }
+        })
+        .filter(v => v.props.length)
 
-        const uploaders = methods
-          .filter(m => m.props.reqFormat?.value === 'FormData')
-          .map(m => m.name)
-        if (uploaders.length) {
-          result += `,\n${indent}uploader: ['${uploaders.join("', '")}']`
-        }
+      if (validateInfo.length) {
+        result += `,\n${indent}validator: {\n${validateInfo
+          .map(
+            v =>
+              `  ${indent}${v.method}: {\n${v.props
+                .map(
+                  p =>
+                    `    ${indent}${p[0]}: { required: ${!p[1].hasQuestion}, Class: validator${
+                      validates.length
+                    }.${p[1].value} }`
+                )
+                .join(',\n')}\n  ${indent}}`
+          )
+          .join(',\n')}\n${indent}}`
+        validates.push(input)
+      }
+
+      const uploaders = methods
+        .filter(m => m.props.reqFormat?.value === 'FormData')
+        .map(m => m.name)
+      if (uploaders.length) {
+        result += `,\n${indent}uploader: ['${uploaders.join("', '")}']`
       }
     }
 
-    if (fs.existsSync(path.join(input, '@controller.ts'))) {
-      result += `,\n${indent}controller: controller${controllers.length}`
-      const text = fs.readFileSync(path.join(input, '@controller.ts'), 'utf8')
-      const hasMiddleware = /export (const|{)(.*[ ,])?middleware[, }=]/.test(text)
+    result += `,\n${indent}controller: controller${controllers.length}`
+    const ctrlText = fs.readFileSync(path.join(input, '@controller.ts'), 'utf8')
+    const hasMiddleware = /export (const|{)(.*[ ,])?middleware[, }=]/.test(ctrlText)
 
-      if (hasMiddleware) {
-        result += `,\n${indent}ctrlMiddleware: ctrlMiddleware${
-          controllers.filter(c => c[1]).length
-        }`
-      }
-
-      controllers.push([`${input}/@controller`, hasMiddleware])
+    if (hasMiddleware) {
+      result += `,\n${indent}ctrlMiddleware: ctrlMiddleware${controllers.filter(c => c[1]).length}`
     }
+
+    controllers.push([`${input}/@controller`, hasMiddleware])
 
     if (fs.existsSync(path.join(input, '@middleware.ts'))) {
       result += `,\n${indent}middleware: middleware${middlewares.length}`
