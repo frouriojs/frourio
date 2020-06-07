@@ -14,6 +14,7 @@ export default ({
   staticDir,
   helmet,
   cors,
+  dotenv,
   immediate,
   uploader
 }: Config): Template[] => [
@@ -27,10 +28,10 @@ import { Server } from 'http'
 import express from 'express'
 import multer from 'multer'${helmet ? "\nimport helmet from 'helmet'" : ''}${
       cors ? "\nimport cors from 'cors'" : ''
-    }
+    }${dotenv ? "\nimport dotenv from 'dotenv'" : ''}
 import { createRouter } from 'frourio'
 import controllers from './$controllers'
-
+${dotenv ? `\ndotenv.config(${typeof dotenv === 'string' ? `{ path: '${dotenv}' }` : ''})\n` : ''}
 export const router = createRouter(
   controllers,
   multer({ dest: ${uploader.dest ? `'${uploader.dest}'` : 'tmpdir()'}, limits: { fileSize: ${
