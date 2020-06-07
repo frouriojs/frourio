@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.3.0](https://github.com/frouriojs/frourio/compare/v0.2.2...v0.3.0) (2020-06-07)
+
+
+### Features
+
+* support dotenv ([0558e1a](https://github.com/frouriojs/frourio/commit/0558e1a8e571bb2acb474bc62cbe4422d2df3fa8))
+
 ### [0.2.2](https://github.com/frouriojs/frourio/compare/v0.2.1...v0.2.2) (2020-06-01)
 
 

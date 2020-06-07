@@ -8,6 +8,7 @@ export type Config = {
   staticDir?: string[]
   helmet: boolean
   cors: boolean
+  dotenv: boolean | string
   immediate: boolean
   uploader: {
     dest?: string
@@ -22,6 +23,7 @@ type ConfigFile = {
   staticDir?: string | string[]
   helmet?: boolean
   cors?: boolean
+  dotenv?: boolean
   immediate?: boolean
   uploader?: {
     dest?: string
@@ -36,6 +38,7 @@ const createConfig = (config: ConfigFile = {}): Config => ({
   staticDir: typeof config.staticDir === 'string' ? [config.staticDir] : config.staticDir,
   helmet: config.helmet ?? true,
   cors: config.cors ?? false,
+  dotenv: config.dotenv ?? false,
   immediate: config.immediate ?? true,
   uploader: config.uploader ?? {}
 })

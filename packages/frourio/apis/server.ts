@@ -5,8 +5,11 @@ import express from 'express'
 import multer from 'multer'
 import helmet from 'helmet'
 import cors from 'cors'
+import dotenv from 'dotenv'
 import { createRouter } from 'frourio'
 import controllers from './$controllers'
+
+dotenv.config()
 
 export const router = createRouter(
   controllers,

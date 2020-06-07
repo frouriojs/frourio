@@ -3,5 +3,6 @@ module.exports = {
   basePath: '/api',
   staticDir: 'packages/frourio/public',
   cors: true,
+  dotenv: true,
   immediate: false
 }
