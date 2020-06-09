@@ -5,7 +5,7 @@
     <img src="https://img.shields.io/npm/v/frourio" alt="npm version" />
   </a>
   <a href="https://github.com/frouriojs/frourio/actions?query=workflow%3A%22Node.js+CI%22">
-    <img src="https://github.com/frouriojs/frourio/workflows/Node.js%20CI/badge.svg" alt="Node.js CI" />
+    <img src="https://github.com/frouriojs/frourio/workflows/Node.js%20CI/badge.svg?branch=master" alt="Node.js CI" />
   </a>
   <a href="https://codecov.io/gh/frouriojs/frourio">
     <img src="https://img.shields.io/codecov/c/github/frouriojs/frourio.svg" alt="Codecov" />

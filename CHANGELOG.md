@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.3.1](https://github.com/frouriojs/frourio/compare/v0.3.0...v0.3.1) (2020-06-09)
+
+
+### Bug Fixes
+
+* add typescript to dependencies ([ba5dbce](https://github.com/frouriojs/frourio/commit/ba5dbcee424110858dba35f8e460af4bbc22c4de))
+
 ## [0.3.0](https://github.com/frouriojs/frourio/compare/v0.2.2...v0.3.0) (2020-06-07)
 
 
