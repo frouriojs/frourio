@@ -1,5 +1,5 @@
 /* eslint-disable */
-import * as validator0 from './index'
+import * as Types from './@types'
 import controller0, { middleware as ctrlMiddleware0 } from './@controller'
 import controller1 from './texts/@controller'
 import controller2 from './texts/sample/@controller'
@@ -12,11 +12,11 @@ export default {
   name: '/',
   validator: {
     get: {
-      query: { required: false, Class: validator0.ValidQuery }
+      query: { required: false, Class: Types.ValidQuery }
     },
     post: {
-      query: { required: true, Class: validator0.ValidQuery },
-      body: { required: true, Class: validator0.ValidBody }
+      query: { required: true, Class: Types.ValidQuery },
+      body: { required: true, Class: Types.ValidBody }
     }
   },
   uploader: ['post'],
@@ -39,6 +39,11 @@ export default {
       },
       {
         name: '/users',
+        validator: {
+          post: {
+            body: { required: true, Class: Types.ValidUserInfo }
+          }
+        },
         controller: controller3,
         ctrlMiddleware: ctrlMiddleware1,
         middleware: middleware1,

@@ -6,7 +6,7 @@ import createDefaultFiles from './createDefaultFilesIfNotExists'
 export default (inputDir: string) => {
   const middlewares: string[] = []
   const controllers: [string, boolean][] = []
-  const validates: string[] = []
+  let hasValidators = false
 
   const createText = (input: string, indent: string, params: [string, string][], user = '') => {
     let result = ''
@@ -39,19 +39,19 @@ export default (inputDir: string) => {
 
     createDefaultFiles(input, hasValuesFile)
 
-    const text = fs.readFileSync(path.join(input, 'index.ts'), 'utf8')
-    const methods = parseInterface(text, 'Methods')
+    const validatorPrefix = 'Valid'
+    const methods = parseInterface(fs.readFileSync(path.join(input, 'index.ts'), 'utf8'), 'Methods')
     if (methods) {
       const validateInfo = methods
         .map(m => {
           const props: [string, { value: string; hasQuestion: boolean }][] = []
-          if (m.props.query && text.includes(`export class ${m.props.query.value} `)) {
+          if (m.props.query?.value.startsWith(validatorPrefix)) {
             props.push(['query', m.props.query])
           }
-          if (m.props.reqBody && text.includes(`export class ${m.props.reqBody.value} `)) {
+          if (m.props.reqBody?.value.startsWith(validatorPrefix)) {
             props.push(['body', m.props.reqBody])
           }
-          if (m.props.reqHeaders && text.includes(`export class ${m.props.reqHeaders.value} `)) {
+          if (m.props.reqHeaders?.value.startsWith(validatorPrefix)) {
             props.push(['headers', m.props.reqHeaders])
           }
           return { method: m.name, props }
@@ -59,20 +59,20 @@ export default (inputDir: string) => {
         .filter(v => v.props.length)
 
       if (validateInfo.length) {
+        hasValidators = true
         result += `,\n${indent}validator: {\n${validateInfo
           .map(
             v =>
               `  ${indent}${v.method}: {\n${v.props
                 .map(
                   p =>
-                    `    ${indent}${p[0]}: { required: ${!p[1].hasQuestion}, Class: validator${
-                      validates.length
-                    }.${p[1].value} }`
+                    `    ${indent}${p[0]}: { required: ${!p[1].hasQuestion}, Class: Types.${
+                      p[1].value
+                    } }`
                 )
                 .join(',\n')}\n  ${indent}}`
           )
           .join(',\n')}\n${indent}}`
-        validates.push(input)
       }
 
       const uploaders = methods
@@ -142,9 +142,9 @@ export default (inputDir: string) => {
   const text = createText(inputDir, '  ', [])
   const ctrlMiddleware = controllers.filter(c => c[1])
 
-  return `/* eslint-disable */${validates.length ? '\n' : ''}${validates
-    .map((v, i) => `import * as validator${i} from '${v.replace(inputDir, '.')}/index'`)
-    .join('\n')}${controllers.length ? '\n' : ''}${controllers
+  return `/* eslint-disable */${hasValidators ? "\nimport * as Types from './@types'" : ''}${
+    controllers.length ? '\n' : ''
+  }${controllers
     .map(
       (ctrl, i) =>
         `import controller${i}${

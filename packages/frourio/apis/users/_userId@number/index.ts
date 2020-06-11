@@ -1,7 +1,7 @@
-import { UserInfo } from '../'
+import { ValidUserInfo } from '../../@types'
 
 export type Methods = {
   get: {
-    resBody: UserInfo
+    resBody: ValidUserInfo
   }
 }

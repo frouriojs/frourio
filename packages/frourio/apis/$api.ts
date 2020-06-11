@@ -36,7 +36,11 @@ const api = <T>(client: AspidaClient<T>) => {
       get: (option?: { config?: T }) =>
         client.fetch<Methods3['get']['resBody']>(prefix, '/users', 'GET', option).json(),
       $get: async (option?: { config?: T }) =>
-        (await client.fetch<Methods3['get']['resBody']>(prefix, '/users', 'GET', option).json()).data
+        (await client.fetch<Methods3['get']['resBody']>(prefix, '/users', 'GET', option).json()).data,
+      post: (option: { data: Methods3['post']['reqBody'], config?: T }) =>
+        client.fetch<void>(prefix, '/users', 'POST', option).send(),
+      $post: async (option: { data: Methods3['post']['reqBody'], config?: T }) =>
+        (await client.fetch<void>(prefix, '/users', 'POST', option).send()).data
     },
     get: (option?: { query?: Methods0['get']['query'], config?: T }) =>
       client.fetch<Methods0['get']['resBody'], BasicHeaders, Methods0['get']['status']>(prefix, '', 'GET', option).json(),

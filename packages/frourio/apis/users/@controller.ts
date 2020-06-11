@@ -11,5 +11,6 @@ const middleware = createMiddleware([
 export { middleware }
 
 export default createController<Methods>({
-  get: async () => ({ status: 200, body: [{ id: 1, name: 'aa' }] })
+  get: async () => ({ status: 200, body: [{ id: 1, name: 'aa' }] }),
+  post: () => ({ status: 204 })
 })

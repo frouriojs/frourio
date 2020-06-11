@@ -1,10 +1,11 @@
-export type UserInfo = {
-  id: number
-  name: string
-}
+import { ValidUserInfo } from '../@types'
 
 export type Methods = {
   get: {
-    resBody: UserInfo[]
+    resBody: ValidUserInfo[]
+  }
+
+  post: {
+    reqBody: ValidUserInfo
   }
 }
