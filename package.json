@@ -5,7 +5,7 @@
   ],
   "scripts": {
     "dev": "npm run build && cd packages/frourio && aspida --build && node bin/index.js --build",
-    "build": "npm run rimraf -- frourio && cd packages/frourio && tsc --project tsconfig.build.json",
+    "build": "npm run rimraf -- frourio && cd packages/frourio && tsc --project tsconfig.json",
     "rimraf": "node -e \"require('fs').rmdirSync('packages/' + process.argv[1] + '/dist', { recursive: true })\"",
     "release": "standard-version --skip.tag",
     "release:major": "npm run release -- --release-as major",

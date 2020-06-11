@@ -1,4 +1,4 @@
-import { ValidUserInfo } from '../../@types'
+import { ValidUserInfo } from '../../../types'
 
 export type Methods = {
   get: {

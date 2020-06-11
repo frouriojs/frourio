@@ -10,6 +10,18 @@ import { validateOrReject } from 'class-validator'
 
 export * as Validator from 'class-validator'
 
+export type Config = {
+  port?: number
+  basePath?: string
+  staticDir?: string | string[]
+  helmet?: boolean
+  cors?: boolean
+  uploader?: {
+    dest?: string
+    size?: number
+  }
+}
+
 type HttpStatusNoOk =
   | 301
   | 302

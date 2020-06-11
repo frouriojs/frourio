@@ -142,16 +142,16 @@ export default (inputDir: string) => {
   const text = createText(inputDir, '  ', [])
   const ctrlMiddleware = controllers.filter(c => c[1])
 
-  return `/* eslint-disable */${hasValidators ? "\nimport * as Types from './@types'" : ''}${
+  return `${hasValidators ? "import * as Types from './types'" : ''}${
     controllers.length ? '\n' : ''
   }${controllers
     .map(
       (ctrl, i) =>
         `import controller${i}${
           ctrl[1] ? `, { middleware as ctrlMiddleware${ctrlMiddleware.indexOf(ctrl)} }` : ''
-        } from '${ctrl[0].replace(inputDir, '.')}'`
+        } from '${ctrl[0].replace(inputDir, './api')}'`
     )
     .join('\n')}${middlewares.length ? '\n' : ''}${middlewares
-    .map((m, i) => `import middleware${i} from '${m.replace(inputDir, '.')}'`)
-    .join('\n')}\n\nexport default {\n  name: '/'${text}\n}\n`
+    .map((m, i) => `import middleware${i} from '${m.replace(inputDir, './api')}'`)
+    .join('\n')}\n\nexport const controllers = {\n  name: '/'${text}\n}`
 }

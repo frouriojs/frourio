@@ -1,4 +1,4 @@
-import { ValidQuery, ValidBody } from './@types'
+import { ValidQuery, ValidBody } from '../types'
 
 export type Methods = {
   get: {
