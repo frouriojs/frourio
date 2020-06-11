@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.4.0](https://github.com/frouriojs/frourio/compare/v0.3.1...v0.4.0) (2020-06-11)
+
+
+### Features
+
+* change architecture ([154c5b3](https://github.com/frouriojs/frourio/commit/154c5b35aa798f92ef5fd2e507eed7cccc9433c2))
+* support typeorm ([921ba7a](https://github.com/frouriojs/frourio/commit/921ba7a741c61e4b10b68edf2b58f0eb41d8442c))
+* support validator from [@types](https://github.com/types) ([596e711](https://github.com/frouriojs/frourio/commit/596e7114a784cb2dfa76424c45c81a96cf42ac60))
+* validate number type params ([c7f30da](https://github.com/frouriojs/frourio/commit/c7f30da136496fdcf41b2edf1f4e2ad4dda9ead5))
+
 ### [0.3.1](https://github.com/frouriojs/frourio/compare/v0.3.0...v0.3.1) (2020-06-09)
 
 

@@ -1,64 +1,77 @@
 import path from 'path'
-import { Config } from './getConfig'
+import { Template } from 'aspida/dist/buildTemplate'
 import createControllersText from './createControllersText'
+import createTypeormText from './createTypeormText'
 
-export type Template = {
-  filePath: string
-  text: string
-}
+export default (input: string): Template => {
+  const typeormText = createTypeormText(input)
 
-export default ({
-  input,
-  port,
-  basePath,
-  staticDir,
-  helmet,
-  cors,
-  dotenv,
-  immediate,
-  uploader
-}: Config): Template[] => [
-  {
-    text: createControllersText(input),
-    filePath: path.posix.join(input, '$controllers.ts')
-  },
-  {
-    text: `/* eslint-disable */${uploader.dest ? '' : "\nimport { tmpdir } from 'os'"}
+  return {
+    text: `/* eslint-disable */
+import 'reflect-metadata'
+import { tmpdir } from 'os'
 import { Server } from 'http'
 import express from 'express'
-import multer from 'multer'${helmet ? "\nimport helmet from 'helmet'" : ''}${
-      cors ? "\nimport cors from 'cors'" : ''
-    }${dotenv ? "\nimport dotenv from 'dotenv'" : ''}
+import multer from 'multer'
+import helmet from 'helmet'
+import cors from 'cors'
+import { createConnection } from 'typeorm'
 import { createRouter } from 'frourio'
-import controllers from './$controllers'
-${dotenv ? `\ndotenv.config(${typeof dotenv === 'string' ? `{ path: '${dotenv}' }` : ''})\n` : ''}
+import config from './frourio.config'
+${typeormText.imports}
+${createControllersText(`${input}/api`)}
+
 export const router = createRouter(
   controllers,
-  multer({ dest: ${uploader.dest ? `'${uploader.dest}'` : 'tmpdir()'}, limits: { fileSize: ${
-      uploader.size ?? '1024 ** 3'
-    } } }).any()
+  multer({
+    dest: config.uploader?.dest ?? tmpdir(),
+    limits: { fileSize: config.uploader?.size ?? 1024 ** 3 }
+  }).any()
 )
 
-export const app = express()${helmet ? '\n  .use(helmet())' : ''}${cors ? '\n  .use(cors())' : ''}
-  .use((req, res, next) => {
-    express.json()(req, res, err => {
-      if (err) return res.sendStatus(400)
+export const app = express()
 
-      next()
-    })
+if (config.helmet) app.use(helmet())
+if (config.cors) app.use(cors())
+
+app.use((req, res, next) => {
+  express.json()(req, res, err => {
+    if (err) return res.sendStatus(400)
+
+    next()
   })
-  .use(${basePath === '/' ? '' : `'/${basePath.replace(/^\//, '')}', `}router)${
-      staticDir ? staticDir.map(d => `\n  .use(express.static('${d}'))`).join('') : ''
-    }
+})
 
-export const run = (port: number | string = ${port}) =>
-  new Promise<Server>(resolve => {
+if (config.basePath && config.basePath !== '/') {
+  app.use(config.basePath.startsWith('/') ? config.basePath : \`/\${config.basePath}\`, router)
+} else {
+  app.use(router)
+}
+
+if (config.staticDir) {
+  ;(Array.isArray(config.staticDir) ? config.staticDir : [config.staticDir]).forEach(dir =>
+    app.use(express.static(dir))
+  )
+}
+
+export const run = async (port: number | string = config.port ?? 8080) => {
+  if (config.typeorm) {
+    await createConnection({
+      entities: ${typeormText.entities},
+      subscribers: ${typeormText.subscribers},
+      migrations: ['${input}/migration/*.js'],
+      ...config.typeorm
+    })
+  }
+
+  return new Promise<Server>(resolve => {
     const server = app.listen(port, () => {
       console.log(\`Frourio is running on http://localhost:\${port}\`)
       resolve(server)
     })
   })
-${immediate ? '\nexport const server = run()\n' : ''}`,
-    filePath: path.posix.join(input, 'server.ts')
+}
+`,
+    filePath: path.posix.join(input, '$app.ts')
   }
-]
+}

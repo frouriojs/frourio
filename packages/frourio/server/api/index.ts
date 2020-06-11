@@ -1,19 +1,4 @@
-import { Validator } from 'frourio'
-
-export class ValidQuery {
-  @Validator.IsNumberString()
-  id: string
-
-  @Validator.IsBooleanString()
-  disable: string
-}
-
-export class ValidBody {
-  @Validator.IsPort()
-  port: string
-
-  file: File
-}
+import { ValidQuery, ValidBody } from '../types'
 
 export type Methods = {
   get: {

@@ -3,11 +3,11 @@ import fs from 'fs'
 import FormData from 'form-data'
 import axios from 'axios'
 import aspida from '@aspida/axios'
-import api from '../apis/$api'
-import { app } from '../apis/server'
+import api from '../server/api/$api'
+import { app } from '../server/$app'
+import config from '../server/frourio.config'
 
 const port = 11111
-const config = require('../frourio.config') as any
 const baseURL = `http://localhost:${port}${config.basePath ?? ''}`
 const client = api(aspida(undefined, { baseURL }))
 let server: Server

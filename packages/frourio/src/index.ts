@@ -7,8 +7,22 @@ import {
 } from 'aspida'
 import express, { RequestHandler } from 'express'
 import { validateOrReject } from 'class-validator'
+import { ConnectionOptions } from 'typeorm'
 
 export * as Validator from 'class-validator'
+
+export type Config = {
+  port?: number
+  basePath?: string
+  staticDir?: string | string[]
+  helmet?: boolean
+  cors?: boolean
+  typeorm?: ConnectionOptions
+  uploader?: {
+    dest?: string
+    size?: number
+  }
+}
 
 type HttpStatusNoOk =
   | 301
@@ -132,7 +146,16 @@ const methodsToHandler = (
   methodCallback: ServerMethods<any, any>[LowerHttpMethod],
   numberTypeParams: string[]
 ): RequestHandler => async (req, res) => {
+  let params: Record<string, string | number>
+
   try {
+    params = numberTypeParams.reduce<typeof params>((p, c) => {
+      const val = Number(p[c])
+      if (isNaN(val)) throw new Error()
+
+      return { ...p, [c]: val }
+    }, req.params)
+
     await Promise.all([
       validator?.query &&
         (Object.keys(req.query).length || validator.query.required ? true : undefined) &&
@@ -156,13 +179,7 @@ const methodsToHandler = (
       method: req.method as HttpMethod,
       body: req.body,
       headers: req.headers,
-      params: numberTypeParams.reduce(
-        (p, c) => ({
-          ...p,
-          [c]: +p[c]
-        }),
-        req.params as Record<string, string | number>
-      ),
+      params,
       user: (req as any).user,
       files: req.files
     })
