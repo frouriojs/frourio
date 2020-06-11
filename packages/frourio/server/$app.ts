@@ -1,12 +1,16 @@
 /* eslint-disable */
+import 'reflect-metadata'
 import { tmpdir } from 'os'
 import { Server } from 'http'
 import express from 'express'
 import multer from 'multer'
 import helmet from 'helmet'
 import cors from 'cors'
+import { createConnection } from 'typeorm'
 import { createRouter } from 'frourio'
 import config from './frourio.config'
+import { Task as Entity0 } from './entity/Task'
+import { TaskSubscriber as Subscriber0 } from './subscriber/TaskSubscriber'
 import * as Types from './types'
 import controller0, { middleware as ctrlMiddleware0 } from './api/@controller'
 import controller1 from './api/texts/@controller'
@@ -99,10 +103,20 @@ if (config.staticDir) {
   )
 }
 
-export const run = (port: number | string = config.port ?? 8080) =>
-  new Promise<Server>(resolve => {
+export const run = async (port: number | string = config.port ?? 8080) => {
+  if (config.typeorm) {
+    await createConnection({
+      entities: [Entity0],
+      subscribers: [Subscriber0],
+      migrations: ['server/migration/*.js'],
+      ...config.typeorm
+    })
+  }
+
+  return new Promise<Server>(resolve => {
     const server = app.listen(port, () => {
       console.log(`Frourio is running on http://localhost:${port}`)
       resolve(server)
     })
   })
+}

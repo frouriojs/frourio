@@ -7,6 +7,7 @@ import {
 } from 'aspida'
 import express, { RequestHandler } from 'express'
 import { validateOrReject } from 'class-validator'
+import { ConnectionOptions } from 'typeorm'
 
 export * as Validator from 'class-validator'
 
@@ -16,6 +17,7 @@ export type Config = {
   staticDir?: string | string[]
   helmet?: boolean
   cors?: boolean
+  typeorm?: ConnectionOptions
   uploader?: {
     dest?: string
     size?: number
