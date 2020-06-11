@@ -4,6 +4,7 @@
     "declarationMap": true,
     "downlevelIteration": true,
     "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "esModuleInterop": true,
     "lib": ["dom"],
     "module": "commonjs",

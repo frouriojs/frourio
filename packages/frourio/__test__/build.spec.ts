@@ -8,7 +8,7 @@ test('build', () => {
   const inputDir = `${basePath}/server`
 
   const result = build(inputDir)
-  expect(result.text).toBe(fs.readFileSync(result.filePath, 'utf8'))
+  expect(result.text.replace(inputDir, 'server')).toBe(fs.readFileSync(result.filePath, 'utf8'))
 
   const target = aspidaBuild({ input: `${inputDir}/api`, baseURL: '', trailingSlash: false })
   expect(target.text).toBe(fs.readFileSync(target.filePath, 'utf8'))
