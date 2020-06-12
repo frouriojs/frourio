@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.5.0](https://github.com/frouriojs/frourio/compare/v0.4.0...v0.5.0) (2020-06-12)
+
+
+### Features
+
+* support migration direcroty ([1a3da5e](https://github.com/frouriojs/frourio/commit/1a3da5eb594a3824a902ad8fa190db22d9d91354))
+
 ## [0.4.0](https://github.com/frouriojs/frourio/compare/v0.3.1...v0.4.0) (2020-06-11)
 
 
