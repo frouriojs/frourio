@@ -4,16 +4,15 @@ import FormData from 'form-data'
 import axios from 'axios'
 import aspida from '@aspida/axios'
 import api from '../server/api/$api'
-import { app } from '../server/$app'
-import config from '../server/frourio.config'
+import { run } from '../server/$app'
 
 const port = 11111
-const baseURL = `http://localhost:${port}${config.basePath ?? ''}`
+const baseURL = `http://localhost:${port}`
 const client = api(aspida(undefined, { baseURL }))
 let server: Server
 
-beforeEach(fn => {
-  server = app.listen(port, fn)
+beforeEach(async () => {
+  server = (await run({ port, staticDir: 'packages/frourio/public' })).server
 })
 
 afterEach(fn => server.close(fn))

@@ -72,7 +72,6 @@ export const controllers = {
 export const entities = [Entity0]
 export const migrations = []
 export const subscribers = [Subscriber0]
-
 export const run = async (config: Config) => {
   const app = express()
   const router = createRouter(
