@@ -102,7 +102,7 @@ export const run = async (config: Config) => {
     )
   }
 
-  let connection: Connection | null = null
+  let connection: Connection
 
   if (config.typeorm) {
     connection = await createConnection({
@@ -116,7 +116,7 @@ export const run = async (config: Config) => {
   return new Promise<{
     app: Express
     server: Server
-    connection: typeof connection
+    connection?: Connection
   }>(resolve => {
     const server = app.listen(config.port, () => {
       console.log(`Frourio is running on http://localhost:${config.port}`)
