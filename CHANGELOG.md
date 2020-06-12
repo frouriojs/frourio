@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.6.0](https://github.com/frouriojs/frourio/compare/v0.5.0...v0.6.0) (2020-06-12)
+
+
+### Features
+
+* support config of helmet, cors and multer ([0e0c8cc](https://github.com/frouriojs/frourio/commit/0e0c8cc5880b6164ff15dc1f88edc6b8f00d5b34))
+
 ## [0.5.0](https://github.com/frouriojs/frourio/compare/v0.4.0...v0.5.0) (2020-06-12)
 
 
