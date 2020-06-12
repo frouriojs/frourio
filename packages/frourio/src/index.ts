@@ -12,7 +12,7 @@ import { ConnectionOptions } from 'typeorm'
 export * as Validator from 'class-validator'
 
 export type Config = {
-  port?: number
+  port: number
   basePath?: string
   staticDir?: string | string[]
   helmet?: boolean
