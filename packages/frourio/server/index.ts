@@ -1,3 +1,8 @@
 import { run } from './$app'
 
-run()
+run({
+  port: 10000,
+  basePath: '/api',
+  staticDir: 'packages/frourio/public',
+  cors: true
+})
