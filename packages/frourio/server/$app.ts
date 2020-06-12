@@ -76,14 +76,11 @@ export const run = async (config: Config) => {
   const app = express()
   const router = createRouter(
     controllers,
-    multer({
-      dest: config.uploader?.dest ?? tmpdir(),
-      limits: { fileSize: config.uploader?.size ?? 1024 ** 3 }
-    }).any()
+    multer(config.multer ?? { dest: tmpdir(), limits: { fileSize: 1024 ** 3 } }).any()
   )
 
-  if (config.helmet) app.use(helmet())
-  if (config.cors) app.use(cors())
+  if (config.helmet) app.use(helmet(config.helmet === true ? {} : config.helmet))
+  if (config.cors) app.use(cors(config.cors === true ? {} : config.cors))
 
   app.use((req, res, next) => {
     express.json()(req, res, err => {

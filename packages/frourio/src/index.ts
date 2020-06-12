@@ -8,20 +8,20 @@ import {
 import express, { RequestHandler } from 'express'
 import { validateOrReject } from 'class-validator'
 import { ConnectionOptions } from 'typeorm'
+import { IHelmetConfiguration } from 'helmet'
+import { CorsOptions } from 'cors'
+import { Options } from 'multer'
 
 export * as Validator from 'class-validator'
 
 export type Config = {
-  port: number
+  port: number | string
   basePath?: string
   staticDir?: string | string[]
-  helmet?: boolean
-  cors?: boolean
+  helmet?: boolean | IHelmetConfiguration
+  cors?: boolean | CorsOptions
   typeorm?: ConnectionOptions
-  uploader?: {
-    dest?: string
-    size?: number
-  }
+  multer?: Options
 }
 
 type HttpStatusNoOk =
