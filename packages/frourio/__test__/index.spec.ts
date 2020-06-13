@@ -12,7 +12,7 @@ const client = api(aspida(undefined, { baseURL }))
 let server: Server
 
 beforeEach(async () => {
-  server = (await run({ port, staticDir: 'packages/frourio/public' })).server
+  server = (await run({ port })).server
 })
 
 afterEach(fn => server.close(fn))

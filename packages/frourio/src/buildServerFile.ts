@@ -11,6 +11,7 @@ export default (input: string): Template => {
 import 'reflect-metadata'
 import { tmpdir } from 'os'
 import { Server } from 'http'
+import path from 'path'
 import express, { Express } from 'express'
 import multer from 'multer'
 import helmet from 'helmet'
@@ -46,11 +47,7 @@ export const run = async (config: Config) => {
     app.use(router)
   }
 
-  if (config.staticDir) {
-    ;(Array.isArray(config.staticDir) ? config.staticDir : [config.staticDir]).forEach(dir =>
-      app.use(express.static(dir))
-    )
-  }
+  app.use(express.static(path.join(__dirname, 'public')))
 
   let connection: Connection
 

@@ -17,7 +17,6 @@ export * as Validator from 'class-validator'
 export type Config = {
   port: number | string
   basePath?: string
-  staticDir?: string | string[]
   helmet?: boolean | IHelmetConfiguration
   cors?: boolean | CorsOptions
   typeorm?: ConnectionOptions
