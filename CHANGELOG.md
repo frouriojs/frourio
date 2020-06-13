@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.7.0](https://github.com/frouriojs/frourio/compare/v0.6.1...v0.7.0) (2020-06-13)
+
+
+### Features
+
+* generate $values.ts into all dirs ([f5ed392](https://github.com/frouriojs/frourio/commit/f5ed392d8bb42b3201e07463d6418be80d8c4ed2))
+* support public directory ([1e97a44](https://github.com/frouriojs/frourio/commit/1e97a447235e1359ad6306380d3d40396544131c))
+
+
+### Bug Fixes
+
+* separate validation handlers ([5503330](https://github.com/frouriojs/frourio/commit/550333056f7fec4326dd8a6a2061fef73a783017))
+
 ### [0.6.1](https://github.com/frouriojs/frourio/compare/v0.6.0...v0.6.1) (2020-06-12)
 
 
