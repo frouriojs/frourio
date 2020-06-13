@@ -28,6 +28,12 @@ test('GET: string', async () => {
   expect(res).toBe(text)
 })
 
+test('GET: params.userId', async () => {
+  const userId = 1
+  const res = await client.users._userId(userId).$get()
+  expect(res.id).toBe(userId)
+})
+
 test('GET: 400', async () => {
   await Promise.all([
     expect(client.get({ query: { id: '1', disable: 'no boolean' } })).rejects.toHaveProperty(

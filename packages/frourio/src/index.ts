@@ -166,7 +166,7 @@ const createTypedParamsHandler = (numberTypeParams: string[]): RequestHandler =>
 ) => {
   const typedParams: Record<string, string | number> = { ...req.params }
 
-  for (const key in numberTypeParams) {
+  for (const key of numberTypeParams) {
     const val = Number(typedParams[key])
     if (isNaN(val)) {
       res.sendStatus(400)
