@@ -141,37 +141,49 @@ export type ControllerTree = {
   }
 }
 
-const methodsToHandler = (
-  validator: Validators | undefined,
-  methodCallback: ServerMethods<any, any>[LowerHttpMethod],
-  numberTypeParams: string[]
-): RequestHandler => async (req, res) => {
-  let params: Record<string, string | number>
+const createValidateHandler = (validator: Validators | undefined): RequestHandler => (
+  req,
+  res,
+  next
+) =>
+  Promise.all([
+    validator?.query &&
+      (Object.keys(req.query).length || validator.query.required ? true : undefined) &&
+      validateOrReject(Object.assign(new validator.query.Class(), req.query)),
+    validator?.headers &&
+      (Object.keys(req.headers).length || validator.headers.required ? true : undefined) &&
+      validateOrReject(Object.assign(new validator.headers.Class(), req.headers)),
+    validator?.body &&
+      (Object.keys(req.body).length || validator.body.required ? true : undefined) &&
+      validateOrReject(Object.assign(new validator.body.Class(), req.body))
+  ])
+    .then(() => next())
+    .catch(() => res.sendStatus(400))
 
-  try {
-    params = numberTypeParams.reduce<typeof params>((p, c) => {
-      const val = Number(p[c])
-      if (isNaN(val)) throw new Error()
+const createTypedParamsHandler = (numberTypeParams: string[]): RequestHandler => async (
+  req,
+  res,
+  next
+) => {
+  const typedParams: Record<string, string | number> = { ...req.params }
 
-      return { ...p, [c]: val }
-    }, req.params)
+  for (const key in numberTypeParams) {
+    const val = Number(typedParams[key])
+    if (isNaN(val)) {
+      res.sendStatus(400)
+      return
+    }
 
-    await Promise.all([
-      validator?.query &&
-        (Object.keys(req.query).length || validator.query.required ? true : undefined) &&
-        validateOrReject(Object.assign(new validator.query.Class(), req.query)),
-      validator?.headers &&
-        (Object.keys(req.headers).length || validator.headers.required ? true : undefined) &&
-        validateOrReject(Object.assign(new validator.headers.Class(), req.headers)),
-      validator?.body &&
-        (Object.keys(req.body).length || validator.body.required ? true : undefined) &&
-        validateOrReject(Object.assign(new validator.body.Class(), req.body))
-    ])
-  } catch (e) {
-    res.sendStatus(400)
-    return
+    typedParams[key] = val
   }
 
+  ;(req as any).typedParams = typedParams
+  next()
+}
+
+const methodsToHandler = (
+  methodCallback: ServerMethods<any, any>[LowerHttpMethod]
+): RequestHandler => async (req, res) => {
   try {
     const result = methodCallback({
       query: req.query,
@@ -179,7 +191,7 @@ const methodsToHandler = (
       method: req.method as HttpMethod,
       body: req.body,
       headers: req.headers,
-      params,
+      params: (req as any).typedParams,
       user: (req as any).user,
       files: req.files
     })
@@ -210,6 +222,7 @@ export const createRouter = (
   }
 
   if (ctrl.controller) {
+    const typedParamsHandler = createTypedParamsHandler(numberTypeParams)
     const ctrlMiddlewareList = Array.isArray(ctrl.ctrlMiddleware)
       ? ctrl.ctrlMiddleware
       : ctrl.ctrlMiddleware
@@ -217,16 +230,13 @@ export const createRouter = (
       : []
 
     for (const method in ctrl.controller) {
-      const handler = methodsToHandler(
-        ctrl.validator?.[method as LowerHttpMethod],
-        ctrl.controller[method],
-        numberTypeParams
-      )
+      const validateHandler = createValidateHandler(ctrl.validator?.[method as LowerHttpMethod])
+      const handler = methodsToHandler(ctrl.controller[method])
 
       ;(router.route('/') as any)[method](
         ctrl.uploader?.includes(method)
-          ? [uploader, ...ctrlMiddlewareList, handler]
-          : [...ctrlMiddlewareList, handler]
+          ? [uploader, validateHandler, typedParamsHandler, ...ctrlMiddlewareList, handler]
+          : [validateHandler, typedParamsHandler, ...ctrlMiddlewareList, handler]
       )
     }
   }
