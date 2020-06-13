@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 
-export default (dir: string, hasValuesFile: boolean) => {
+export default (dir: string) => {
   const indexFilePath = path.join(dir, 'index.ts')
   if (!fs.existsSync(indexFilePath)) {
     fs.writeFileSync(indexFilePath, 'export type Methods = {}\n', 'utf8')
@@ -12,8 +12,10 @@ export default (dir: string, hasValuesFile: boolean) => {
     fs.writeFileSync(
       controllerFilePath,
       `import { createController } from 'frourio'
-${hasValuesFile ? "import { Values } from './$values'\n" : ''}import { Methods } from './'\n
-export default createController<Methods${hasValuesFile ? ', Values' : ''}>({})\n`,
+import { Values } from './$values'
+import { Methods } from './'
+
+export default createController<Methods, Values>({})\n`,
       'utf8'
     )
   }

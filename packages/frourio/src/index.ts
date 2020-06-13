@@ -110,7 +110,7 @@ export type ServerMethods<T extends AspidaMethods, U extends ServerValues> = {
   ) => ServerResponse<T[K]> | Promise<ServerResponse<T[K]>>
 }
 
-export const createController = <T extends AspidaMethods, U extends ServerValues = {}>(
+export const createController = <T extends AspidaMethods, U extends ServerValues>(
   methods: ServerMethods<T, U>
 ) => methods
 

@@ -21,23 +21,21 @@ export default (inputDir: string) => {
     const valuesPath = path.join(input, '$values.ts')
     const hasValuesFile = !!(params.length || userPath)
 
-    if (hasValuesFile) {
-      const text = `/* eslint-disable */\n${
-        userPath ? `import { User } from '${userPath}'\n\n` : ''
-      }export type Values = {${
-        params.length
-          ? `\n  params: {\n${params.map(v => `    ${v[0]}: ${v[1]}`).join('\n')}\n  }`
-          : ''
-      }${userPath ? '\n  user: User' : ''}\n}\n`
+    const text = hasValuesFile
+      ? `/* eslint-disable */\n${
+          userPath ? `import { User } from '${userPath}'\n\n` : ''
+        }export type Values = {${
+          params.length
+            ? `\n  params: {\n${params.map(v => `    ${v[0]}: ${v[1]}`).join('\n')}\n  }`
+            : ''
+        }${userPath ? '\n  user: User' : ''}\n}\n`
+      : '/* eslint-disable */\nexport type Values = {}\n'
 
-      if (!fs.existsSync(valuesPath) || fs.readFileSync(valuesPath, 'utf8') !== text) {
-        fs.writeFileSync(valuesPath, text, 'utf8')
-      }
-    } else if (fs.existsSync(valuesPath)) {
-      fs.unlinkSync(valuesPath)
+    if (!fs.existsSync(valuesPath) || fs.readFileSync(valuesPath, 'utf8') !== text) {
+      fs.writeFileSync(valuesPath, text, 'utf8')
     }
 
-    createDefaultFiles(input, hasValuesFile)
+    createDefaultFiles(input)
 
     const validatorPrefix = 'Valid'
     const methods = parseInterface(fs.readFileSync(path.join(input, 'index.ts'), 'utf8'), 'Methods')

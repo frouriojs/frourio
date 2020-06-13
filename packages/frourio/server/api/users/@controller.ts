@@ -1,4 +1,5 @@
 import { createController, createMiddleware } from 'frourio'
+import { Values } from './$values'
 import { Methods } from './'
 
 const middleware = createMiddleware([
@@ -10,7 +11,7 @@ const middleware = createMiddleware([
 
 export { middleware }
 
-export default createController<Methods>({
+export default createController<Methods, Values>({
   get: async () => ({ status: 200, body: [{ id: 1, name: 'aa' }] }),
   post: () => ({ status: 204 })
 })
