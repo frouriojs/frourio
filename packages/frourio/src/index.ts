@@ -14,6 +14,8 @@ import { Options } from 'multer'
 
 export * as Validator from 'class-validator'
 
+export type File = Express.Multer.File
+
 export type Config = {
   port: number | string
   basePath?: string
@@ -101,7 +103,7 @@ type RequestParams<T extends AspidaMethodParams> = {
 }
 
 type FileType<T extends AspidaMethodParams> = T['reqFormat'] extends FormData
-  ? { files: Express.Multer.File[] }
+  ? { files: File[] }
   : {}
 
 export type ServerMethods<T extends AspidaMethods, U extends ServerValues> = {
