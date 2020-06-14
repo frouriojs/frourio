@@ -3,7 +3,8 @@ import {
   AspidaMethods,
   HttpMethod,
   HttpStatusOk,
-  AspidaMethodParams
+  AspidaMethodParams,
+  $arrayTypeKeysName
 } from 'aspida'
 import express, { RequestHandler } from 'express'
 import { validateOrReject } from 'class-validator'
@@ -87,28 +88,27 @@ type ServerValues = {
   user?: any
 }
 
-type ExcludeBlob<T extends AspidaMethodParams> = T['reqFormat'] extends FormData
-  ? Pick<
-      T['reqBody'],
-      { [K in keyof T['reqBody']]-?: T['reqBody'][K] extends Blob ? never : K }[keyof T['reqBody']]
-    >
+type BlobToFile<T extends AspidaMethodParams> = T['reqFormat'] extends FormData
+  ? {
+      [P in keyof T['reqBody']]: Required<T['reqBody']>[P] extends Blob
+        ? File
+        : Required<T['reqBody']>[P] extends Blob[]
+        ? File[]
+        : T['reqBody'][P]
+    }
   : T['reqBody']
 
 type RequestParams<T extends AspidaMethodParams> = {
   path: string
   method: HttpMethod
   query: T['query']
-  body: ExcludeBlob<T>
+  body: BlobToFile<T>
   headers: T['reqHeaders']
 }
 
-type FileType<T extends AspidaMethodParams> = T['reqFormat'] extends FormData
-  ? { files: File[] }
-  : {}
-
 export type ServerMethods<T extends AspidaMethods, U extends ServerValues> = {
   [K in keyof T]: (
-    req: RequestParams<T[K]> & U & FileType<T[K]>
+    req: RequestParams<T[K]> & U
   ) => ServerResponse<T[K]> | Promise<ServerResponse<T[K]>>
 }
 
@@ -193,8 +193,7 @@ const methodsToHandler = (
       body: req.body,
       headers: req.headers,
       params: (req as any).typedParams,
-      user: (req as any).user,
-      files: req.files
+      user: (req as any).user
     })
 
     const { status, body, headers } = result instanceof Promise ? await result : result
@@ -207,6 +206,40 @@ const methodsToHandler = (
   } catch (e) {
     res.sendStatus(500)
   }
+}
+
+const formatMulterData: RequestHandler = ({ body, files }, _res, next) => {
+  if (body[$arrayTypeKeysName]) {
+    const arrayTypeKeys: string[] = body[$arrayTypeKeysName].split(',')
+
+    for (const key of arrayTypeKeys) {
+      if (body[key] === undefined) body[key] = []
+      else if (!Array.isArray(body[key])) {
+        body[key] = [body[key]]
+      }
+    }
+
+    for (const file of files) {
+      if (Array.isArray(body[file.fieldname])) {
+        body[file.fieldname].push(file)
+      } else {
+        body[file.fieldname] = file
+      }
+    }
+
+    delete body[$arrayTypeKeysName]
+  } else {
+    for (const file of files) {
+      if (Array.isArray(body[file.fieldname])) {
+        body[file.fieldname].push(file)
+      } else {
+        body[file.fieldname] =
+          body[file.fieldname] === undefined ? file : [body[file.fieldname], file]
+      }
+    }
+  }
+
+  next()
 }
 
 export const createRouter = (
@@ -236,7 +269,14 @@ export const createRouter = (
 
       ;(router.route('/') as any)[method](
         ctrl.uploader?.includes(method)
-          ? [uploader, validateHandler, typedParamsHandler, ...ctrlMiddlewareList, handler]
+          ? [
+              uploader,
+              formatMulterData,
+              validateHandler,
+              typedParamsHandler,
+              ...ctrlMiddlewareList,
+              handler
+            ]
           : [validateHandler, typedParamsHandler, ...ctrlMiddlewareList, handler]
       )
     }

@@ -14,8 +14,6 @@ export default createController<Methods, Values>({
   post: v => ({
     // @ts-expect-error
     status: 200,
-    // @ts-expect-error
-    test: v.body.file,
-    body: { id: +v.query.id, port: v.body.port, fileName: v.files[0].originalname }
+    body: { id: +v.query.id, port: v.body.port, fileName: v.body.file.originalname }
   })
 })

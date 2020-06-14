@@ -2,6 +2,7 @@ import { Server } from 'http'
 import fs from 'fs'
 import FormData from 'form-data'
 import axios from 'axios'
+import { $arrayTypeKeysName } from 'aspida'
 import aspida from '@aspida/axios'
 import api from '../server/api/$api'
 import { run } from '../server/$app'
@@ -15,7 +16,10 @@ beforeEach(async () => {
   server = (await run({ port })).server
 })
 
-afterEach(fn => server.close(fn))
+afterEach(fn => {
+  fs.rmdirSync('packages/frourio/server/.upload', { recursive: true })
+  server.close(fn)
+})
 
 test('GET: 200', async () => {
   const res = await client.$get({ query: { id: '1', disable: 'false' } })
@@ -59,6 +63,45 @@ test('POST: formdata', async () => {
   })
   expect(res.data.port).toBe(port)
   expect(res.data.fileName).toBe(fileName)
+})
+
+test('POST: multi file upload', async () => {
+  const fileName = 'tsconfig.json'
+  const form = new FormData()
+  const fileST = fs.createReadStream(fileName)
+  form.append('name', 'sample')
+  form.append('vals', 'dammy')
+  form.append('icon', fileST)
+  form.append('files', fileST)
+  form.append('files', fileST)
+  form.append($arrayTypeKeysName, ['empty', 'vals', 'files'].join(','))
+  const res = await axios.post(`${baseURL}/multiForm`, form, {
+    headers: form.getHeaders()
+  })
+  expect(res.data).toEqual({
+    [$arrayTypeKeysName]: undefined,
+    empty: 0,
+    name: -1,
+    icon: -1,
+    vals: 1,
+    files: 2
+  })
+})
+
+test('POST: 400', async () => {
+  const fileName = 'tsconfig.json'
+  const form = new FormData()
+  const fileST = fs.createReadStream(fileName)
+  form.append('name', 'sample')
+  form.append('vals', 'dammy')
+  form.append('icon', fileST)
+  form.append($arrayTypeKeysName, ['empty', 'vals', 'files'].join(','))
+
+  await expect(
+    axios.post(`${baseURL}/multiForm`, form, {
+      headers: form.getHeaders()
+    })
+  ).rejects.toHaveProperty('response.status', 400)
 })
 
 test('GET: static', async () => {

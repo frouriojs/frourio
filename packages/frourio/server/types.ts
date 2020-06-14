@@ -22,3 +22,20 @@ export class ValidUserInfo {
   @Validator.MaxLength(20)
   name: string
 }
+
+export class ValidMultiForm {
+  @Validator.IsInt({ each: true })
+  empty: number[]
+
+  @Validator.IsString()
+  name: string
+
+  @Validator.Allow()
+  icon: Blob
+
+  @Validator.IsString({ each: true })
+  vals: string[]
+
+  @Validator.ArrayNotEmpty()
+  files: Blob[]
+}

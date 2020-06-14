@@ -9,7 +9,6 @@ export default (input: string): Template => {
   return {
     text: `/* eslint-disable */
 import 'reflect-metadata'
-import { tmpdir } from 'os'
 import { Server } from 'http'
 import path from 'path'
 import express, { Express } from 'express'
@@ -27,7 +26,9 @@ export const run = async (config: Config) => {
   const app = express()
   const router = createRouter(
     controllers,
-    multer(config.multer ?? { dest: tmpdir(), limits: { fileSize: 1024 ** 3 } }).any()
+    multer(
+      config.multer ?? { dest: path.join(__dirname, '.upload'), limits: { fileSize: 1024 ** 3 } }
+    ).any()
   )
 
   if (config.helmet) app.use(helmet(config.helmet === true ? {} : config.helmet))

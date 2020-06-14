@@ -1,6 +1,5 @@
 /* eslint-disable */
 import 'reflect-metadata'
-import { tmpdir } from 'os'
 import { Server } from 'http'
 import path from 'path'
 import express, { Express } from 'express'
@@ -13,10 +12,11 @@ import { Task as Entity0 } from './entity/Task'
 import { TaskSubscriber as Subscriber0 } from './subscriber/TaskSubscriber'
 import * as Types from './types'
 import controller0, { middleware as ctrlMiddleware0 } from './api/@controller'
-import controller1 from './api/texts/@controller'
-import controller2 from './api/texts/sample/@controller'
-import controller3, { middleware as ctrlMiddleware1 } from './api/users/@controller'
-import controller4 from './api/users/_userId@number/@controller'
+import controller1 from './api/multiForm/@controller'
+import controller2 from './api/texts/@controller'
+import controller3 from './api/texts/sample/@controller'
+import controller4, { middleware as ctrlMiddleware1 } from './api/users/@controller'
+import controller5 from './api/users/_userId@number/@controller'
 import middleware0 from './api/@middleware'
 import middleware1 from './api/users/@middleware'
 
@@ -38,13 +38,23 @@ export const controllers = {
   children: {
     names: [
       {
+        name: '/multiForm',
+        validator: {
+          post: {
+            body: { required: true, Class: Types.ValidMultiForm }
+          }
+        },
+        uploader: ['post'],
+        controller: controller1
+      },
+      {
         name: '/texts',
-        controller: controller1,
+        controller: controller2,
         children: {
           names: [
             {
               name: '/sample',
-              controller: controller2
+              controller: controller3
             }
           ]
         }
@@ -56,13 +66,13 @@ export const controllers = {
             body: { required: true, Class: Types.ValidUserInfo }
           }
         },
-        controller: controller3,
+        controller: controller4,
         ctrlMiddleware: ctrlMiddleware1,
         middleware: middleware1,
         children: {
           value: {
             name: '/_userId@number',
-            controller: controller4
+            controller: controller5
           }
         }
       }
@@ -77,7 +87,9 @@ export const run = async (config: Config) => {
   const app = express()
   const router = createRouter(
     controllers,
-    multer(config.multer ?? { dest: tmpdir(), limits: { fileSize: 1024 ** 3 } }).any()
+    multer(
+      config.multer ?? { dest: path.join(__dirname, '.upload'), limits: { fileSize: 1024 ** 3 } }
+    ).any()
   )
 
   if (config.helmet) app.use(helmet(config.helmet === true ? {} : config.helmet))
