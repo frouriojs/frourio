@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.7.2](https://github.com/frouriojs/frourio/compare/v0.7.1...v0.7.2) (2020-06-14)
+
+
+### Bug Fixes
+
+* export File type from Express.Multer ([337cf51](https://github.com/frouriojs/frourio/commit/337cf51c92b1ca4acbc6e1080aa319ce8015123e))
+
 ### [0.7.1](https://github.com/frouriojs/frourio/compare/v0.7.0...v0.7.1) (2020-06-13)
 
 
