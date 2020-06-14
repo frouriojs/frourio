@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.8.0](https://github.com/frouriojs/frourio/compare/v0.7.2...v0.8.0) (2020-06-14)
+
+
+### Features
+
+* support multi files of FormData ([6228084](https://github.com/frouriojs/frourio/commit/6228084de315e42fdbe2bae116a06b86f9d295b9))
+
 ### [0.7.2](https://github.com/frouriojs/frourio/compare/v0.7.1...v0.7.2) (2020-06-14)
 
 
