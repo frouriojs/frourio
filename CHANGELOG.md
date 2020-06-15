@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.9.0](https://github.com/frouriojs/frourio/compare/v0.8.0...v0.9.0) (2020-06-15)
+
+
+### Features
+
+* update aspida@0.18.0 ([723ab45](https://github.com/frouriojs/frourio/commit/723ab4525acdc591707a1374621339ede3f52a8b))
+
 ## [0.8.0](https://github.com/frouriojs/frourio/compare/v0.7.2...v0.8.0) (2020-06-14)
 
 
