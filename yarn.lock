@@ -2,12 +2,12 @@
 # yarn lockfile v1
 
 
-"@aspida/axios@^0.7.0":
-  version "0.7.0"
-  resolved "https://registry.yarnpkg.com/@aspida/axios/-/axios-0.7.0.tgz#cafdbc6cc6ec8afcd2866e28eb2e5404a21ef874"
-  integrity sha512-T6WRmzm1otKU8nvomQx+FcmE7INW09d6DQ/tZ7vIJBXSIUy9gkG0n2c1ZtfS+yGIlj7QfacgU5R198DJup8HXQ==
+"@aspida/axios@0.8.0":
+  version "0.8.0"
+  resolved "https://registry.yarnpkg.com/@aspida/axios/-/axios-0.8.0.tgz#eca52cb9ae5bb709c61ed98c16f06fb0eebaab61"
+  integrity sha512-IBC3vyVYGVOcVEtsKUdFeD7nBSH+/XFfFMJqz6fLZQmto/TjEkQZzf9StKVgg6guc0L3cfNpjmyYZks0+AhnKw==
   dependencies:
-    aspida "^0.17.0"
+    aspida "^0.18.0"
 
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.10.1":
   version "7.10.1"
@@ -1096,10 +1096,10 @@ asn1@~0.2.3:
   dependencies:
     safer-buffer "~2.1.0"
 
-aspida@^0.17.0:
-  version "0.17.0"
-  resolved "https://registry.yarnpkg.com/aspida/-/aspida-0.17.0.tgz#555b3c47d1b9e47b5db1057b0530fbf727be45d5"
-  integrity sha512-+bS0t1pYRKnokh/EZRI7v/2cgD1/mMZYDLeSbNp0/nprewWQpCrnSMQY4R/Csuj128UeRy2/xvU2iNPCatP8Jw==
+aspida@^0.18.0:
+  version "0.18.0"
+  resolved "https://registry.yarnpkg.com/aspida/-/aspida-0.18.0.tgz#7b8dcad290b6e24d9efe57e0a4a07f1ebd689d7d"
+  integrity sha512-xHdMjYHncV4oRi4BuM4ytx8FgehaPsCgeI9T5/PqHWX0TzuSl7y3QqEkN3Q7PTmtWD6uVLXUHdocg0ipwBNSag==
   dependencies:
     chokidar "^3.4.0"
     minimist "^1.2.5"
