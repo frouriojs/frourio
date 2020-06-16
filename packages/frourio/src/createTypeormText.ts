@@ -2,6 +2,8 @@ import fs from 'fs'
 import path from 'path'
 import listFiles from './listFiles'
 
+const getFileName = (name: string) => path.basename(name, path.extname(name))
+
 export default (inputDir: string) => {
   const entities = fs.existsSync(`${inputDir}/entity`) ? listFiles(`${inputDir}/entity`) : []
   const migrations = fs.existsSync(`${inputDir}/migration`)
@@ -11,16 +13,36 @@ export default (inputDir: string) => {
     ? listFiles(`${inputDir}/subscriber`)
     : []
 
+  entities.forEach(async e => {
+    if (await fs.promises.readFile(e, 'utf8')) return
+
+    await fs.promises.writeFile(
+      e,
+      `import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm'
+
+@Entity()
+export class ${getFileName(e)} {
+  @PrimaryGeneratedColumn()
+  id: number
+
+  @Column({ length: 100 })
+  name: string
+}
+`,
+      'utf8'
+    )
+  })
+
   const imports = `${entities
     .map(
       (e, i) =>
-        `\nimport { ${path.basename(e, path.extname(e))} as Entity${i} } from '${e
+        `\nimport { ${getFileName(e)} as Entity${i} } from '${e
           .replace(inputDir, '.')
           .replace('.ts', '')}'`
     )
     .join('')}${migrations
     .map((m, i) => {
-      const names = path.basename(m, path.extname(m)).split('-')
+      const names = getFileName(m).split('-')
       return `\nimport { ${names[1]}${names[0]} as Migration${i} } from '${m
         .replace(inputDir, '.')
         .replace('.ts', '')}'`
@@ -28,7 +50,7 @@ export default (inputDir: string) => {
     .join('')}${subscribers
     .map(
       (s, i) =>
-        `\nimport { ${path.basename(s, path.extname(s))} as Subscriber${i} } from '${s
+        `\nimport { ${getFileName(s)} as Subscriber${i} } from '${s
           .replace(inputDir, '.')
           .replace('.ts', '')}'`
     )
