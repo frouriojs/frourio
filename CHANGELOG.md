@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.10.0](https://github.com/frouriojs/frourio/compare/v0.9.0...v0.10.0) (2020-06-16)
+
+
+### Features
+
+* change $values.ts to $relay.ts ([a3d136d](https://github.com/frouriojs/frourio/commit/a3d136da53e55b7257b043f60435f0115850b514))
+
+
+### Documentation
+
+* update readme ([1717122](https://github.com/frouriojs/frourio/commit/1717122ae39a6d57bd9c8b4201aa230d3fc236f4))
+
 ## [0.9.0](https://github.com/frouriojs/frourio/compare/v0.8.0...v0.9.0) (2020-06-15)
 
 
