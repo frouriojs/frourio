@@ -18,21 +18,19 @@ export default (inputDir: string) => {
         ? `./.${user}`
         : ''
 
-    const valuesPath = path.join(input, '$values.ts')
-    const hasValuesFile = !!(params.length || userPath)
+    const relayPath = path.join(input, '$relay.ts')
+    const text = `/* eslint-disable */\nimport { RequestHandler } from 'express'\nimport { ServerMethods } from 'frourio'\n${
+      userPath ? `import { User } from '${userPath}'\n` : ''
+    }import { Methods } from './'\n\ntype Types = {${userPath ? '\n  user: User\n' : ''}${
+      !userPath && params.length ? '\n' : ''
+    }${
+      params.length
+        ? `  params: {\n${params.map(v => `    ${v[0]}: ${v[1]}`).join('\n')}\n  }\n`
+        : ''
+    }}\n\nexport const createMiddleware = (middleware: RequestHandler | RequestHandler[]) => middleware\nexport const createController = (methods: ServerMethods<Methods, Types>) => methods\n`
 
-    const text = hasValuesFile
-      ? `/* eslint-disable */\n${
-          userPath ? `import { User } from '${userPath}'\n\n` : ''
-        }export type Values = {${
-          params.length
-            ? `\n  params: {\n${params.map(v => `    ${v[0]}: ${v[1]}`).join('\n')}\n  }`
-            : ''
-        }${userPath ? '\n  user: User' : ''}\n}\n`
-      : '/* eslint-disable */\nexport type Values = {}\n'
-
-    if (!fs.existsSync(valuesPath) || fs.readFileSync(valuesPath, 'utf8') !== text) {
-      fs.writeFileSync(valuesPath, text, 'utf8')
+    if (!fs.existsSync(relayPath) || fs.readFileSync(relayPath, 'utf8') !== text) {
+      fs.writeFileSync(relayPath, text, 'utf8')
     }
 
     createDefaultFiles(input)

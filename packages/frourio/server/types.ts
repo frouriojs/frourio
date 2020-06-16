@@ -1,41 +1,50 @@
-import { Validator } from 'frourio'
+import {
+  IsNumberString,
+  IsBooleanString,
+  IsPort,
+  IsInt,
+  MaxLength,
+  IsString,
+  Allow,
+  ArrayNotEmpty
+} from 'class-validator'
 
 export class ValidQuery {
-  @Validator.IsNumberString()
+  @IsNumberString()
   id: string
 
-  @Validator.IsBooleanString()
+  @IsBooleanString()
   disable: string
 }
 
 export class ValidBody {
-  @Validator.IsPort()
+  @IsPort()
   port: string
 
   file: File
 }
 
 export class ValidUserInfo {
-  @Validator.IsInt()
+  @IsInt()
   id: number
 
-  @Validator.MaxLength(20)
+  @MaxLength(20)
   name: string
 }
 
 export class ValidMultiForm {
-  @Validator.IsInt({ each: true })
+  @IsInt({ each: true })
   empty: number[]
 
-  @Validator.IsString()
+  @IsString()
   name: string
 
-  @Validator.Allow()
+  @Allow()
   icon: Blob
 
-  @Validator.IsString({ each: true })
+  @IsString({ each: true })
   vals: string[]
 
-  @Validator.ArrayNotEmpty()
+  @ArrayNotEmpty()
   files: Blob[]
 }

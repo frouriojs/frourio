@@ -1,4 +1,4 @@
-import { createMiddleware } from 'frourio'
+import { createMiddleware } from './$relay'
 
 export type User = {
   id: number

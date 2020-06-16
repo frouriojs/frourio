@@ -11,11 +11,7 @@ export default (dir: string) => {
   if (!fs.existsSync(controllerFilePath)) {
     fs.writeFileSync(
       controllerFilePath,
-      `import { createController } from 'frourio'
-import { Values } from './$values'
-import { Methods } from './'
-
-export default createController<Methods, Values>({})\n`,
+      `import { createController } from './$relay'\n\nexport default createController({})\n`,
       'utf8'
     )
   }

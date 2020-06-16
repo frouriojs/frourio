@@ -1,6 +1,4 @@
-import { createController, createMiddleware } from 'frourio'
-import { Values } from './$values'
-import { Methods } from './'
+import { createController, createMiddleware } from './$relay'
 
 const middleware = createMiddleware([
   (req, res, next) => {
@@ -11,7 +9,7 @@ const middleware = createMiddleware([
 
 export { middleware }
 
-export default createController<Methods, Values>({
+export default createController({
   get: async () => ({ status: 200, body: [{ id: 1, name: 'aa' }] }),
   post: () => ({ status: 204 })
 })

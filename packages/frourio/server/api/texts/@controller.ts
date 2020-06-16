@@ -1,8 +1,6 @@
-import { createController } from 'frourio'
-import { Values } from './$values'
-import { Methods } from './'
+import { createController } from './$relay'
 
 // @ts-expect-error
-export default createController<Methods, Values>({
+export default createController({
   get: ({ query }) => ({ status: 200, body: query.val })
 })

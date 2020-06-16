@@ -1,7 +1,5 @@
-import { createController } from 'frourio'
-import { Values } from './$values'
-import { Methods } from './'
+import { createController } from './$relay'
 
-export default createController<Methods, Values>({
+export default createController({
   get: ({ params }) => ({ status: 200, body: { id: params.userId, name: 'bbb' } })
 })

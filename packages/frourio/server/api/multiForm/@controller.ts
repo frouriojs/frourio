@@ -1,8 +1,7 @@
-import { createController } from 'frourio'
-import { Values } from './$values'
+import { createController } from './$relay'
 import { Methods } from './'
 
-export default createController<Methods, Values>({
+export default createController({
   post: ({ body }) => ({
     status: 201,
     body: Object.entries(body).reduce(

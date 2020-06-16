@@ -13,8 +13,6 @@ import { IHelmetConfiguration } from 'helmet'
 import { CorsOptions } from 'cors'
 import { Options } from 'multer'
 
-export * as Validator from 'class-validator'
-
 export type File = Express.Multer.File
 
 export type Config = {
@@ -112,12 +110,6 @@ export type ServerMethods<T extends AspidaMethods, U extends ServerValues> = {
   ) => ServerResponse<T[K]> | Promise<ServerResponse<T[K]>>
 }
 
-export const createController = <T extends AspidaMethods, U extends ServerValues>(
-  methods: ServerMethods<T, U>
-) => methods
-
-export const createMiddleware = (middleware: RequestHandler | RequestHandler[]) => middleware
-
 type Validator = {
   required: boolean
   Class: any
@@ -129,7 +121,7 @@ type Validators = {
   headers?: Validator
 }
 
-export type ControllerTree = {
+type ControllerTree = {
   name: string
   controller?: ServerMethods<any, any>
   ctrlMiddleware?: RequestHandler | RequestHandler[]
