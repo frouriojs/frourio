@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.1](https://github.com/frouriojs/frourio/compare/v0.10.0...v0.10.1) (2020-06-16)
+
+
+### Features
+
+* generate entity and middleware ([4df2b60](https://github.com/frouriojs/frourio/commit/4df2b60137d60686ed742bf65e27cf8bed96ea1b))
+
 ## [0.10.0](https://github.com/frouriojs/frourio/compare/v0.9.0...v0.10.0) (2020-06-16)
 
 
