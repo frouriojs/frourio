@@ -72,6 +72,30 @@ Or with [yarn](https://yarnpkg.com/en/):
 yarn create frourio-app <my-project>
 ```
 
+## Environment
+
+Frourio requires TypeScript 3.9 or higher.  
+If the TypeScript version of VSCode is low, an error is displayed during development.
+
+## Type definition of API endpoints
+
+aspida: `/apis` --> frourio: `/server/api`
+
+[See: Create an endpoint type definition file | aspida](https://github.com/aspidajs/aspida#create-an-endpoint-type-definition-file)
+
+#### Warning !
+examples.
+
+> GET: /api/test
+
+x- /server/api/test.ts  
+o- /server/api/test/index.ts
+
+> GET: /api/test/{testId}
+
+x- /server/api/test/_testId.ts  
+o- /server/api/test/_testId/index.ts
+
 ## Support
 
 <a href="https://twitter.com/solufa2020">
