@@ -1,6 +1,6 @@
 import fs from 'fs'
 import path from 'path'
-import listFiles from './listFiles'
+import { listFiles } from './listFiles'
 
 const getFileName = (name: string) => path.basename(name, path.extname(name))
 

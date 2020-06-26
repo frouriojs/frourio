@@ -1,20 +1,8 @@
 import fs from 'fs'
 import path from 'path'
 
-const listFiles = (targetDir: string) => {
-  const list: string[] = []
-
-  fs.readdirSync(targetDir).forEach(file => {
-    const target = path.posix.join(targetDir, file)
-
-    if (fs.statSync(target).isFile()) {
-      list.push(target)
-    } else {
-      list.push(...listFiles(target))
-    }
+export const listFiles = (targetDir: string): string[] =>
+  fs.readdirSync(targetDir, { withFileTypes: true }).flatMap(dirent => {
+    const target = path.posix.join(targetDir, dirent.name)
+    return dirent.isFile() ? [target] : listFiles(target)
   })
-
-  return list
-}
-
-export default listFiles
