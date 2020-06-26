@@ -12,7 +12,7 @@ updates:
     target-branch: "develop"
     commit-message:
       prefix: "fix"
-      prefix_development: "chore"
+      prefix-development: "chore"
 
   - package-ecosystem: "npm"
     directory: "/packages/frourio"
@@ -21,5 +21,5 @@ updates:
     target-branch: "develop"
     commit-message:
       prefix: "fix"
-      prefix_development: "chore"
+      prefix-development: "chore"
  
