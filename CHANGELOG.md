@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.2](https://github.com/frouriojs/frourio/compare/v0.10.1...v0.10.2) (2020-06-26)
+
+
+### Documentation
+
+* update readme ([c9dc7f7](https://github.com/frouriojs/frourio/commit/c9dc7f7f0c6b3f92cb1b1f77d8618984d2c3cf23))
+
+
+### Refactors
+
+* update listFiles.ts ([ef608a3](https://github.com/frouriojs/frourio/commit/ef608a38855767f379d148b01fb0801839b417af))
+
 ### [0.10.1](https://github.com/frouriojs/frourio/compare/v0.10.0...v0.10.1) (2020-06-16)
 
 
