@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.3](https://github.com/frouriojs/frourio/compare/v0.10.2...v0.10.3) (2020-06-27)
+
+
+### Bug Fixes
+
+* resolve relative path ([3a5ed01](https://github.com/frouriojs/frourio/commit/3a5ed013600e05b3ea8216560a9984327d1b3a06))
+
 ### [0.10.2](https://github.com/frouriojs/frourio/compare/v0.10.1...v0.10.2) (2020-06-26)
 
 
