@@ -145,9 +145,12 @@ export default (inputDir: string) => {
       (ctrl, i) =>
         `import controller${i}${
           ctrl[1] ? `, { middleware as ctrlMiddleware${ctrlMiddleware.indexOf(ctrl)} }` : ''
-        } from '${ctrl[0].replace(inputDir, './api')}'`
+        } from '${ctrl[0].replace(/^api/, './api').replace(inputDir, './api')}'`
     )
     .join('\n')}${middlewares.length ? '\n' : ''}${middlewares
-    .map((m, i) => `import middleware${i} from '${m.replace(inputDir, './api')}'`)
+    .map(
+      (m, i) =>
+        `import middleware${i} from '${m.replace(/^api/, './api').replace(inputDir, './api')}'`
+    )
     .join('\n')}\n\nexport const controllers = {\n  name: '/'${text}\n}`
 }

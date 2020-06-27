@@ -28,7 +28,7 @@
     "@types/express-serve-static-core": "4.17.7",
     "@types/helmet": "^0.0.47",
     "@types/multer": "^1.4.3",
-    "aspida": "^0.19.3",
+    "aspida": "^0.19.4",
     "class-validator": "^0.12.2",
     "cors": "^2.8.5",
     "express": "^4.17.1",
