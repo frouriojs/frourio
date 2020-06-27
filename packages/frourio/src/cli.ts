@@ -12,7 +12,7 @@ const options: minimist.Opts = {
 
 export const run = (args: string[]) => {
   const argv = minimist(args, options)
-  const dirs = ((argv.dir as string) ?? 'server').split(',')
+  const dirs = ((argv.dir as string) ?? '.').split(',')
   const commands: Command[] = [
     argv.version !== undefined ? versionCommand : nullCommand,
     argv.build !== undefined ? { exec: () => dirs.forEach(dir => write(build(dir))) } : nullCommand,
