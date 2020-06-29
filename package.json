@@ -37,7 +37,7 @@
     "form-data": "^3.0.0",
     "husky": "^4.2.5",
     "jest": "^26.1.0",
-    "lint-staged": "^10.2.6",
+    "lint-staged": "^10.2.11",
     "prettier": "2.0.5",
     "standard-version": "^8.0.0",
     "ts-jest": "^25.5.1"
