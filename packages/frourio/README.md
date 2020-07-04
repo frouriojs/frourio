@@ -9,9 +9,6 @@
 <a href="https://codecov.io/gh/frouriojs/frourio">
   <img src="https://img.shields.io/codecov/c/github/frouriojs/frourio.svg" alt="Codecov" />
 </a>
-<a href="https://dependabot.com">
-  <img src="https://api.dependabot.com/badges/status?host=github&repo=frouriojs/frourio" alt="Dependabot Status" />
-</a>
 <a href="https://github.com/frouriojs/frourio/blob/master/packages/frourio/LICENSE">
   <img src="https://img.shields.io/npm/l/frourio" alt="License" />
 </a>
