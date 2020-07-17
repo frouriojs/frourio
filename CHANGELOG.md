@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.4](https://github.com/frouriojs/frourio/compare/v0.10.3...v0.10.4) (2020-07-17)
+
+
+### Bug Fixes
+
+* add router type ([6483533](https://github.com/frouriojs/frourio/commit/6483533b1938505ac68a3489932270324cf65e15))
+* bump typescript from 3.9.5 to 3.9.6 ([5070df0](https://github.com/frouriojs/frourio/commit/5070df0673bebada5a0712c117762306d6a1f654))
+* static middleware basePath ([cc5ba3e](https://github.com/frouriojs/frourio/commit/cc5ba3ec74765f6c329102e239c3d112a1747ff8))
+* update helmet requirement in /packages/frourio ([9257dfc](https://github.com/frouriojs/frourio/commit/9257dfcc37233586052eb65120a82f5f5162a56f))
+* update typescript requirement in /packages/frourio ([b393912](https://github.com/frouriojs/frourio/commit/b393912df7bda0c069502d82edd4b27f0f540f2f))
+
+
+### Documentation
+
+* remove dependabot badge ([8c92316](https://github.com/frouriojs/frourio/commit/8c92316fad67a4d4b201b29a63ea731e89a66d4f))
+
 ### [0.10.3](https://github.com/frouriojs/frourio/compare/v0.10.2...v0.10.3) (2020-06-27)
 
 
