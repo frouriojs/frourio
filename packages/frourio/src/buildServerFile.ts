@@ -42,13 +42,15 @@ export const run = async (config: Config) => {
     })
   })
 
+  const staticMiddleware = express.static(path.join(__dirname, 'public'))
   if (config.basePath && config.basePath !== '/') {
-    app.use(config.basePath.startsWith('/') ? config.basePath : \`/\${config.basePath}\`, router)
+    const staticPath = config.basePath.startsWith('/') ? config.basePath : \`/\${config.basePath}\`
+    app.use(staticPath, router)
+    app.use(staticPath, staticMiddleware)
   } else {
     app.use(router)
+    app.use(staticMiddleware)
   }
-
-  app.use(express.static(path.join(__dirname, 'public')))
 
   let connection: Connection
 
