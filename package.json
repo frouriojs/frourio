@@ -53,7 +53,10 @@
     "trailingComma": "none",
     "overrides": [
       {
-        "files": ["*.md", "*.yml"],
+        "files": [
+          "*.md",
+          "*.yml"
+        ],
         "options": {
           "singleQuote": false
         }
