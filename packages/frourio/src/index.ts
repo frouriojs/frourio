@@ -6,7 +6,7 @@ import {
   AspidaMethodParams,
   $arrayTypeKeysName
 } from 'aspida'
-import express, { RequestHandler } from 'express'
+import express, { RequestHandler, Router } from 'express'
 import { validateOrReject } from 'class-validator'
 import { ConnectionOptions } from 'typeorm'
 import { IHelmetConfiguration } from 'helmet'
@@ -238,7 +238,7 @@ export const createRouter = (
   ctrl: ControllerTree,
   uploader: RequestHandler,
   numberTypeParams: string[] = []
-) => {
+): Router => {
   const router = express.Router({ mergeParams: true })
 
   if (ctrl.middleware) {
