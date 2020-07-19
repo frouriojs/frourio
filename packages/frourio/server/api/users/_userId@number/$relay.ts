@@ -4,12 +4,20 @@ import { ServerMethods } from 'frourio'
 import { User } from './../@middleware'
 import { Methods } from './'
 
-type Types = {
+type ControllerMethods = ServerMethods<Methods, {
   user: User
   params: {
     userId: number
   }
-}
+}>
 
-export const createMiddleware = (middleware: RequestHandler | RequestHandler[]) => middleware
-export const createController = (methods: ServerMethods<Methods, Types>) => methods
+export const createMiddleware = <
+  T extends RequestHandler | [] | [RequestHandler, ...RequestHandler[]]
+>(handler: T): T => handler
+
+export const createController = (methods: ControllerMethods) => methods
+
+export const createInjectableController = <T>(
+  cb: (deps: T) => ControllerMethods,
+  deps: T
+) => ({ ...cb(deps), inject: (d: T) => cb(d) })

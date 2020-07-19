@@ -21,13 +21,25 @@ export default (inputDir: string) => {
     const relayPath = path.join(input, '$relay.ts')
     const text = `/* eslint-disable */\nimport { RequestHandler } from 'express'\nimport { ServerMethods } from 'frourio'\n${
       userPath ? `import { User } from '${userPath}'\n` : ''
-    }import { Methods } from './'\n\ntype Types = {${userPath ? '\n  user: User\n' : ''}${
-      !userPath && params.length ? '\n' : ''
-    }${
+    }import { Methods } from './'\n\ntype ControllerMethods = ServerMethods<Methods, {${
+      userPath ? '\n  user: User\n' : ''
+    }${!userPath && params.length ? '\n' : ''}${
       params.length
         ? `  params: {\n${params.map(v => `    ${v[0]}: ${v[1]}`).join('\n')}\n  }\n`
         : ''
-    }}\n\nexport const createMiddleware = (middleware: RequestHandler | RequestHandler[]) => middleware\nexport const createController = (methods: ServerMethods<Methods, Types>) => methods\n`
+    }}>
+
+export const createMiddleware = <
+  T extends RequestHandler | [] | [RequestHandler, ...RequestHandler[]]
+>(handler: T): T => handler
+
+export const createController = (methods: ControllerMethods) => methods
+
+export const createInjectableController = <T>(
+  cb: (deps: T) => ControllerMethods,
+  deps: T
+) => ({ ...cb(deps), inject: (d: T) => cb(d) })
+`
 
     if (!fs.existsSync(relayPath) || fs.readFileSync(relayPath, 'utf8') !== text) {
       fs.writeFileSync(relayPath, text, 'utf8')

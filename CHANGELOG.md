@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.11.0](https://github.com/frouriojs/frourio/compare/v0.10.4...v0.11.0) (2020-07-19)
+
+
+### Features
+
+* support DI ([b4e4bc1](https://github.com/frouriojs/frourio/commit/b4e4bc13e3cff3f628e8a7ffc32c1e577f499bbc))
+
 ### [0.10.4](https://github.com/frouriojs/frourio/compare/v0.10.3...v0.10.4) (2020-07-17)
 
 

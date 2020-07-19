@@ -295,3 +295,12 @@ export const createRouter = (
 
   return router
 }
+
+export const createInjectableFunction = <T extends [] | [any, ...any[]], U, V>(
+  cb: (deps: V, ...params: T) => U,
+  deps: V
+) => {
+  const fn = (...args: T) => cb(deps, ...args)
+  fn.inject = (d: V) => (...args: T) => cb(d, ...args)
+  return fn
+}
