@@ -9,6 +9,9 @@
 <a href="https://codecov.io/gh/frouriojs/frourio">
   <img src="https://img.shields.io/codecov/c/github/frouriojs/frourio.svg" alt="Codecov" />
 </a>
+<a href="https://lgtm.com/projects/g/frouriojs/frourio/context:javascript">
+  <img src="https://img.shields.io/lgtm/grade/javascript/g/frouriojs/frourio.svg" alt="Language grade: JavaScript" />
+</a>
 <a href="https://github.com/frouriojs/frourio/blob/master/packages/frourio/LICENSE">
   <img src="https://img.shields.io/npm/l/frourio" alt="License" />
 </a>
