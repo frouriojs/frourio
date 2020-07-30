@@ -5,7 +5,7 @@ export const middleware = createMiddleware((req, res, next) => {
   next()
 })
 
-export default createController({
+export default createController(() => ({
   get: async v => {
     return await { status: 200, body: { id: +(v.query?.id || 0) } }
   },
@@ -14,4 +14,4 @@ export default createController({
     status: 200,
     body: { id: +v.query.id, port: v.body.port, fileName: v.body.file.originalname }
   })
-})
+}))

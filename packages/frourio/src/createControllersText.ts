@@ -19,7 +19,7 @@ export default (inputDir: string) => {
         : ''
 
     const relayPath = path.join(input, '$relay.ts')
-    const text = `/* eslint-disable */\nimport { RequestHandler } from 'express'\nimport { ServerMethods } from 'frourio'\n${
+    const text = `/* eslint-disable */\nimport { ServerMethods, Deps, createMiddleware } from 'frourio'\n${
       userPath ? `import { User } from '${userPath}'\n` : ''
     }import { Methods } from './'\n\ntype ControllerMethods = ServerMethods<Methods, {${
       userPath ? '\n  user: User\n' : ''
@@ -29,16 +29,13 @@ export default (inputDir: string) => {
         : ''
     }}>
 
-export const createMiddleware = <
-  T extends RequestHandler | [] | [RequestHandler, ...RequestHandler[]]
->(handler: T): T => handler
+export { createMiddleware }
 
-export const createController = (methods: ControllerMethods) => methods
-
-export const createInjectableController = <T>(
-  cb: (deps: T) => ControllerMethods,
-  deps: T
-) => ({ ...cb(deps), inject: (d: T) => cb(d) })
+export function createController(methods: () => ControllerMethods): ControllerMethods
+export function createController<T extends Record<string, any>>(deps: T, cb: (deps: Deps<T>) => ControllerMethods): ControllerMethods & {  _frourio: boolean; inject: (d: Deps<T>) => ControllerMethods }
+export function createController<T extends Record<string, any>>(methods: () => ControllerMethods | T, cb?: (deps: Deps<T>) => ControllerMethods) {
+  return typeof methods === 'function' ? methods() : { ...cb!(methods), _frourio: true, inject: (d: Deps<T>) => cb!(d) }
+}
 `
 
     if (!fs.existsSync(relayPath) || fs.readFileSync(relayPath, 'utf8') !== text) {
