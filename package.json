@@ -65,7 +65,7 @@
   },
   "devDependencies": {
     "@aspida/axios": "^0.10.1",
-    "@types/jest": "^26.0.4",
+    "@types/jest": "^26.0.7",
     "@types/minimist": "^1.2.0",
     "@typescript-eslint/eslint-plugin": "^3.6.1",
     "@typescript-eslint/parser": "^3.6.1",
