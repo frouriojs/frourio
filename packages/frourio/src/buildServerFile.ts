@@ -1,9 +1,8 @@
 import path from 'path'
-import { Template } from 'aspida/dist/buildTemplate'
 import createControllersText from './createControllersText'
 import createTypeormText from './createTypeormText'
 
-export default (input: string): Template => {
+export default (input: string) => {
   const typeormText = createTypeormText(input)
 
   return {

@@ -1,6 +1,6 @@
 import path from 'path'
 import fs from 'fs'
-import parseInterface from 'aspida/dist/parseInterface'
+import { parse } from 'aspida/dist/commands'
 import createDefaultFiles from './createDefaultFilesIfNotExists'
 
 export default (inputDir: string) => {
@@ -12,7 +12,7 @@ export default (inputDir: string) => {
     let result = ''
     const userPath =
       fs.existsSync(path.join(input, '@middleware.ts')) &&
-      parseInterface(fs.readFileSync(path.join(input, '@middleware.ts'), 'utf8'), 'User')
+      parse(fs.readFileSync(path.join(input, '@middleware.ts'), 'utf8'), 'User')
         ? './@middleware'
         : user
         ? `./.${user}`
@@ -45,7 +45,7 @@ export function createController<T extends Record<string, any>>(methods: () => C
     createDefaultFiles(input)
 
     const validatorPrefix = 'Valid'
-    const methods = parseInterface(fs.readFileSync(path.join(input, 'index.ts'), 'utf8'), 'Methods')
+    const methods = parse(fs.readFileSync(path.join(input, 'index.ts'), 'utf8'), 'Methods')
     if (methods) {
       const validateInfo = methods
         .map(m => {
