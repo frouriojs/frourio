@@ -1,7 +1,7 @@
 import { createController } from './$relay'
 import { Methods } from './'
 
-export default createController({
+export default createController(() => ({
   post: ({ body }) => ({
     status: 201,
     body: Object.entries(body).reduce(
@@ -9,4 +9,4 @@ export default createController({
       {} as Methods['post']['resBody']
     )
   })
-})
+}))

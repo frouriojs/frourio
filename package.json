@@ -14,7 +14,7 @@
     "lint": "eslint --ext .js,.ts --ignore-path .gitignore .",
     "lint:fix": "npm run lint -- --fix",
     "test": "jest",
-    "typecheck": "npm run build && tsc --noEmit"
+    "typecheck": "tsc --noEmit"
   },
   "eslintConfig": {
     "env": {

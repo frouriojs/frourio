@@ -9,7 +9,7 @@ const middleware = createMiddleware([
 
 export { middleware }
 
-export default createController({
+export default createController(() => ({
   get: async () => ({ status: 200, body: [{ id: 1, name: 'aa' }] }),
   post: () => ({ status: 204 })
-})
+}))

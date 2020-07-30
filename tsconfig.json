@@ -9,6 +9,10 @@
     "lib": ["esnext", "dom"],
     "module": "commonjs",
     "moduleResolution": "node",
+    "baseUrl": ".",
+    "paths": {
+      "frourio": ["packages/frourio/src"]
+    },
     "sourceMap": true,
     "strict": true,
     "strictPropertyInitialization": false,

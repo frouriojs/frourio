@@ -110,6 +110,12 @@ export type ServerMethods<T extends AspidaMethods, U extends ServerValues> = {
   ) => ServerResponse<T[K]> | Promise<ServerResponse<T[K]>>
 }
 
+export type Deps<T extends Record<string, any>> = {
+  [P in keyof T]: T[P] extends { _frourio: boolean }
+    ? (...args: Parameters<T[P]>) => ReturnType<T[P]>
+    : T[P]
+}
+
 type Validator = {
   required: boolean
   Class: any
@@ -296,11 +302,8 @@ export const createRouter = (
   return router
 }
 
-export const createInjectableFunction = <T extends [] | [any, ...any[]], U, V>(
-  cb: (deps: V, ...params: T) => U,
-  deps: V
-) => {
-  const fn = (...args: T) => cb(deps, ...args)
-  fn.inject = (d: V) => (...args: T) => cb(d, ...args)
-  return fn
-}
+export const createMiddleware = <
+  T extends RequestHandler | [] | [RequestHandler, ...RequestHandler[]]
+>(
+  handler: T
+): T => handler
