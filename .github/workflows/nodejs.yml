@@ -9,7 +9,7 @@ jobs:
     strategy:
       matrix:
         node-version: [12, 14]
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        os: [windows-latest, ubuntu-latest]
     steps:
       - name: Disable autocrlf
         run: git config --global core.autocrlf false
