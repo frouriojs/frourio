@@ -104,6 +104,7 @@ export const run = async (config: Config) => {
   })
 
   const staticMiddleware = express.static(path.join(__dirname, 'public'))
+
   if (config.basePath && config.basePath !== '/') {
     const staticPath = config.basePath.startsWith('/') ? config.basePath : `/${config.basePath}`
     app.use(staticPath, router)
