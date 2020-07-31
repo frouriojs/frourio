@@ -8,8 +8,15 @@ export default (inputDir: string) => {
   const controllers: [string, boolean][] = []
   let hasValidators = false
 
-  const createText = (input: string, indent: string, params: [string, string][], user = '') => {
+  const createText = (
+    input: string,
+    indent: string,
+    params: [string, string][],
+    appPath = '$app',
+    user = ''
+  ) => {
     let result = ''
+    const appText = `../${appPath}`
     const userPath =
       fs.existsSync(path.join(input, '@middleware.ts')) &&
       parse(fs.readFileSync(path.join(input, '@middleware.ts'), 'utf8'), 'User')
@@ -19,7 +26,7 @@ export default (inputDir: string) => {
         : ''
 
     const relayPath = path.join(input, '$relay.ts')
-    const text = `/* eslint-disable */\nimport { Deps } from 'velona'\nimport { ServerMethods, createMiddleware } from 'frourio'\n${
+    const text = `/* eslint-disable */\nimport { Deps } from 'velona'\nimport { ServerMethods, createMiddleware } from '${appText}'\n${
       userPath ? `import { User } from '${userPath}'\n` : ''
     }import { Methods } from './'\n\ntype ControllerMethods = ServerMethods<Methods, {${
       userPath ? '\n  user: User\n' : ''
@@ -119,6 +126,7 @@ export function createController<T extends Record<string, any>>(methods: () => C
                 path.posix.join(input, n),
                 `      ${indent}`,
                 params,
+                appText,
                 userPath
               )}\n    ${indent}}`
           )
@@ -135,6 +143,7 @@ export function createController<T extends Record<string, any>>(methods: () => C
           path.posix.join(input, value),
           `    ${indent}`,
           [...params, [value.slice(1).split('@')[0], value.split('@')[1] ?? 'string']],
+          appText,
           userPath
         )}\n  ${indent}}`
       }

@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { Deps } from 'velona'
-import { ServerMethods, createMiddleware } from 'frourio'
+import { ServerMethods, createMiddleware } from '../../../$app'
 import { User } from './../@middleware'
 import { Methods } from './'
 
