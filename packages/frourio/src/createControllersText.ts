@@ -19,7 +19,7 @@ export default (inputDir: string) => {
         : ''
 
     const relayPath = path.join(input, '$relay.ts')
-    const text = `/* eslint-disable */\nimport { ServerMethods, Deps, createMiddleware } from 'frourio'\n${
+    const text = `/* eslint-disable */\nimport { Deps } from 'velona'\nimport { ServerMethods, createMiddleware } from 'frourio'\n${
       userPath ? `import { User } from '${userPath}'\n` : ''
     }import { Methods } from './'\n\ntype ControllerMethods = ServerMethods<Methods, {${
       userPath ? '\n  user: User\n' : ''
@@ -32,9 +32,9 @@ export default (inputDir: string) => {
 export { createMiddleware }
 
 export function createController(methods: () => ControllerMethods): ControllerMethods
-export function createController<T extends Record<string, any>>(deps: T, cb: (deps: Deps<T>) => ControllerMethods): ControllerMethods & {  _frourio: boolean; inject: (d: Deps<T>) => ControllerMethods }
+export function createController<T extends Record<string, any>>(deps: T, cb: (deps: Deps<T>) => ControllerMethods): ControllerMethods & { inject: (d: Deps<T>) => ControllerMethods }
 export function createController<T extends Record<string, any>>(methods: () => ControllerMethods | T, cb?: (deps: Deps<T>) => ControllerMethods) {
-  return typeof methods === 'function' ? methods() : { ...cb!(methods), _frourio: true, inject: (d: Deps<T>) => cb!(d) }
+  return typeof methods === 'function' ? methods() : { ...cb!(methods), inject: (d: Deps<T>) => cb!(d) }
 }
 `
 

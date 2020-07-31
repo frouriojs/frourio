@@ -110,12 +110,6 @@ export type ServerMethods<T extends AspidaMethods, U extends ServerValues> = {
   ) => ServerResponse<T[K]> | Promise<ServerResponse<T[K]>>
 }
 
-export type Deps<T extends Record<string, any>> = {
-  [P in keyof T]: T[P] extends { _frourio: boolean }
-    ? (...args: Parameters<T[P]>) => ReturnType<T[P]>
-    : T[P]
-}
-
 type Validator = {
   required: boolean
   Class: any
