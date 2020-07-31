@@ -23,7 +23,12 @@ import multer, { Options } from 'multer'
 import helmet, { IHelmetConfiguration } from 'helmet'
 import cors, { CorsOptions } from 'cors'
 import { createConnection, Connection, ConnectionOptions } from 'typeorm'
-import { validateOrReject } from 'class-validator'${typeormText.imports}
+import { validateOrReject } from 'class-validator'
+
+export const createMiddleware = <
+  T extends RequestHandler | [] | [RequestHandler, ...RequestHandler[]]
+>(handler: T): T => handler
+${typeormText.imports}
 ${createControllersText(`${input}/api`)}
 
 export type File = Express.Multer.File
@@ -308,10 +313,6 @@ export const createRouter = (
 
   return router
 }
-
-export const createMiddleware = <
-  T extends RequestHandler | [] | [RequestHandler, ...RequestHandler[]]
->(handler: T): T => handler
 
 export const entities = [${typeormText.entities}]
 export const migrations = [${typeormText.migrations}]

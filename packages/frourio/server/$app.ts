@@ -16,6 +16,11 @@ import helmet, { IHelmetConfiguration } from 'helmet'
 import cors, { CorsOptions } from 'cors'
 import { createConnection, Connection, ConnectionOptions } from 'typeorm'
 import { validateOrReject } from 'class-validator'
+
+export const createMiddleware = <
+  T extends RequestHandler | [] | [RequestHandler, ...RequestHandler[]]
+>(handler: T): T => handler
+
 import { Task as Entity0 } from './entity/Task'
 import { TaskSubscriber as Subscriber0 } from './subscriber/TaskSubscriber'
 import * as Types from './types'
@@ -370,10 +375,6 @@ export const createRouter = (
 
   return router
 }
-
-export const createMiddleware = <
-  T extends RequestHandler | [] | [RequestHandler, ...RequestHandler[]]
->(handler: T): T => handler
 
 export const entities = [Entity0]
 export const migrations = []
