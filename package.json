@@ -65,12 +65,12 @@
   },
   "devDependencies": {
     "@aspida/axios": "^0.10.1",
-    "@types/jest": "^26.0.7",
+    "@types/jest": "^26.0.8",
     "@types/minimist": "^1.2.0",
     "@typescript-eslint/eslint-plugin": "^3.7.1",
     "@typescript-eslint/parser": "^3.7.1",
     "axios": "^0.19.2",
-    "eslint": "^7.5.0",
+    "eslint": "^7.6.0",
     "eslint-config-prettier": "^6.11.0",
     "eslint-config-standard": "^14.1.1",
     "eslint-plugin-import": "^2.22.0",
@@ -80,7 +80,7 @@
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
     "form-data": "^3.0.0",
-    "jest": "^26.2.1",
+    "jest": "^26.2.2",
     "prettier": "2.0.5",
     "standard-version": "^8.0.2",
     "ts-jest": "^26.1.4"
