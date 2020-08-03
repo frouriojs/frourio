@@ -36,6 +36,6 @@
     "reflect-metadata": "^0.1.13",
     "typeorm": "^0.2.25",
     "typescript": "^3.9.7",
-    "velona": "^0.5.0"
+    "velona": "^0.5.1"
   }
 }
