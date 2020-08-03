@@ -1,14 +1,5 @@
-import path from 'path'
-import createControllersText from './createControllersText'
-import createTypeormText from './createTypeormText'
-
-export default (input: string, engine: 'express' | 'fastify') => {
-  const typeormText = createTypeormText(input)
-  const isExpress = engine === 'express'
-
-  return {
-    text: `/* eslint-disable */
-import 'reflect-metadata'${isExpress ? "\nimport { Server } from 'http'" : ''}
+/* eslint-disable */
+import 'reflect-metadata'
 import path from 'path'
 import {
   LowerHttpMethod,
@@ -18,43 +9,98 @@ import {
   AspidaMethodParams,
   $arrayTypeKeysName
 } from 'aspida'
-${
-  isExpress
-    ? `import express, { Express, RequestHandler, Router } from 'express'
-import multer, { Options } from 'multer'
-import helmet, { IHelmetConfiguration } from 'helmet'
-import cors, { CorsOptions } from 'cors'
-import { createConnection, Connection, ConnectionOptions } from 'typeorm'`
-    : `import fastify from 'fastify'
+import fastify from 'fastify'
 import express, { RequestHandler, Router } from 'express'
 import multer, { Options } from 'multer'
 import helmet, { FastifyHelmetOptions } from 'fastify-helmet'
 import cors, { FastifyCorsOptions } from 'fastify-cors'
 import staticPlugin from 'fastify-static'
-import { createConnection, ConnectionOptions } from 'typeorm'`
-}
+import { createConnection, ConnectionOptions } from 'typeorm'
 import { validateOrReject } from 'class-validator'
 
 export const createMiddleware = <
   T extends RequestHandler | [] | [RequestHandler, ...RequestHandler[]]
 >(handler: T): T => handler
-${typeormText.imports}
-${createControllersText(`${input}/api`)}
+
+import { Task as Entity0 } from './entity/Task'
+import { TaskSubscriber as Subscriber0 } from './subscriber/TaskSubscriber'
+import * as Types from './types'
+import controller0, { middleware as ctrlMiddleware0 } from './api/@controller'
+import controller1 from './api/multiForm/@controller'
+import controller2 from './api/texts/@controller'
+import controller3 from './api/texts/sample/@controller'
+import controller4, { middleware as ctrlMiddleware1 } from './api/users/@controller'
+import controller5 from './api/users/_userId@number/@controller'
+import middleware0 from './api/@middleware'
+import middleware1 from './api/users/@middleware'
+
+export const controllers = {
+  name: '/',
+  validator: {
+    get: {
+      query: { required: false, Class: Types.ValidQuery }
+    },
+    post: {
+      query: { required: true, Class: Types.ValidQuery },
+      body: { required: true, Class: Types.ValidBody }
+    }
+  },
+  uploader: ['post'],
+  controller: controller0,
+  ctrlMiddleware: ctrlMiddleware0,
+  middleware: middleware0,
+  children: {
+    names: [
+      {
+        name: '/multiForm',
+        validator: {
+          post: {
+            body: { required: true, Class: Types.ValidMultiForm }
+          }
+        },
+        uploader: ['post'],
+        controller: controller1
+      },
+      {
+        name: '/texts',
+        controller: controller2,
+        children: {
+          names: [
+            {
+              name: '/sample',
+              controller: controller3
+            }
+          ]
+        }
+      },
+      {
+        name: '/users',
+        validator: {
+          post: {
+            body: { required: true, Class: Types.ValidUserInfo }
+          }
+        },
+        controller: controller4,
+        ctrlMiddleware: ctrlMiddleware1,
+        middleware: middleware1,
+        children: {
+          value: {
+            name: '/_userId@number',
+            controller: controller5
+          }
+        }
+      }
+    ]
+  }
+}
 
 export type File = Express.Multer.File
 
 export type Config = {
-${
-  isExpress
-    ? `  port: number | string
-  basePath?: string
-  helmet?: boolean | IHelmetConfiguration
-  cors?: boolean | CorsOptions`
-    : `  port: number
+  port: number
   basePath?: string
   helmet?: boolean | FastifyHelmetOptions
-  cors?: boolean | FastifyCorsOptions`
-}
+  cors?: boolean | FastifyCorsOptions
   typeorm?: ConnectionOptions
   multer?: Options
 }
@@ -328,11 +374,11 @@ export const createRouter = (
   return router
 }
 
-export const entities = [${typeormText.entities}]
-export const migrations = [${typeormText.migrations}]
-export const subscribers = [${typeormText.subscribers}]
+export const entities = [Entity0]
+export const migrations = []
+export const subscribers = [Subscriber0]
 export const run = async (config: Config) => {
-  const app = ${engine}()
+  const app = fastify()
   const router = createRouter(
     controllers,
     multer(
@@ -340,50 +386,20 @@ export const run = async (config: Config) => {
     ).any()
   )
 
-  if (config.helmet) app.${
-    isExpress
-      ? 'use(helmet(config.helmet === true ? {} : config.helmet))'
-      : 'register(helmet, config.helmet === true ? {} : config.helmet)'
-  }
-  if (config.cors) app.${
-    isExpress
-      ? 'use(cors(config.cors === true ? {} : config.cors))'
-      : 'register(cors, config.cors === true ? {} : config.cors)'
-  }
-${
-  isExpress
-    ? `
-  app.use((req, res, next) => {
-    express.json()(req, res, err => {
-      if (err) return res.sendStatus(400)
+  if (config.helmet) app.register(helmet, config.helmet === true ? {} : config.helmet)
+  if (config.cors) app.register(cors, config.cors === true ? {} : config.cors)
 
-      next()
-    })
-  })
-
-  const staticMiddleware = express.static(path.join(__dirname, 'public'))
-`
-    : ''
-}
   if (config.basePath && config.basePath !== '/') {
-    const staticPath = config.basePath.startsWith('/') ? config.basePath : \`/\${config.basePath}\`
+    const staticPath = config.basePath.startsWith('/') ? config.basePath : `/${config.basePath}`
     app.use(staticPath, router)
-    app.${
-      isExpress
-        ? 'use(staticPath, staticMiddleware)'
-        : `register(staticPlugin, {
+    app.register(staticPlugin, {
       root: path.join(__dirname, 'public'),
       prefix: staticPath,
       prefixAvoidTrailingSlash: !staticPath.endsWith('/')
-    })`
-    }
+    })
   } else {
     app.use(router)
-    app.${
-      isExpress
-        ? 'use(staticMiddleware)'
-        : "register(staticPlugin, { root: path.join(__dirname, 'public') })"
-    }
+    app.register(staticPlugin, { root: path.join(__dirname, 'public') })
   }
 
   const connection = config.typeorm ? await createConnection({
@@ -393,24 +409,7 @@ ${
     ...config.typeorm
   }) : null
 
-${
-  isExpress
-    ? `  return new Promise<{
-    app: Express
-    server: Server
-    connection: Connection | null
-  }>(resolve => {
-    const server = app.listen(config.port, () => {
-      console.log(\`Frourio is running on http://localhost:\${config.port}\`)
-      resolve({ app, server, connection })
-    })
-  })`
-    : `  await app.listen(config.port)
-  console.log(\`Frourio is running on http://localhost:\${config.port}\`)
-  return { app, server: app.server, connection }`
-}
-}
-`,
-    filePath: path.posix.join(input, '$app.ts')
-  }
+  await app.listen(config.port)
+  console.log(`Frourio is running on http://localhost:${config.port}`)
+  return { app, server: app.server, connection }
 }

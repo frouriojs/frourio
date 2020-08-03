@@ -1,11 +1,9 @@
 {
-  "name": "frourio",
+  "name": "@frourio/fastify",
   "version": "0.11.0",
   "description": "Perfectly type-checkable REST framework for TypeScript",
   "author": "Solufa <solufa2020@gmail.com>",
   "license": "MIT",
-  "main": "dist/index.js",
-  "bin": "bin/index.js",
   "homepage": "https://github.com/frouriojs/frourio/tree/master/packages/frourio#readme",
   "repository": {
     "type": "git",
@@ -20,14 +18,15 @@
   "keywords": [
     "typescript",
     "aspida",
-    "server"
+    "server",
+    "fastify"
   ],
   "dependencies": {
-    "aspida": "^0.20.2",
-    "class-validator": "^0.12.2",
-    "reflect-metadata": "^0.1.13",
-    "typeorm": "^0.2.25",
-    "typescript": "^3.9.7",
-    "velona": "^0.5.1"
+    "fastify": "^3.1.1",
+    "fastify-cors": "^4.1.0",
+    "fastify-helmet": "^4.0.2",
+    "fastify-multipart": "^2.0.3",
+    "fastify-static": "^3.2.0",
+    "frourio": "^0.11.0"
   }
 }
