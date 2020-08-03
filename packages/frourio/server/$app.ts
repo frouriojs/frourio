@@ -354,23 +354,20 @@ export const createRouter = (
     }
   }
 
-  if (ctrl.children) {
-    // eslint-disable-next-line no-unused-expressions
-    ctrl.children.names?.forEach(n => {
-      router.use(n.name, createRouter(n, uploader, numberTypeParams))
-    })
+  ctrl.children?.names?.forEach(n => {
+    router.use(n.name, createRouter(n, uploader, numberTypeParams))
+  })
 
-    if (ctrl.children.value) {
-      const pathName = ctrl.children.value.name.replace('_', ':').split('@')
-      router.use(
-        pathName[0],
-        createRouter(
-          ctrl.children.value,
-          uploader,
-          pathName[1] === 'number' ? [...numberTypeParams, pathName[0].slice(2)] : numberTypeParams
-        )
+  if (ctrl.children?.value) {
+    const pathName = ctrl.children.value.name.replace('_', ':').split('@')
+    router.use(
+      pathName[0],
+      createRouter(
+        ctrl.children.value,
+        uploader,
+        pathName[1] === 'number' ? [...numberTypeParams, pathName[0].slice(2)] : numberTypeParams
       )
-    }
+    )
   }
 
   return router
@@ -410,21 +407,17 @@ export const run = async (config: Config) => {
     app.use(staticMiddleware)
   }
 
-  let connection: Connection
-
-  if (config.typeorm) {
-    connection = await createConnection({
-      entities,
-      migrations,
-      subscribers,
-      ...config.typeorm
-    })
-  }
+  const connection = config.typeorm ? await createConnection({
+    entities,
+    migrations,
+    subscribers,
+    ...config.typeorm
+  }) : null
 
   return new Promise<{
     app: Express
     server: Server
-    connection?: Connection
+    connection: Connection | null
   }>(resolve => {
     const server = app.listen(config.port, () => {
       console.log(`Frourio is running on http://localhost:${config.port}`)
