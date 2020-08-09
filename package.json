@@ -4,7 +4,7 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "npm run build && cd packages/frourio && aspida && node ./bin/index.js -d server && node ./bin/index.js -d server-fastify -e fastify",
+    "dev": "npm run build && cd packages/frourio/server && aspida && node ../bin/index.js",
     "build": "npm run rimraf -- frourio && tsc -p packages/frourio",
     "rimraf": "node -e \"require('fs').rmdirSync('packages/' + process.argv[1] + '/dist', { recursive: true })\"",
     "release": "standard-version --skip.tag",
@@ -66,7 +66,6 @@
   "devDependencies": {
     "@aspida/axios": "^0.10.1",
     "@types/jest": "^26.0.8",
-    "@types/minimist": "^1.2.0",
     "@typescript-eslint/eslint-plugin": "^3.7.1",
     "@typescript-eslint/parser": "^3.7.1",
     "axios": "^0.19.2",
