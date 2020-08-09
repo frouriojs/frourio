@@ -1,6 +1,5 @@
 /* eslint-disable */
 import 'reflect-metadata'
-import { Server } from 'http'
 import path from 'path'
 import {
   LowerHttpMethod,
@@ -10,11 +9,12 @@ import {
   AspidaMethodParams,
   $arrayTypeKeysName
 } from 'aspida'
-import express, { Express, RequestHandler } from 'express'
+import express, { RequestHandler } from 'express'
+import fastify from 'fastify'
 import multer, { Options } from 'multer'
-import helmet, { IHelmetConfiguration } from 'helmet'
+import helmet, { HelmetOptions } from 'helmet'
 import cors, { CorsOptions } from 'cors'
-import { createConnection, Connection, ConnectionOptions } from 'typeorm'
+import { createConnection, ConnectionOptions } from 'typeorm'
 import { validateOrReject } from 'class-validator'
 
 export const createMiddleware = <T extends RequestHandler | RequestHandler[]>(handler: T): T extends RequestHandler[] ? T : [T] => (Array.isArray(handler) ? handler : [handler]) as any
@@ -86,12 +86,12 @@ export const controllers = [
   }
 ]
 
-export type File = Express.Multer.File
+export type MulterFile = Express.Multer.File
 
 export type Config = {
-  port: number | string
+  port: number
   basePath?: string
-  helmet?: boolean | IHelmetConfiguration
+  helmet?: boolean | HelmetOptions
   cors?: boolean | CorsOptions
   typeorm?: ConnectionOptions
   multer?: Options
@@ -271,7 +271,7 @@ const formatMulterData: RequestHandler = ({ body, files }, _res, next) => {
       }
     }
 
-    for (const file of files as File[]) {
+    for (const file of files as MulterFile[]) {
       if (Array.isArray(body[file.fieldname])) {
         body[file.fieldname].push(file)
       } else {
@@ -281,7 +281,7 @@ const formatMulterData: RequestHandler = ({ body, files }, _res, next) => {
 
     delete body[$arrayTypeKeysName]
   } else {
-    for (const file of files as File[]) {
+    for (const file of files as MulterFile[]) {
       if (Array.isArray(body[file.fieldname])) {
         body[file.fieldname].push(file)
       } else {
@@ -298,19 +298,13 @@ export const entities = [Entity0]
 export const migrations = []
 export const subscribers = [Subscriber0]
 export const run = async (config: Config) => {
-  const app = express()
+  const app = fastify()
+  await app.register(require('fastify-express'))
 
   if (config.helmet) app.use(helmet(config.helmet === true ? {} : config.helmet))
   if (config.cors) app.use(cors(config.cors === true ? {} : config.cors))
 
-  app.use((req, res, next) => {
-    express.json()(req, res, err => {
-      if (err) return res.sendStatus(400)
-
-      next()
-    })
-  })
-
+  const router = express.Router()
   const basePath = config.basePath ? `/${config.basePath}`.replace('//', '/') : ''
   const uploader = multer(
       config.multer ?? { dest: path.join(__dirname, '.upload'), limits: { fileSize: 1024 ** 3 } }
@@ -328,10 +322,11 @@ export const run = async (config: Config) => {
       if (ctrl.middleware) handlers.push(...ctrl.middleware)
       handlers.push(methodsToHandler(ctrl.controller[method as keyof typeof ctrl.controller]))
 
-      app[method as keyof typeof app](`${basePath}${ctrl.path}`, handlers)
+      router[method as LowerHttpMethod](`${basePath}${ctrl.path}`, handlers)
     }
   }
 
+  app.use(router)
   app.use(basePath, express.static(path.join(__dirname, 'public')))
 
   const connection = config.typeorm ? await createConnection({
@@ -341,14 +336,7 @@ export const run = async (config: Config) => {
     ...config.typeorm
   }) : null
 
-  return new Promise<{
-    app: Express
-    server: Server
-    connection: Connection | null
-  }>(resolve => {
-    const server = app.listen(config.port, () => {
-      console.log(`Frourio is running on http://localhost:${config.port}`)
-      resolve({ app, server, connection })
-    })
-  })
+  await app.listen(config.port)
+  console.log(`Frourio is running on http://localhost:${config.port}`)
+  return { app, connection }
 }

@@ -19,7 +19,7 @@ test('version command', () => {
 test('build', () => {
   const inputDir = `${basePath}/server`
 
-  const result = build(inputDir, 'express')
+  const result = build(inputDir)
   expect(result.text.replace(inputDir, 'server')).toBe(
     fs.readFileSync(result.filePath, 'utf8').replace(/\r/g, '')
   )

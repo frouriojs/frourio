@@ -13,7 +13,7 @@ const client = api(aspida(undefined, { baseURL }))
 let server: Server
 
 beforeEach(async () => {
-  server = (await run({ port })).server
+  server = (await run({ port })).app.server
 })
 
 afterEach(fn => {
