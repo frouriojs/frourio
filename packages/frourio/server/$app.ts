@@ -162,9 +162,9 @@ type ServerValues = {
 type BlobToFile<T extends AspidaMethodParams> = T['reqFormat'] extends FormData
   ? {
       [P in keyof T['reqBody']]: Required<T['reqBody']>[P] extends Blob
-        ? File
+        ? MulterFile
         : Required<T['reqBody']>[P] extends Blob[]
-        ? File[]
+        ? MulterFile[]
         : T['reqBody'][P]
     }
   : T['reqBody']
