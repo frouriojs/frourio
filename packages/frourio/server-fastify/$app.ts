@@ -1,5 +1,6 @@
 /* eslint-disable */
 import 'reflect-metadata'
+import fs from 'fs'
 import path from 'path'
 import {
   LowerHttpMethod,
@@ -9,18 +10,16 @@ import {
   AspidaMethodParams,
   $arrayTypeKeysName
 } from 'aspida'
-import fastify from 'fastify'
-import express, { RequestHandler, Router } from 'express'
-import multer, { Options } from 'multer'
+import fastify, { onRequestHookHandler } from 'fastify'
 import helmet, { FastifyHelmetOptions } from 'fastify-helmet'
 import cors, { FastifyCorsOptions } from 'fastify-cors'
 import staticPlugin from 'fastify-static'
+import multipart, { FastifyMultipartOptions } from 'fastify-multipart'
+import pump from 'pump'
 import { createConnection, ConnectionOptions } from 'typeorm'
 import { validateOrReject } from 'class-validator'
 
-export const createMiddleware = <
-  T extends RequestHandler | [] | [RequestHandler, ...RequestHandler[]]
->(handler: T): T => handler
+export const createMiddleware = <T extends onRequestHookHandler | onRequestHookHandler[]>(handler: T): T extends onRequestHookHandler[] ? T : [T] => (Array.isArray(handler) ? handler : [handler]) as any
 
 import { Task as Entity0 } from './entity/Task'
 import { TaskSubscriber as Subscriber0 } from './subscriber/TaskSubscriber'
@@ -34,67 +33,67 @@ import controller5 from './api/users/_userId@number/@controller'
 import middleware0 from './api/@middleware'
 import middleware1 from './api/users/@middleware'
 
-export const controllers = {
-  name: '/',
-  validator: {
-    get: {
-      query: { required: false, Class: Types.ValidQuery }
-    },
-    post: {
-      query: { required: true, Class: Types.ValidQuery },
-      body: { required: true, Class: Types.ValidBody }
-    }
-  },
-  uploader: ['post'],
-  controller: controller0,
-  ctrlMiddleware: ctrlMiddleware0,
-  middleware: middleware0,
-  children: {
-    names: [
-      {
-        name: '/multiForm',
-        validator: {
-          post: {
-            body: { required: true, Class: Types.ValidMultiForm }
-          }
-        },
-        uploader: ['post'],
-        controller: controller1
+export const controllers = [
+  {
+    path: '/',
+    validator: {
+      get: {
+        query: { required: false, Class: Types.ValidQuery }
       },
-      {
-        name: '/texts',
-        controller: controller2,
-        children: {
-          names: [
-            {
-              name: '/sample',
-              controller: controller3
-            }
-          ]
-        }
-      },
-      {
-        name: '/users',
-        validator: {
-          post: {
-            body: { required: true, Class: Types.ValidUserInfo }
-          }
-        },
-        controller: controller4,
-        ctrlMiddleware: ctrlMiddleware1,
-        middleware: middleware1,
-        children: {
-          value: {
-            name: '/_userId@number',
-            controller: controller5
-          }
-        }
+      post: {
+        query: { required: true, Class: Types.ValidQuery },
+        body: { required: true, Class: Types.ValidBody }
       }
-    ]
+    },
+    uploader: ['post'],
+    controller: controller0,
+    middleware: [...middleware0, ...ctrlMiddleware0]
+  },
+  {
+    path: '/multiForm',
+    validator: {
+      post: {
+        body: { required: true, Class: Types.ValidMultiForm }
+      }
+    },
+    uploader: ['post'],
+    controller: controller1,
+    middleware: middleware0
+  },
+  {
+    path: '/texts',
+    controller: controller2,
+    middleware: middleware0
+  },
+  {
+    path: '/texts/sample',
+    controller: controller3,
+    middleware: middleware0
+  },
+  {
+    path: '/users',
+    validator: {
+      post: {
+        body: { required: true, Class: Types.ValidUserInfo }
+      }
+    },
+    controller: controller4,
+    middleware: [...middleware0, ...middleware1, ...ctrlMiddleware1]
+  },
+  {
+    path: '/users/:userId',
+    numberTypeParams: ['userId'],
+    controller: controller5,
+    middleware: [...middleware0, ...middleware1]
   }
-}
+]
 
-export type File = Express.Multer.File
+export type File = {
+  field: string
+  filename: string
+  encoding: string
+  mimetype: string
+}
 
 export type Config = {
   port: number
@@ -102,7 +101,7 @@ export type Config = {
   helmet?: boolean | FastifyHelmetOptions
   cors?: boolean | FastifyCorsOptions
   typeorm?: ConnectionOptions
-  multer?: Options
+  multipart?: FastifyMultipartOptions
 }
 
 type HttpStatusNoOk =
@@ -202,49 +201,36 @@ type Validators = {
   headers?: Validator
 }
 
-type ControllerTree = {
-  name: string
-  controller?: ServerMethods<any, any>
-  ctrlMiddleware?: RequestHandler | RequestHandler[]
-  uploader?: string[]
-  validator?: { [K in LowerHttpMethod]?: Validators }
-  middleware?: RequestHandler | RequestHandler[]
-  children?: {
-    names?: ControllerTree[]
-    value?: ControllerTree
-  }
-}
-
-const createValidateHandler = (validator: Validators | undefined): RequestHandler => (
+const createValidateHandler = (validator: Validators): onRequestHookHandler => (
   req,
   res,
   next
 ) =>
   Promise.all([
-    validator?.query &&
+    validator.query &&
       (Object.keys(req.query).length || validator.query.required ? true : undefined) &&
       validateOrReject(Object.assign(new validator.query.Class(), req.query)),
-    validator?.headers &&
+    validator.headers &&
       (Object.keys(req.headers).length || validator.headers.required ? true : undefined) &&
       validateOrReject(Object.assign(new validator.headers.Class(), req.headers)),
-    validator?.body &&
+    validator.body &&
       (Object.keys(req.body).length || validator.body.required ? true : undefined) &&
       validateOrReject(Object.assign(new validator.body.Class(), req.body))
   ])
     .then(() => next())
-    .catch(() => res.sendStatus(400))
+    .catch(() => res.status(400).send())
 
-const createTypedParamsHandler = (numberTypeParams: string[]): RequestHandler => async (
+const createTypedParamsHandler = (numberTypeParams: string[]): onRequestHookHandler => (
   req,
   res,
   next
 ) => {
-  const typedParams: Record<string, string | number> = { ...req.params }
+  const typedParams: Record<string, string | number> = { ...req.params as any }
 
   for (const key of numberTypeParams) {
     const val = Number(typedParams[key])
     if (isNaN(val)) {
-      res.sendStatus(400)
+      res.status(400).send()
       return
     }
 
@@ -257,11 +243,11 @@ const createTypedParamsHandler = (numberTypeParams: string[]): RequestHandler =>
 
 const methodsToHandler = (
   methodCallback: ServerMethods<any, any>[LowerHttpMethod]
-): RequestHandler => async (req, res) => {
+): onRequestHookHandler => async (req, res) => {
   try {
     const result = methodCallback({
       query: req.query,
-      path: req.path,
+      path: req.url,
       method: req.method as HttpMethod,
       body: req.body,
       headers: req.headers,
@@ -272,106 +258,13 @@ const methodsToHandler = (
     const { status, body, headers } = result instanceof Promise ? await result : result
 
     for (const key in headers) {
-      res.setHeader(key, headers[key])
+      res.header(key, headers[key])
     }
 
     res.status(status).send(body)
   } catch (e) {
-    res.sendStatus(500)
+    res.status(500).send()
   }
-}
-
-const formatMulterData: RequestHandler = ({ body, files }, _res, next) => {
-  if (body[$arrayTypeKeysName]) {
-    const arrayTypeKeys: string[] = body[$arrayTypeKeysName].split(',')
-
-    for (const key of arrayTypeKeys) {
-      if (body[key] === undefined) body[key] = []
-      else if (!Array.isArray(body[key])) {
-        body[key] = [body[key]]
-      }
-    }
-
-    for (const file of files as File[]) {
-      if (Array.isArray(body[file.fieldname])) {
-        body[file.fieldname].push(file)
-      } else {
-        body[file.fieldname] = file
-      }
-    }
-
-    delete body[$arrayTypeKeysName]
-  } else {
-    for (const file of files as File[]) {
-      if (Array.isArray(body[file.fieldname])) {
-        body[file.fieldname].push(file)
-      } else {
-        body[file.fieldname] =
-          body[file.fieldname] === undefined ? file : [body[file.fieldname], file]
-      }
-    }
-  }
-
-  next()
-}
-
-export const createRouter = (
-  ctrl: ControllerTree,
-  uploader: RequestHandler,
-  numberTypeParams: string[] = []
-): Router => {
-  const router = express.Router({ mergeParams: true })
-
-  if (ctrl.middleware) {
-    ;(Array.isArray(ctrl.middleware) ? ctrl.middleware : [ctrl.middleware]).forEach(handler => {
-      router.use(handler)
-    })
-  }
-
-  if (ctrl.controller) {
-    const typedParamsHandler = createTypedParamsHandler(numberTypeParams)
-    const ctrlMiddlewareList = Array.isArray(ctrl.ctrlMiddleware)
-      ? ctrl.ctrlMiddleware
-      : ctrl.ctrlMiddleware
-      ? [ctrl.ctrlMiddleware]
-      : []
-
-    for (const method in ctrl.controller) {
-      const validateHandler = createValidateHandler(ctrl.validator?.[method as LowerHttpMethod])
-      const handler = methodsToHandler(ctrl.controller[method])
-
-      ;(router.route('/') as any)[method](
-        ctrl.uploader?.includes(method)
-          ? [
-              uploader,
-              formatMulterData,
-              validateHandler,
-              typedParamsHandler,
-              ...ctrlMiddlewareList,
-              handler
-            ]
-          : [validateHandler, typedParamsHandler, ...ctrlMiddlewareList, handler]
-      )
-    }
-  }
-
-  ctrl.children?.names?.forEach(n => {
-    router.use(n.name, createRouter(n, uploader, numberTypeParams))
-  })
-
-  if (ctrl.children?.value) {
-    const pathName = ctrl.children.value.name.replace('_', ':').split('@')
-    router.use(
-      pathName[0],
-      createRouter(
-        ctrl.children.value,
-        uploader,
-        pathName[1] === 'number' ? [...numberTypeParams, pathName[0].slice(2)] : numberTypeParams
-      )
-    )
-  }
-
-  return router
 }
 
 export const entities = [Entity0]
@@ -379,28 +272,79 @@ export const migrations = []
 export const subscribers = [Subscriber0]
 export const run = async (config: Config) => {
   const app = fastify()
-  const router = createRouter(
-    controllers,
-    multer(
-      config.multer ?? { dest: path.join(__dirname, '.upload'), limits: { fileSize: 1024 ** 3 } }
-    ).any()
-  )
 
   if (config.helmet) app.register(helmet, config.helmet === true ? {} : config.helmet)
   if (config.cors) app.register(cors, config.cors === true ? {} : config.cors)
 
-  if (config.basePath && config.basePath !== '/') {
-    const staticPath = config.basePath.startsWith('/') ? config.basePath : `/${config.basePath}`
-    app.use(staticPath, router)
-    app.register(staticPlugin, {
-      root: path.join(__dirname, 'public'),
-      prefix: staticPath,
-      prefixAvoidTrailingSlash: !staticPath.endsWith('/')
-    })
-  } else {
-    app.use(router)
-    app.register(staticPlugin, { root: path.join(__dirname, 'public') })
+  const basePath = config.basePath ? `/${config.basePath}`.replace('//', '/') : ''
+  let initUploader = false
+  const uploader:onRequestHookHandler = (req, res, done) => {
+    if (req.isMultipart()) return done()
+
+    const arrayTypeKeys = req.body[$arrayTypeKeysName] ? req.body[$arrayTypeKeysName].split(',') : null
+
+    if (arrayTypeKeys) {
+      for (const key of arrayTypeKeys) {
+        req.body[key] = []
+      }
+
+      delete req.body[$arrayTypeKeysName]
+    }
+
+    req.multipart((field, file, filename, encoding, mimetype) => {
+      pump(file, fs.createWriteStream(path.join(__dirname, '.upload', filename)))
+
+      const fileData: File = {
+        field,
+        filename,
+        encoding,
+        mimetype
+      }
+
+      if (arrayTypeKeys) {
+        if (arrayTypeKeys.includes(field)) {
+          req.body[field].push(fileData)
+        } else {
+          req.body[field] = fileData
+        }
+      } else {
+        if (Array.isArray(req.body[field])) {
+          req.body[field].push(file)
+        } else if (req.body[field])  {
+          req.body[field] = [req.body[field], fileData]
+        } else {
+          req.body[field] = fileData
+        }
+      }
+    }, done)
   }
+
+  for (const ctrl of controllers) {
+    const typedParamsHandler = ctrl.numberTypeParams && createTypedParamsHandler(ctrl.numberTypeParams)
+
+    for (const method in ctrl.controller) {
+      const handlers: onRequestHookHandler[] = []
+      if (ctrl.uploader?.includes(method)) {
+        if (!initUploader) {
+          initUploader = true
+          app.register(multipart, config.multipart ?? { limits: { fileSize: 1024 ** 3 } })
+        }
+        handlers.push(uploader)
+      }
+      if (ctrl.validator?.[method as LowerHttpMethod]) handlers.push(createValidateHandler(ctrl.validator[method as LowerHttpMethod]))
+      if (typedParamsHandler) handlers.push(typedParamsHandler)
+      if (ctrl.middleware) handlers.push(...ctrl.middleware)
+      handlers.push(methodsToHandler(ctrl.controller[method]))
+
+      app[method](`${basePath}${ctrl.path}`, handlers)
+    }
+  }
+
+  app.register(staticPlugin, {
+    root: path.join(__dirname, 'public'),
+    prefix: basePath,
+    prefixAvoidTrailingSlash: !basePath.endsWith('/')
+  })
 
   const connection = config.typeorm ? await createConnection({
     entities,
