@@ -9,13 +9,24 @@ export default (inputDir: string) => {
   let hasValidators = false
 
   const createText = (
-    input: string,
-    indent: string,
+    dirPath: string,
+    middleware: string[],
     params: [string, string][],
     appPath = '$app',
     user = ''
   ) => {
-    let result = ''
+    let result = `  {\n    path: '${`/${dirPath}`
+      .replace(/\/_/g, '/:')
+      .replace(/@.+?($|\/)/g, '')}'${
+      dirPath.includes('@number')
+        ? `,\n    numberTypeParams: ['${dirPath
+            .split('/')
+            .filter(p => p.includes('@number'))
+            .map(p => p.split('@')[0].slice(1))
+            .join("', '")}']`
+        : ''
+    }`
+    const input = path.join(inputDir, dirPath)
     const appText = `../${appPath}`
     const userPath =
       fs.existsSync(path.join(input, '@middleware.ts')) &&
@@ -72,88 +83,81 @@ export function createController<T extends Record<string, any>>(methods: () => C
 
       if (validateInfo.length) {
         hasValidators = true
-        result += `,\n${indent}validator: {\n${validateInfo
+        result += `,\n    validator: {\n${validateInfo
           .map(
             v =>
-              `  ${indent}${v.method}: {\n${v.props
+              `      ${v.method}: {\n${v.props
                 .map(
                   p =>
-                    `    ${indent}${p[0]}: { required: ${!p[1].hasQuestion}, Class: Types.${
+                    `        ${p[0]}: { required: ${!p[1].hasQuestion}, Class: Types.${
                       p[1].value
                     } }`
                 )
-                .join(',\n')}\n  ${indent}}`
+                .join(',\n')}\n      }`
           )
-          .join(',\n')}\n${indent}}`
+          .join(',\n')}\n    }`
       }
 
       const uploaders = methods
         .filter(m => m.props.reqFormat?.value === 'FormData')
         .map(m => m.name)
       if (uploaders.length) {
-        result += `,\n${indent}uploader: ['${uploaders.join("', '")}']`
+        result += `,\n    uploader: ['${uploaders.join("', '")}']`
       }
     }
 
-    result += `,\n${indent}controller: controller${controllers.length}`
+    result += `,\n    controller: controller${controllers.length}`
+
+    if (fs.existsSync(path.join(input, '@middleware.ts'))) {
+      middleware.push(`...middleware${middlewares.length}`)
+      middlewares.push(`${input}/@middleware`)
+    }
+
     const ctrlText = fs.readFileSync(path.join(input, '@controller.ts'), 'utf8')
     const hasMiddleware = /export (const|{)(.*[ ,])?middleware[, }=]/.test(ctrlText)
 
-    if (hasMiddleware) {
-      result += `,\n${indent}ctrlMiddleware: ctrlMiddleware${controllers.filter(c => c[1]).length}`
+    if (middleware.length || hasMiddleware) {
+      const m = `${middleware.join(', ')}${middleware.length && hasMiddleware ? ', ' : ''}${
+        hasMiddleware ? `...ctrlMiddleware${controllers.filter(c => c[1]).length}` : ''
+      }`
+      result += `,\n    middleware: ${m.includes(',') ? `[${m}]` : m.replace('...', '')}`
     }
 
     controllers.push([`${input}/@controller`, hasMiddleware])
-
-    if (fs.existsSync(path.join(input, '@middleware.ts'))) {
-      result += `,\n${indent}middleware: middleware${middlewares.length}`
-      middlewares.push(`${input}/@middleware`)
-    }
+    result += '\n  }'
 
     const childrenDirs = fs
       .readdirSync(input)
       .filter(d => fs.statSync(path.join(input, d)).isDirectory() && !d.startsWith('@'))
 
     if (childrenDirs.length) {
-      result += `,\n${indent}children: {\n`
       const names = childrenDirs.filter(d => !d.startsWith('_'))
       if (names.length) {
-        result += `  ${indent}names: [\n`
         result += names
           .map(
             n =>
-              `    ${indent}{\n      ${indent}name: '/${n}'${createText(
-                path.posix.join(input, n),
-                `      ${indent}`,
-                params,
-                appText,
-                userPath
-              )}\n    ${indent}}`
+              `,\n${createText(path.posix.join(dirPath, n), middleware, params, appText, userPath)}`
           )
-          .join(',\n')
-        result += `\n  ${indent}]`
+          .join('')
       }
 
       const value = childrenDirs.find(d => d.startsWith('_'))
 
       if (value) {
-        result += `${
-          names.length ? ',\n' : ''
-        }  ${indent}value: {\n    ${indent}name: '/${value}'${createText(
-          path.posix.join(input, value),
-          `    ${indent}`,
+        result += `,\n${createText(
+          path.posix.join(dirPath, value),
+          middleware,
           [...params, [value.slice(1).split('@')[0], value.split('@')[1] ?? 'string']],
           appText,
           userPath
-        )}\n  ${indent}}`
+        )}`
       }
-      result += `\n${indent}}`
     }
 
     return result
   }
 
-  const text = createText(inputDir, '  ', [])
+  const text = createText('', [], [])
   const ctrlMiddleware = controllers.filter(c => c[1])
 
   return `${hasValidators ? "import * as Types from './types'" : ''}${
@@ -170,5 +174,5 @@ export function createController<T extends Record<string, any>>(methods: () => C
       (m, i) =>
         `import middleware${i} from '${m.replace(/^api/, './api').replace(inputDir, './api')}'`
     )
-    .join('\n')}\n\nexport const controllers = {\n  name: '/'${text}\n}`
+    .join('\n')}\n\nexport const controllers = [\n${text}\n]`
 }
