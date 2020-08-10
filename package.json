@@ -4,9 +4,10 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "npm run build && cd packages/frourio/servers && aspida && node ../bin/index.js -d all,benchmark,noMulter,noPublic,noTypedParams,noTypeorm,noValidator",
-    "build": "npm run rimraf -- frourio && tsc -p packages/frourio",
-    "rimraf": "node -e \"require('fs').rmdirSync('packages/' + process.argv[1] + '/dist', { recursive: true })\"",
+    "dev": "npm run build && cd packages/frourio/servers && aspida && node ../bin/index.js -d all,frourio,noMulter,noPublic,noTypedParams,noTypeorm,noValidator",
+    "build": "npm run rimraf -- packages/frourio/dist && tsc -p packages/frourio",
+    "build:benchmark": "npm run rimraf -- benchmark && tsc -p tsconfig.benchmark.json",
+    "rimraf": "node -e \"require('fs').rmdirSync(process.argv[1], { recursive: true })\"",
     "release": "standard-version --skip.tag",
     "release:major": "npm run release -- --release-as major",
     "release:minor": "npm run release -- --release-as minor",
