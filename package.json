@@ -4,7 +4,7 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "npm run build && cd packages/frourio/servers && aspida && node ../bin/index.js -d all,noMulter,noTypedParams,noValidator",
+    "dev": "npm run build && cd packages/frourio/servers && aspida && node ../bin/index.js -d all,noMulter,noPublic,noTypedParams,noValidator",
     "build": "npm run rimraf -- frourio && tsc -p packages/frourio",
     "rimraf": "node -e \"require('fs').rmdirSync('packages/' + process.argv[1] + '/dist', { recursive: true })\"",
     "release": "standard-version --skip.tag",
