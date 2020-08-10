@@ -158,8 +158,8 @@ ${validateInfo
   const ctrlMiddleware = controllers.filter(c => c[1])
 
   return {
-    imports: `${text.includes('validateOrReject') ? "import * as Types from './types'" : ''}${
-      controllers.length ? '\n' : ''
+    imports: `\n${
+      text.includes('validateOrReject') ? "import * as Types from './types'\n" : ''
     }${controllers
       .map(
         (ctrl, i) =>

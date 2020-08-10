@@ -20,7 +20,6 @@ export const createMiddleware = <T extends RequestHandler | RequestHandler[]>(ha
 
 import { Task as Entity0 } from './entity/Task'
 import { TaskSubscriber as Subscriber0 } from './subscriber/TaskSubscriber'
-
 import controller0, { middleware as ctrlMiddleware0 } from './api/@controller'
 import controller1 from './api/empty/noEmpty/@controller'
 import controller2 from './api/multiForm/@controller'

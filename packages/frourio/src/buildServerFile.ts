@@ -13,8 +13,9 @@ export default (input: string) => {
   const hasPublic = fs.existsSync(`${input}/public`)
 
   return {
-    text: `/* eslint-disable */${hasTypeorm ? "\nimport 'reflect-metadata'" : ''}
-import path from 'path'
+    text: `/* eslint-disable */${hasTypeorm ? "\nimport 'reflect-metadata'" : ''}${
+      hasMulter || hasPublic ? "\nimport path from 'path'" : ''
+    }
 import {${hasMulter ? '\n  $arrayTypeKeysName,' : ''}
   LowerHttpMethod,
   AspidaMethods,
@@ -30,8 +31,7 @@ import cors, { CorsOptions } from 'cors'${
     }${hasValidator ? "\nimport { validateOrReject } from 'class-validator'" : ''}
 
 export const createMiddleware = <T extends RequestHandler | RequestHandler[]>(handler: T): T extends RequestHandler[] ? T : [T] => (Array.isArray(handler) ? handler : [handler]) as any
-${typeormText.imports}
-${imports}
+${typeormText.imports}${imports}
 
 export type Config = {
   port: number
