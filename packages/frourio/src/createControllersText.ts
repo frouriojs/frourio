@@ -56,7 +56,7 @@ export function createController<T extends Record<string, any>>(methods: () => C
 
     if (methods?.length) {
       if (fs.existsSync(path.join(input, '@middleware.ts'))) {
-        middleware.push(`\n          ...middleware${middlewares.length},`)
+        middleware.push(`\n            ...middleware${middlewares.length},`)
         middlewares.push(`${input}/@middleware`)
       }
 
@@ -64,9 +64,9 @@ export function createController<T extends Record<string, any>>(methods: () => C
       const hasMiddleware = /export (const|{)(.*[ ,])?middleware[, }=]/.test(ctrlText)
 
       results.push(
-        `  {\n    path: '${`/${dirPath}`
+        `    {\n      path: '${`/${dirPath}`
           .replace(/\/_/g, '/:')
-          .replace(/@.+?($|\/)/g, '')}',\n    methods: [\n${methods
+          .replace(/@.+?($|\/)/g, '')}',\n      methods: [\n${methods
           .map(m => {
             const validateInfo = [
               { name: 'query', val: m.props.query },
@@ -77,33 +77,33 @@ export function createController<T extends Record<string, any>>(methods: () => C
                 !!prop.val?.value.startsWith(validatorPrefix)
             )
 
-            return `      {
-        method: '${m.name}',
-        handlers: [${
-          m.props.reqFormat?.value === 'FormData'
-            ? '\n          uploader,\n          formatMulterData,'
-            : ''
-        }${
+            return `        {
+          name: '${m.name}',
+          handlers: [${
+            m.props.reqFormat?.value === 'FormData'
+              ? '\n            uploader,\n            formatMulterData,'
+              : ''
+          }${
               validateInfo.length
-                ? `\n          (req, res, next) =>
-            Promise.all([
+                ? `\n            (req, res, next) =>
+              Promise.all([
 ${validateInfo
   .map(
     v =>
-      `              ${
+      `                ${
         v.val.hasQuestion ? `Object.keys(req.${v.name}).length ? ` : ''
       }validateOrReject(Object.assign(new Types.${v.val.value}(), req.${v.name}))${
         v.val.hasQuestion ? ' : null' : ''
       }`
   )
   .join(',\n')}
-            ])
-              .then(() => next())
-              .catch(() => res.sendStatus(400)),`
+              ])
+                .then(() => next())
+                .catch(() => res.sendStatus(400)),`
                 : ''
             }${
               dirPath.includes('@number')
-                ? `\n          createTypedParamsHandler(['${dirPath
+                ? `\n            createTypedParamsHandler(['${dirPath
                     .split('/')
                     .filter(p => p.includes('@number'))
                     .map(p => p.split('@')[0].slice(1))
@@ -113,14 +113,14 @@ ${validateInfo
               middleware.length || hasMiddleware
                 ? `${middleware.join('')}${
                     hasMiddleware
-                      ? `\n          ...ctrlMiddleware${controllers.filter(c => c[1]).length},`
+                      ? `\n            ...ctrlMiddleware${controllers.filter(c => c[1]).length},`
                       : ''
                   }`
                 : ''
-            }\n          methodsToHandler(controller${controllers.length}.${m.name})\n        ]
-      }`
+            }\n            methodsToHandler(controller${controllers.length}.${m.name})\n          ]
+        }`
           })
-          .join(',\n')}\n    ]\n  }`
+          .join(',\n')}\n      ]\n    }`
       )
 
       controllers.push([`${input}/@controller`, hasMiddleware])

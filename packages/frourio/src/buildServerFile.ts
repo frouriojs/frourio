@@ -5,22 +5,21 @@ import createTypeormText from './createTypeormText'
 export default (input: string) => {
   const typeormText = createTypeormText(input)
   const { imports, controllers } = createControllersText(`${input}/api`)
+  const hasMulter = controllers.includes('formatMulterData,')
 
   return {
     text: `/* eslint-disable */
 import 'reflect-metadata'
 import path from 'path'
-import {
+import {${hasMulter ? '\n  $arrayTypeKeysName,' : ''}
   LowerHttpMethod,
   AspidaMethods,
   HttpMethod,
   HttpStatusOk,
-  AspidaMethodParams,
-  $arrayTypeKeysName
+  AspidaMethodParams
 } from 'aspida'
 import express, { RequestHandler } from 'express'
-import fastify from 'fastify'
-import multer, { Options } from 'multer'
+import fastify from 'fastify'${hasMulter ? "\nimport multer, { Options } from 'multer'" : ''}
 import helmet, { HelmetOptions } from 'helmet'
 import cors, { CorsOptions } from 'cors'
 import { createConnection, ConnectionOptions } from 'typeorm'
@@ -30,15 +29,19 @@ export const createMiddleware = <T extends RequestHandler | RequestHandler[]>(ha
 ${typeormText.imports}
 ${imports}
 
-export type MulterFile = Express.Multer.File
-
 export type Config = {
   port: number
   basePath?: string
   helmet?: boolean | HelmetOptions
   cors?: boolean | CorsOptions
   typeorm?: ConnectionOptions
-  multer?: Options
+${
+  hasMulter
+    ? `  multer?: Options
+}
+
+export type MulterFile = Express.Multer.File`
+    : '}'
 }
 
 type HttpStatusNoOk =
@@ -102,7 +105,9 @@ type ServerValues = {
   params?: Record<string, any>
   user?: any
 }
-
+${
+  hasMulter
+    ? `
 type BlobToFile<T extends AspidaMethodParams> = T['reqFormat'] extends FormData
   ? {
       [P in keyof T['reqBody']]: Required<T['reqBody']>[P] extends Blob
@@ -112,12 +117,14 @@ type BlobToFile<T extends AspidaMethodParams> = T['reqFormat'] extends FormData
         : T['reqBody'][P]
     }
   : T['reqBody']
-
+`
+    : ''
+}
 type RequestParams<T extends AspidaMethodParams> = {
   path: string
   method: HttpMethod
   query: T['query']
-  body: BlobToFile<T>
+  body: ${hasMulter ? 'BlobToFile<T>' : "T['reqBody']"}
   headers: T['reqHeaders']
 }
 
@@ -173,7 +180,9 @@ const methodsToHandler = (
     res.sendStatus(500)
   }
 }
-
+${
+  hasMulter
+    ? `
 const formatMulterData: RequestHandler = ({ body, files }, _res, next) => {
   if (body[$arrayTypeKeysName]) {
     const arrayTypeKeys: string[] = body[$arrayTypeKeysName].split(',')
@@ -207,18 +216,28 @@ const formatMulterData: RequestHandler = ({ body, files }, _res, next) => {
 
   next()
 }
-
-export const controllers = (${
-      controllers.includes('uploader,') ? 'uploader: RequestHandler' : ''
-    }): {
+`
+    : ''
+}
+export const controllers = (${hasMulter ? "config: Pick<Config, 'multer'>" : ''}): {
   path: string
   methods: {
-    method: LowerHttpMethod
+    name: LowerHttpMethod
     handlers: RequestHandler[]
   }[]
-}[] => [
+}[] => {${
+      hasMulter
+        ? `
+  const uploader = multer(
+    config.multer ?? { dest: path.join(__dirname, '.upload'), limits: { fileSize: 1024 ** 3 } }
+  ).any()
+`
+        : ''
+    }
+  return [
 ${controllers}
-]
+  ]
+}
 
 export const entities = [${typeormText.entities}]
 export const migrations = [${typeormText.migrations}]
@@ -238,15 +257,11 @@ export const run = async (config: Config) => {
 
   const router = express.Router()
   const basePath = config.basePath ? \`/\${config.basePath}\`.replace('//', '/') : ''
-  const ctrls = controllers(
-    multer(
-      config.multer ?? { dest: path.join(__dirname, '.upload'), limits: { fileSize: 1024 ** 3 } }
-    ).any()
-  )
+  const ctrls = controllers(${hasMulter ? 'config' : ''})
 
   for (const ctrl of ctrls) {
-    for (const m of ctrl.methods) {
-      router[m.method](\`\${basePath}\${ctrl.path}\`, m.handlers)
+    for (const method of ctrl.methods) {
+      router[method.name](\`\${basePath}\${ctrl.path}\`, method.handlers)
     }
   }
 

@@ -2,7 +2,6 @@
 import 'reflect-metadata'
 import path from 'path'
 import {
-  $arrayTypeKeysName,
   LowerHttpMethod,
   AspidaMethods,
   HttpMethod,
@@ -11,7 +10,6 @@ import {
 } from 'aspida'
 import express, { RequestHandler } from 'express'
 import fastify from 'fastify'
-import multer, { Options } from 'multer'
 import helmet, { HelmetOptions } from 'helmet'
 import cors, { CorsOptions } from 'cors'
 import { createConnection, ConnectionOptions } from 'typeorm'
@@ -24,11 +22,10 @@ import { TaskSubscriber as Subscriber0 } from './subscriber/TaskSubscriber'
 import * as Types from './types'
 import controller0, { middleware as ctrlMiddleware0 } from './api/@controller'
 import controller1 from './api/empty/noEmpty/@controller'
-import controller2 from './api/multiForm/@controller'
-import controller3 from './api/texts/@controller'
-import controller4 from './api/texts/sample/@controller'
-import controller5, { middleware as ctrlMiddleware1 } from './api/users/@controller'
-import controller6 from './api/users/_userId@number/@controller'
+import controller2 from './api/texts/@controller'
+import controller3 from './api/texts/sample/@controller'
+import controller4, { middleware as ctrlMiddleware1 } from './api/users/@controller'
+import controller5 from './api/users/_userId@number/@controller'
 import middleware0 from './api/@middleware'
 import middleware1 from './api/users/@middleware'
 
@@ -38,10 +35,7 @@ export type Config = {
   helmet?: boolean | HelmetOptions
   cors?: boolean | CorsOptions
   typeorm?: ConnectionOptions
-  multer?: Options
 }
-
-export type MulterFile = Express.Multer.File
 
 type HttpStatusNoOk =
   | 301
@@ -105,21 +99,11 @@ type ServerValues = {
   user?: any
 }
 
-type BlobToFile<T extends AspidaMethodParams> = T['reqFormat'] extends FormData
-  ? {
-      [P in keyof T['reqBody']]: Required<T['reqBody']>[P] extends Blob
-        ? MulterFile
-        : Required<T['reqBody']>[P] extends Blob[]
-        ? MulterFile[]
-        : T['reqBody'][P]
-    }
-  : T['reqBody']
-
 type RequestParams<T extends AspidaMethodParams> = {
   path: string
   method: HttpMethod
   query: T['query']
-  body: BlobToFile<T>
+  body: T['reqBody']
   headers: T['reqHeaders']
 }
 
@@ -176,51 +160,13 @@ const methodsToHandler = (
   }
 }
 
-const formatMulterData: RequestHandler = ({ body, files }, _res, next) => {
-  if (body[$arrayTypeKeysName]) {
-    const arrayTypeKeys: string[] = body[$arrayTypeKeysName].split(',')
-
-    for (const key of arrayTypeKeys) {
-      if (body[key] === undefined) body[key] = []
-      else if (!Array.isArray(body[key])) {
-        body[key] = [body[key]]
-      }
-    }
-
-    for (const file of files as MulterFile[]) {
-      if (Array.isArray(body[file.fieldname])) {
-        body[file.fieldname].push(file)
-      } else {
-        body[file.fieldname] = file
-      }
-    }
-
-    delete body[$arrayTypeKeysName]
-  } else {
-    for (const file of files as MulterFile[]) {
-      if (Array.isArray(body[file.fieldname])) {
-        body[file.fieldname].push(file)
-      } else {
-        body[file.fieldname] =
-          body[file.fieldname] === undefined ? file : [body[file.fieldname], file]
-      }
-    }
-  }
-
-  next()
-}
-
-export const controllers = (config: Pick<Config, 'multer'>): {
+export const controllers = (): {
   path: string
   methods: {
     name: LowerHttpMethod
     handlers: RequestHandler[]
   }[]
 }[] => {
-  const uploader = multer(
-    config.multer ?? { dest: path.join(__dirname, '.upload'), limits: { fileSize: 1024 ** 3 } }
-  ).any()
-
   return [
     {
       path: '/',
@@ -242,8 +188,6 @@ export const controllers = (config: Pick<Config, 'multer'>): {
         {
           name: 'post',
           handlers: [
-            uploader,
-            formatMulterData,
             (req, res, next) =>
               Promise.all([
                 validateOrReject(Object.assign(new Types.ValidQuery(), req.query)),
@@ -271,40 +215,20 @@ export const controllers = (config: Pick<Config, 'multer'>): {
       ]
     },
     {
-      path: '/multiForm',
-      methods: [
-        {
-          name: 'post',
-          handlers: [
-            uploader,
-            formatMulterData,
-            (req, res, next) =>
-              Promise.all([
-                validateOrReject(Object.assign(new Types.ValidMultiForm(), req.body))
-              ])
-                .then(() => next())
-                .catch(() => res.sendStatus(400)),
-            ...middleware0,
-            methodsToHandler(controller2.post)
-          ]
-        }
-      ]
-    },
-    {
       path: '/texts',
       methods: [
         {
           name: 'get',
           handlers: [
             ...middleware0,
-            methodsToHandler(controller3.get)
+            methodsToHandler(controller2.get)
           ]
         },
         {
           name: 'put',
           handlers: [
             ...middleware0,
-            methodsToHandler(controller3.put)
+            methodsToHandler(controller2.put)
           ]
         }
       ]
@@ -316,7 +240,7 @@ export const controllers = (config: Pick<Config, 'multer'>): {
           name: 'put',
           handlers: [
             ...middleware0,
-            methodsToHandler(controller4.put)
+            methodsToHandler(controller3.put)
           ]
         }
       ]
@@ -330,7 +254,7 @@ export const controllers = (config: Pick<Config, 'multer'>): {
             ...middleware0,
             ...middleware1,
             ...ctrlMiddleware1,
-            methodsToHandler(controller5.get)
+            methodsToHandler(controller4.get)
           ]
         },
         {
@@ -345,7 +269,7 @@ export const controllers = (config: Pick<Config, 'multer'>): {
             ...middleware0,
             ...middleware1,
             ...ctrlMiddleware1,
-            methodsToHandler(controller5.post)
+            methodsToHandler(controller4.post)
           ]
         }
       ]
@@ -359,7 +283,7 @@ export const controllers = (config: Pick<Config, 'multer'>): {
             createTypedParamsHandler(['userId']),
             ...middleware0,
             ...middleware1,
-            methodsToHandler(controller6.get)
+            methodsToHandler(controller5.get)
           ]
         }
       ]
@@ -385,7 +309,7 @@ export const run = async (config: Config) => {
 
   const router = express.Router()
   const basePath = config.basePath ? `/${config.basePath}`.replace('//', '/') : ''
-  const ctrls = controllers(config)
+  const ctrls = controllers()
 
   for (const ctrl of ctrls) {
     for (const method of ctrl.methods) {
