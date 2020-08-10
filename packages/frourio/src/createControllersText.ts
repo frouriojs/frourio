@@ -85,21 +85,18 @@ export function createController<T extends Record<string, any>>(methods: () => C
               : ''
           }${
               validateInfo.length
-                ? `\n            (req, res, next) =>
-              Promise.all([
+                ? `\n            createValidateHandler(req => [
 ${validateInfo
   .map(
     v =>
-      `                ${
+      `              ${
         v.val.hasQuestion ? `Object.keys(req.${v.name}).length ? ` : ''
       }validateOrReject(Object.assign(new Types.${v.val.value}(), req.${v.name}))${
         v.val.hasQuestion ? ' : null' : ''
       }`
   )
   .join(',\n')}
-              ])
-                .then(() => next())
-                .catch(() => res.sendStatus(400)),`
+            ]),`
                 : ''
             }${
               dirPath.includes('@number')

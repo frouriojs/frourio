@@ -9,7 +9,7 @@ import {
   HttpStatusOk,
   AspidaMethodParams
 } from 'aspida'
-import express, { RequestHandler } from 'express'
+import express, { RequestHandler, Request } from 'express'
 import fastify from 'fastify'
 import multer, { Options } from 'multer'
 import helmet, { HelmetOptions } from 'helmet'
@@ -150,6 +150,9 @@ const createTypedParamsHandler = (numberTypeParams: string[]): RequestHandler =>
   next()
 }
 
+const createValidateHandler = (validators: (req: Request) => (Promise<void> | null)[]): RequestHandler =>
+  (req, res, next) => Promise.all(validators(req)).then(() => next()).catch(() => res.sendStatus(400))
+
 const methodsToHandler = (
   methodCallback: ServerMethods<any, any>[LowerHttpMethod]
 ): RequestHandler => async (req, res) => {
@@ -228,12 +231,9 @@ export const controllers = (config: Pick<Config, 'multer'>): {
         {
           name: 'get',
           handlers: [
-            (req, res, next) =>
-              Promise.all([
-                Object.keys(req.query).length ? validateOrReject(Object.assign(new Types.ValidQuery(), req.query)) : null
-              ])
-                .then(() => next())
-                .catch(() => res.sendStatus(400)),
+            createValidateHandler(req => [
+              Object.keys(req.query).length ? validateOrReject(Object.assign(new Types.ValidQuery(), req.query)) : null
+            ]),
             ...middleware0,
             ...ctrlMiddleware0,
             methodsToHandler(controller0.get)
@@ -244,13 +244,10 @@ export const controllers = (config: Pick<Config, 'multer'>): {
           handlers: [
             uploader,
             formatMulterData,
-            (req, res, next) =>
-              Promise.all([
-                validateOrReject(Object.assign(new Types.ValidQuery(), req.query)),
-                validateOrReject(Object.assign(new Types.ValidBody(), req.body))
-              ])
-                .then(() => next())
-                .catch(() => res.sendStatus(400)),
+            createValidateHandler(req => [
+              validateOrReject(Object.assign(new Types.ValidQuery(), req.query)),
+              validateOrReject(Object.assign(new Types.ValidBody(), req.body))
+            ]),
             ...middleware0,
             ...ctrlMiddleware0,
             methodsToHandler(controller0.post)
@@ -278,12 +275,9 @@ export const controllers = (config: Pick<Config, 'multer'>): {
           handlers: [
             uploader,
             formatMulterData,
-            (req, res, next) =>
-              Promise.all([
-                validateOrReject(Object.assign(new Types.ValidMultiForm(), req.body))
-              ])
-                .then(() => next())
-                .catch(() => res.sendStatus(400)),
+            createValidateHandler(req => [
+              validateOrReject(Object.assign(new Types.ValidMultiForm(), req.body))
+            ]),
             ...middleware0,
             methodsToHandler(controller2.post)
           ]
@@ -336,12 +330,9 @@ export const controllers = (config: Pick<Config, 'multer'>): {
         {
           name: 'post',
           handlers: [
-            (req, res, next) =>
-              Promise.all([
-                validateOrReject(Object.assign(new Types.ValidUserInfo(), req.body))
-              ])
-                .then(() => next())
-                .catch(() => res.sendStatus(400)),
+            createValidateHandler(req => [
+              validateOrReject(Object.assign(new Types.ValidUserInfo(), req.body))
+            ]),
             ...middleware0,
             ...middleware1,
             ...ctrlMiddleware1,

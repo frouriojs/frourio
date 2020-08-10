@@ -5,6 +5,7 @@ import createTypeormText from './createTypeormText'
 export default (input: string) => {
   const typeormText = createTypeormText(input)
   const { imports, controllers } = createControllersText(`${input}/api`)
+  const hasValidator = controllers.includes('validateOrReject(')
   const hasMulter = controllers.includes('formatMulterData,')
 
   return {
@@ -18,12 +19,13 @@ import {${hasMulter ? '\n  $arrayTypeKeysName,' : ''}
   HttpStatusOk,
   AspidaMethodParams
 } from 'aspida'
-import express, { RequestHandler } from 'express'
+import express, { RequestHandler${hasValidator ? ', Request' : ''} } from 'express'
 import fastify from 'fastify'${hasMulter ? "\nimport multer, { Options } from 'multer'" : ''}
 import helmet, { HelmetOptions } from 'helmet'
 import cors, { CorsOptions } from 'cors'
-import { createConnection, ConnectionOptions } from 'typeorm'
-import { validateOrReject } from 'class-validator'
+import { createConnection, ConnectionOptions } from 'typeorm'${
+      hasValidator ? "\nimport { validateOrReject } from 'class-validator'" : ''
+    }
 
 export const createMiddleware = <T extends RequestHandler | RequestHandler[]>(handler: T): T extends RequestHandler[] ? T : [T] => (Array.isArray(handler) ? handler : [handler]) as any
 ${typeormText.imports}
@@ -154,7 +156,14 @@ const createTypedParamsHandler = (numberTypeParams: string[]): RequestHandler =>
   ;(req as any).typedParams = typedParams
   next()
 }
-
+${
+  hasValidator
+    ? `
+const createValidateHandler = (validators: (req: Request) => (Promise<void> | null)[]): RequestHandler =>
+  (req, res, next) => Promise.all(validators(req)).then(() => next()).catch(() => res.sendStatus(400))
+`
+    : ''
+}
 const methodsToHandler = (
   methodCallback: ServerMethods<any, any>[LowerHttpMethod]
 ): RequestHandler => async (req, res) => {
