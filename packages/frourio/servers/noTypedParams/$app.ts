@@ -325,6 +325,7 @@ export const controllers = (config: Pick<Config, 'multer'>): {
 export const entities = [Entity0]
 export const migrations = []
 export const subscribers = [Subscriber0]
+
 export const run = async (config: Config) => {
   const typeormPromise = config.typeorm ? createConnection({
     entities,

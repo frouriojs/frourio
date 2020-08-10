@@ -7,13 +7,13 @@ export default (input: string) => {
   const typeormText = createTypeormText(input)
   const { imports, controllers } = createControllersText(`${input}/api`)
   const hasTypedParams = controllers.includes('createTypedParamsHandler(')
+  const hasTypeorm = !!typeormText.imports
   const hasValidator = controllers.includes('validateOrReject(')
   const hasMulter = controllers.includes('formatMulterData,')
   const hasPublic = fs.existsSync(`${input}/public`)
 
   return {
-    text: `/* eslint-disable */
-import 'reflect-metadata'
+    text: `/* eslint-disable */${hasTypeorm ? "\nimport 'reflect-metadata'" : ''}
 import path from 'path'
 import {${hasMulter ? '\n  $arrayTypeKeysName,' : ''}
   LowerHttpMethod,
@@ -25,10 +25,9 @@ import {${hasMulter ? '\n  $arrayTypeKeysName,' : ''}
 import express, { RequestHandler${hasValidator ? ', Request' : ''} } from 'express'
 import fastify from 'fastify'${hasMulter ? "\nimport multer, { Options } from 'multer'" : ''}
 import helmet, { HelmetOptions } from 'helmet'
-import cors, { CorsOptions } from 'cors'
-import { createConnection, ConnectionOptions } from 'typeorm'${
-      hasValidator ? "\nimport { validateOrReject } from 'class-validator'" : ''
-    }
+import cors, { CorsOptions } from 'cors'${
+      hasTypeorm ? "\nimport { createConnection, ConnectionOptions } from 'typeorm'" : ''
+    }${hasValidator ? "\nimport { validateOrReject } from 'class-validator'" : ''}
 
 export const createMiddleware = <T extends RequestHandler | RequestHandler[]>(handler: T): T extends RequestHandler[] ? T : [T] => (Array.isArray(handler) ? handler : [handler]) as any
 ${typeormText.imports}
@@ -38,8 +37,7 @@ export type Config = {
   port: number
   basePath?: string
   helmet?: boolean | HelmetOptions
-  cors?: boolean | CorsOptions
-  typeorm?: ConnectionOptions
+  cors?: boolean | CorsOptions${hasTypeorm ? '\n  typeorm?: ConnectionOptions' : ''}
 ${
   hasMulter
     ? `  multer?: Options
@@ -254,17 +252,26 @@ export const controllers = (${hasMulter ? "config: Pick<Config, 'multer'>" : ''}
 ${controllers}
   ]
 }
-
+${
+  hasTypeorm
+    ? `
 export const entities = [${typeormText.entities}]
 export const migrations = [${typeormText.migrations}]
 export const subscribers = [${typeormText.subscribers}]
-export const run = async (config: Config) => {
+`
+    : ''
+}
+export const run = async (config: Config) => {${
+      hasTypeorm
+        ? `
   const typeormPromise = config.typeorm ? createConnection({
     entities,
     migrations,
     subscribers,
     ...config.typeorm
-  }) : null
+  }) : null`
+        : ''
+    }
   const app = fastify()
   await app.register(require('fastify-express'))
 
@@ -285,13 +292,17 @@ export const run = async (config: Config) => {
     hasPublic ? "\n  app.use(basePath, express.static(path.join(__dirname, 'public')))" : ''
   }
 
-  const [connection] = await Promise.all([
+  ${
+    hasTypeorm
+      ? `const [connection] = await Promise.all([
     typeormPromise,
     app.listen(config.port)
-  ])
+  ])`
+      : 'await app.listen(config.port)'
+  }
 
   console.log(\`Frourio is running on http://localhost:\${config.port}\`)
-  return { app, connection }
+  return { app${hasTypeorm ? ', connection' : ''} }
 }
 `,
     filePath: path.posix.join(input, '$app.ts')

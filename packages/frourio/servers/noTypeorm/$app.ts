@@ -1,5 +1,4 @@
 /* eslint-disable */
-import 'reflect-metadata'
 import path from 'path'
 import {
   $arrayTypeKeysName,
@@ -14,13 +13,10 @@ import fastify from 'fastify'
 import multer, { Options } from 'multer'
 import helmet, { HelmetOptions } from 'helmet'
 import cors, { CorsOptions } from 'cors'
-import { createConnection, ConnectionOptions } from 'typeorm'
 import { validateOrReject } from 'class-validator'
 
 export const createMiddleware = <T extends RequestHandler | RequestHandler[]>(handler: T): T extends RequestHandler[] ? T : [T] => (Array.isArray(handler) ? handler : [handler]) as any
 
-import { Task as Entity0 } from './entity/Task'
-import { TaskSubscriber as Subscriber0 } from './subscriber/TaskSubscriber'
 import * as Types from './types'
 import controller0, { middleware as ctrlMiddleware0 } from './api/@controller'
 import controller1 from './api/empty/noEmpty/@controller'
@@ -37,7 +33,6 @@ export type Config = {
   basePath?: string
   helmet?: boolean | HelmetOptions
   cors?: boolean | CorsOptions
-  typeorm?: ConnectionOptions
   multer?: Options
 }
 
@@ -358,17 +353,7 @@ export const controllers = (config: Pick<Config, 'multer'>): {
   ]
 }
 
-export const entities = [Entity0]
-export const migrations = []
-export const subscribers = [Subscriber0]
-
 export const run = async (config: Config) => {
-  const typeormPromise = config.typeorm ? createConnection({
-    entities,
-    migrations,
-    subscribers,
-    ...config.typeorm
-  }) : null
   const app = fastify()
   await app.register(require('fastify-express'))
 
@@ -388,11 +373,8 @@ export const run = async (config: Config) => {
   app.use(router)
   app.use(basePath, express.static(path.join(__dirname, 'public')))
 
-  const [connection] = await Promise.all([
-    typeormPromise,
-    app.listen(config.port)
-  ])
+  await app.listen(config.port)
 
   console.log(`Frourio is running on http://localhost:${config.port}`)
-  return { app, connection }
+  return { app }
 }
