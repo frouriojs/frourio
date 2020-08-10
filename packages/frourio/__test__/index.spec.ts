@@ -4,8 +4,8 @@ import FormData from 'form-data'
 import axios from 'axios'
 import { $arrayTypeKeysName } from 'aspida'
 import aspida from '@aspida/axios'
-import api from '../server/api/$api'
-import { run } from '../server/$app'
+import api from '../servers/all/api/$api'
+import { run } from '../servers/all/$app'
 
 const port = 11111
 const baseURL = `http://localhost:${port}`
@@ -17,7 +17,7 @@ beforeEach(async () => {
 })
 
 afterEach(fn => {
-  fs.rmdirSync('packages/frourio/server/.upload', { recursive: true })
+  fs.rmdirSync('packages/frourio/servers/all/.upload', { recursive: true })
   server.close(fn)
 })
 

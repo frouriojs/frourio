@@ -17,10 +17,10 @@ test('version command', () => {
 })
 
 test('build', () => {
-  const inputDir = `${basePath}/server`
+  const inputDir = `${basePath}/servers/all`
 
   const result = build(inputDir)
-  expect(result.text.replace(inputDir, 'server')).toBe(
+  expect(result.text.replace(inputDir, 'server/all')).toBe(
     fs.readFileSync(result.filePath, 'utf8').replace(/\r/g, '')
   )
 
