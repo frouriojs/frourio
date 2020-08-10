@@ -6,7 +6,6 @@ import createDefaultFiles from './createDefaultFilesIfNotExists'
 export default (inputDir: string) => {
   const middlewares: string[] = []
   const controllers: [string, boolean][] = []
-  let hasValidators = false
 
   const createText = (
     dirPath: string,
@@ -56,79 +55,75 @@ export function createController<T extends Record<string, any>>(methods: () => C
     const results: string[] = []
 
     if (methods?.length) {
-      let result = `  {\n    path: '${`/${dirPath}`
-        .replace(/\/_/g, '/:')
-        .replace(/@.+?($|\/)/g, '')}'${
-        dirPath.includes('@number')
-          ? `,\n    numberTypeParams: ['${dirPath
-              .split('/')
-              .filter(p => p.includes('@number'))
-              .map(p => p.split('@')[0].slice(1))
-              .join("', '")}']`
-          : ''
-      }`
-
-      const validateInfo = methods
-        .map(m => {
-          const props: [string, { value: string; hasQuestion: boolean }][] = []
-          if (m.props.query?.value.startsWith(validatorPrefix)) {
-            props.push(['query', m.props.query])
-          }
-          if (m.props.reqBody?.value.startsWith(validatorPrefix)) {
-            props.push(['body', m.props.reqBody])
-          }
-          if (m.props.reqHeaders?.value.startsWith(validatorPrefix)) {
-            props.push(['headers', m.props.reqHeaders])
-          }
-          return { method: m.name, props }
-        })
-        .filter(v => v.props.length)
-
-      if (validateInfo.length) {
-        hasValidators = true
-        result += `,\n    validator: {\n${validateInfo
-          .map(
-            v =>
-              `      ${v.method}: {\n${v.props
-                .map(
-                  p =>
-                    `        ${p[0]}: { required: ${!p[1].hasQuestion}, Class: Types.${
-                      p[1].value
-                    } }`
-                )
-                .join(',\n')}\n      }`
-          )
-          .join(',\n')}\n    }`
-      }
-
-      const uploaders = methods
-        .filter(m => m.props.reqFormat?.value === 'FormData')
-        .map(m => m.name)
-      if (uploaders.length) {
-        result += `,\n    uploader: ['${uploaders.join("', '")}']`
-      }
-
-      result += `,\n    controller: controller${controllers.length}`
-
       if (fs.existsSync(path.join(input, '@middleware.ts'))) {
-        middleware.push(`...middleware${middlewares.length}`)
+        middleware.push(`\n          ...middleware${middlewares.length},`)
         middlewares.push(`${input}/@middleware`)
       }
 
       const ctrlText = fs.readFileSync(path.join(input, '@controller.ts'), 'utf8')
       const hasMiddleware = /export (const|{)(.*[ ,])?middleware[, }=]/.test(ctrlText)
 
-      if (middleware.length || hasMiddleware) {
-        const m = `${middleware.join(', ')}${middleware.length && hasMiddleware ? ', ' : ''}${
-          hasMiddleware ? `...ctrlMiddleware${controllers.filter(c => c[1]).length}` : ''
-        }`
-        result += `,\n    middleware: ${m.includes(',') ? `[${m}]` : m.replace('...', '')}`
-      }
+      results.push(
+        `  {\n    path: '${`/${dirPath}`
+          .replace(/\/_/g, '/:')
+          .replace(/@.+?($|\/)/g, '')}',\n    methods: [\n${methods
+          .map(m => {
+            const validateInfo = [
+              { name: 'query', val: m.props.query },
+              { name: 'body', val: m.props.reqBody },
+              { name: 'headers', val: m.props.reqHeaders }
+            ].filter(
+              (prop): prop is { name: string; val: { value: string; hasQuestion: boolean } } =>
+                !!prop.val?.value.startsWith(validatorPrefix)
+            )
+
+            return `      {
+        method: '${m.name}',
+        handlers: [${
+          m.props.reqFormat?.value === 'FormData'
+            ? '\n          uploader,\n          formatMulterData,'
+            : ''
+        }${
+              validateInfo.length
+                ? `\n          (req, res, next) =>
+            Promise.all([
+${validateInfo
+  .map(
+    v =>
+      `              ${
+        v.val.hasQuestion ? `Object.keys(req.${v.name}).length ? ` : ''
+      }validateOrReject(Object.assign(new Types.${v.val.value}(), req.${v.name}))${
+        v.val.hasQuestion ? ' : null' : ''
+      }`
+  )
+  .join(',\n')}
+            ])
+              .then(() => next())
+              .catch(() => res.sendStatus(400)),`
+                : ''
+            }${
+              dirPath.includes('@number')
+                ? `\n          createTypedParamsHandler(['${dirPath
+                    .split('/')
+                    .filter(p => p.includes('@number'))
+                    .map(p => p.split('@')[0].slice(1))
+                    .join("', '")}']),`
+                : ''
+            }${
+              middleware.length || hasMiddleware
+                ? `${middleware.join('')}${
+                    hasMiddleware
+                      ? `\n          ...ctrlMiddleware${controllers.filter(c => c[1]).length},`
+                      : ''
+                  }`
+                : ''
+            }\n          methodsToHandler(controller${controllers.length}.${m.name})\n        ]
+      }`
+          })
+          .join(',\n')}\n    ]\n  }`
+      )
 
       controllers.push([`${input}/@controller`, hasMiddleware])
-      result += '\n  }'
-
-      results.push(result)
     }
 
     const childrenDirs = fs
@@ -166,7 +161,7 @@ export function createController<T extends Record<string, any>>(methods: () => C
   const ctrlMiddleware = controllers.filter(c => c[1])
 
   return {
-    imports: `${hasValidators ? "import * as Types from './types'" : ''}${
+    imports: `${text.includes('validateOrReject') ? "import * as Types from './types'" : ''}${
       controllers.length ? '\n' : ''
     }${controllers
       .map(

@@ -1,3 +1,5 @@
 import { createController } from './$relay'
 
-export default createController(() => ({}))
+export default createController(() => ({
+  get: () => ({ status: 200, body: 'sample' })
+}))

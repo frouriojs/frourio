@@ -127,36 +127,6 @@ export type ServerMethods<T extends AspidaMethods, U extends ServerValues> = {
   ) => ServerResponse<T[K]> | Promise<ServerResponse<T[K]>>
 }
 
-type Validator = {
-  required: boolean
-  Class: any
-}
-
-type Validators = {
-  query?: Validator
-  body?: Validator
-  headers?: Validator
-}
-
-const createValidateHandler = (validator: Validators): RequestHandler => (
-  req,
-  res,
-  next
-) =>
-  Promise.all([
-    validator.query &&
-      (Object.keys(req.query).length || validator.query.required ? true : undefined) &&
-      validateOrReject(Object.assign(new validator.query.Class(), req.query)),
-    validator.headers &&
-      (Object.keys(req.headers).length || validator.headers.required ? true : undefined) &&
-      validateOrReject(Object.assign(new validator.headers.Class(), req.headers)),
-    validator.body &&
-      (Object.keys(req.body).length || validator.body.required ? true : undefined) &&
-      validateOrReject(Object.assign(new validator.body.Class(), req.body))
-  ])
-    .then(() => next())
-    .catch(() => res.sendStatus(400))
-
 const createTypedParamsHandler = (numberTypeParams: string[]): RequestHandler => (
   req,
   res,
@@ -238,7 +208,15 @@ const formatMulterData: RequestHandler = ({ body, files }, _res, next) => {
   next()
 }
 
-export const controllers = [
+export const controllers = (${
+      controllers.includes('uploader,') ? 'uploader: RequestHandler' : ''
+    }): {
+  path: string
+  methods: {
+    method: LowerHttpMethod
+    handlers: RequestHandler[]
+  }[]
+}[] => [
 ${controllers}
 ]
 
@@ -246,6 +224,12 @@ export const entities = [${typeormText.entities}]
 export const migrations = [${typeormText.migrations}]
 export const subscribers = [${typeormText.subscribers}]
 export const run = async (config: Config) => {
+  const typeormPromise = config.typeorm ? createConnection({
+    entities,
+    migrations,
+    subscribers,
+    ...config.typeorm
+  }) : null
   const app = fastify()
   await app.register(require('fastify-express'))
 
@@ -254,37 +238,26 @@ export const run = async (config: Config) => {
 
   const router = express.Router()
   const basePath = config.basePath ? \`/\${config.basePath}\`.replace('//', '/') : ''
-  const uploader = multer(
+  const ctrls = controllers(
+    multer(
       config.multer ?? { dest: path.join(__dirname, '.upload'), limits: { fileSize: 1024 ** 3 } }
     ).any()
+  )
 
-  for (const ctrl of controllers) {
-    const typedParamsHandler = ctrl.numberTypeParams && createTypedParamsHandler(ctrl.numberTypeParams)
-
-    for (const method in ctrl.controller) {
-      const handlers: RequestHandler[] = []
-      if (ctrl.uploader?.includes(method)) handlers.push(uploader, formatMulterData)
-      const validator = ctrl.validator?.[method as keyof typeof ctrl.validator]
-      if (validator) handlers.push(createValidateHandler(validator))
-      if (typedParamsHandler) handlers.push(typedParamsHandler)
-      if (ctrl.middleware) handlers.push(...ctrl.middleware)
-      handlers.push(methodsToHandler(ctrl.controller[method as keyof typeof ctrl.controller]))
-
-      router[method as LowerHttpMethod](\`\${basePath}\${ctrl.path}\`, handlers)
+  for (const ctrl of ctrls) {
+    for (const m of ctrl.methods) {
+      router[m.method](\`\${basePath}\${ctrl.path}\`, m.handlers)
     }
   }
 
   app.use(router)
   app.use(basePath, express.static(path.join(__dirname, 'public')))
 
-  const connection = config.typeorm ? await createConnection({
-    entities,
-    migrations,
-    subscribers,
-    ...config.typeorm
-  }) : null
+  const [connection] = await Promise.all([
+    typeormPromise,
+    app.listen(config.port)
+  ])
 
-  await app.listen(config.port)
   console.log(\`Frourio is running on http://localhost:\${config.port}\`)
   return { app, connection }
 }
