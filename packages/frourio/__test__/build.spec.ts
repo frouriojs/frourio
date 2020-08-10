@@ -17,18 +17,21 @@ test('version command', () => {
 })
 
 test('build', () => {
-  const inputDir = `${basePath}/servers/all`
+  const inputDir = `${basePath}/servers`
 
-  const result = build(inputDir)
-  expect(result.text.replace(inputDir, 'server/all')).toBe(
-    fs.readFileSync(result.filePath, 'utf8').replace(/\r/g, '')
-  )
+  fs.readdirSync(inputDir, { withFileTypes: true })
+    .filter(d => d.isDirectory())
+    .map(d => `${inputDir}/${d.name}`)
+    .forEach(input => {
+      const result = build(input)
+      expect(result.text).toBe(fs.readFileSync(result.filePath, 'utf8').replace(/\r/g, ''))
 
-  const [target] = aspidaBuild({
-    input: `${inputDir}/api`,
-    baseURL: '',
-    trailingSlash: false,
-    outputEachDir: false
-  })
-  expect(target.text).toBe(fs.readFileSync(target.filePath, 'utf8').replace(/\r/g, ''))
+      const [target] = aspidaBuild({
+        input: `${input}/api`,
+        baseURL: '',
+        trailingSlash: false,
+        outputEachDir: false
+      })
+      expect(target.text).toBe(fs.readFileSync(target.filePath, 'utf8').replace(/\r/g, ''))
+    })
 })
