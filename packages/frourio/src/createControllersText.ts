@@ -26,7 +26,7 @@ export default (inputDir: string) => {
             .join("', '")}']`
         : ''
     }`
-    const input = path.join(inputDir, dirPath)
+    const input = path.posix.join(inputDir, dirPath)
     const appText = `../${appPath}`
     const userPath =
       fs.existsSync(path.join(input, '@middleware.ts')) &&
