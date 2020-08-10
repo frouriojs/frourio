@@ -24,9 +24,7 @@ import {${hasMulter ? '\n  $arrayTypeKeysName,' : ''}
   AspidaMethodParams
 } from 'aspida'
 import express, { RequestHandler${hasValidator ? ', Request' : ''} } from 'express'
-import fastify from 'fastify'${hasMulter ? "\nimport multer, { Options } from 'multer'" : ''}
-import helmet, { HelmetOptions } from 'helmet'
-import cors, { CorsOptions } from 'cors'${
+import fastify from 'fastify'${hasMulter ? "\nimport multer, { Options } from 'multer'" : ''}${
       hasTypeorm ? "\nimport { createConnection, ConnectionOptions } from 'typeorm'" : ''
     }${hasValidator ? "\nimport { validateOrReject } from 'class-validator'" : ''}
 
@@ -35,9 +33,7 @@ ${typeormText.imports}${imports}
 
 export type Config = {
   port: number
-  basePath?: string
-  helmet?: boolean | HelmetOptions
-  cors?: boolean | CorsOptions${hasTypeorm ? '\n  typeorm?: ConnectionOptions' : ''}
+  basePath?: string${hasTypeorm ? '\n  typeorm?: ConnectionOptions' : ''}
 ${
   hasMulter
     ? `  multer?: Options
@@ -269,15 +265,10 @@ export const run = async (config: Config) => {${
     migrations,
     subscribers,
     ...config.typeorm
-  }) : null`
+  }) : null
+`
         : ''
     }
-  const app = fastify()
-  await app.register(require('fastify-express'))
-
-  if (config.helmet) app.use(helmet(config.helmet === true ? {} : config.helmet))
-  if (config.cors) app.use(cors(config.cors === true ? {} : config.cors))
-
   const router = express.Router()
   const basePath = config.basePath ? \`/\${config.basePath}\`.replace('//', '/') : ''
   const ctrls = controllers(${hasMulter ? 'config' : ''})
@@ -288,6 +279,8 @@ export const run = async (config: Config) => {${
     }
   }
 
+  const app = fastify()
+  await app.register(require('fastify-express'))
   app.use(router)${
     hasPublic ? "\n  app.use(basePath, express.static(path.join(__dirname, 'public')))" : ''
   }

@@ -10,8 +10,6 @@ import {
 } from 'aspida'
 import express, { RequestHandler, Request } from 'express'
 import fastify from 'fastify'
-import helmet, { HelmetOptions } from 'helmet'
-import cors, { CorsOptions } from 'cors'
 import { createConnection, ConnectionOptions } from 'typeorm'
 import { validateOrReject } from 'class-validator'
 
@@ -32,8 +30,6 @@ import middleware1 from './api/users/@middleware'
 export type Config = {
   port: number
   basePath?: string
-  helmet?: boolean | HelmetOptions
-  cors?: boolean | CorsOptions
   typeorm?: ConnectionOptions
 }
 
@@ -296,11 +292,6 @@ export const run = async (config: Config) => {
     subscribers,
     ...config.typeorm
   }) : null
-  const app = fastify()
-  await app.register(require('fastify-express'))
-
-  if (config.helmet) app.use(helmet(config.helmet === true ? {} : config.helmet))
-  if (config.cors) app.use(cors(config.cors === true ? {} : config.cors))
 
   const router = express.Router()
   const basePath = config.basePath ? `/${config.basePath}`.replace('//', '/') : ''
@@ -312,6 +303,8 @@ export const run = async (config: Config) => {
     }
   }
 
+  const app = fastify()
+  await app.register(require('fastify-express'))
   app.use(router)
   app.use(basePath, express.static(path.join(__dirname, 'public')))
 

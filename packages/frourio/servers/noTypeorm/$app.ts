@@ -11,8 +11,6 @@ import {
 import express, { RequestHandler, Request } from 'express'
 import fastify from 'fastify'
 import multer, { Options } from 'multer'
-import helmet, { HelmetOptions } from 'helmet'
-import cors, { CorsOptions } from 'cors'
 import { validateOrReject } from 'class-validator'
 
 export const createMiddleware = <T extends RequestHandler | RequestHandler[]>(handler: T): T extends RequestHandler[] ? T : [T] => (Array.isArray(handler) ? handler : [handler]) as any
@@ -31,8 +29,6 @@ import middleware1 from './api/users/@middleware'
 export type Config = {
   port: number
   basePath?: string
-  helmet?: boolean | HelmetOptions
-  cors?: boolean | CorsOptions
   multer?: Options
 }
 
@@ -354,12 +350,6 @@ export const controllers = (config: Pick<Config, 'multer'>): {
 }
 
 export const run = async (config: Config) => {
-  const app = fastify()
-  await app.register(require('fastify-express'))
-
-  if (config.helmet) app.use(helmet(config.helmet === true ? {} : config.helmet))
-  if (config.cors) app.use(cors(config.cors === true ? {} : config.cors))
-
   const router = express.Router()
   const basePath = config.basePath ? `/${config.basePath}`.replace('//', '/') : ''
   const ctrls = controllers(config)
@@ -370,6 +360,8 @@ export const run = async (config: Config) => {
     }
   }
 
+  const app = fastify()
+  await app.register(require('fastify-express'))
   app.use(router)
   app.use(basePath, express.static(path.join(__dirname, 'public')))
 

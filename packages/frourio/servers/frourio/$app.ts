@@ -8,8 +8,6 @@ import {
 } from 'aspida'
 import express, { RequestHandler } from 'express'
 import fastify from 'fastify'
-import helmet, { HelmetOptions } from 'helmet'
-import cors, { CorsOptions } from 'cors'
 
 export const createMiddleware = <T extends RequestHandler | RequestHandler[]>(handler: T): T extends RequestHandler[] ? T : [T] => (Array.isArray(handler) ? handler : [handler]) as any
 
@@ -18,8 +16,6 @@ import controller0 from './api/@controller'
 export type Config = {
   port: number
   basePath?: string
-  helmet?: boolean | HelmetOptions
-  cors?: boolean | CorsOptions
 }
 
 type HttpStatusNoOk =
@@ -147,12 +143,6 @@ export const controllers = (): {
 }
 
 export const run = async (config: Config) => {
-  const app = fastify()
-  await app.register(require('fastify-express'))
-
-  if (config.helmet) app.use(helmet(config.helmet === true ? {} : config.helmet))
-  if (config.cors) app.use(cors(config.cors === true ? {} : config.cors))
-
   const router = express.Router()
   const basePath = config.basePath ? `/${config.basePath}`.replace('//', '/') : ''
   const ctrls = controllers()
@@ -163,6 +153,8 @@ export const run = async (config: Config) => {
     }
   }
 
+  const app = fastify()
+  await app.register(require('fastify-express'))
   app.use(router)
 
   await app.listen(config.port)
