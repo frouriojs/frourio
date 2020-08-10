@@ -15,17 +15,6 @@ export default (inputDir: string) => {
     appPath = '$app',
     user = ''
   ) => {
-    let result = `  {\n    path: '${`/${dirPath}`
-      .replace(/\/_/g, '/:')
-      .replace(/@.+?($|\/)/g, '')}'${
-      dirPath.includes('@number')
-        ? `,\n    numberTypeParams: ['${dirPath
-            .split('/')
-            .filter(p => p.includes('@number'))
-            .map(p => p.split('@')[0].slice(1))
-            .join("', '")}']`
-        : ''
-    }`
     const input = path.posix.join(inputDir, dirPath)
     const appText = `../${appPath}`
     const userPath =
@@ -64,7 +53,21 @@ export function createController<T extends Record<string, any>>(methods: () => C
 
     const validatorPrefix = 'Valid'
     const methods = parse(fs.readFileSync(path.join(input, 'index.ts'), 'utf8'), 'Methods')
-    if (methods) {
+    const results: string[] = []
+
+    if (methods?.length) {
+      let result = `  {\n    path: '${`/${dirPath}`
+        .replace(/\/_/g, '/:')
+        .replace(/@.+?($|\/)/g, '')}'${
+        dirPath.includes('@number')
+          ? `,\n    numberTypeParams: ['${dirPath
+              .split('/')
+              .filter(p => p.includes('@number'))
+              .map(p => p.split('@')[0].slice(1))
+              .join("', '")}']`
+          : ''
+      }`
+
       const validateInfo = methods
         .map(m => {
           const props: [string, { value: string; hasQuestion: boolean }][] = []
@@ -104,75 +107,80 @@ export function createController<T extends Record<string, any>>(methods: () => C
       if (uploaders.length) {
         result += `,\n    uploader: ['${uploaders.join("', '")}']`
       }
+
+      result += `,\n    controller: controller${controllers.length}`
+
+      if (fs.existsSync(path.join(input, '@middleware.ts'))) {
+        middleware.push(`...middleware${middlewares.length}`)
+        middlewares.push(`${input}/@middleware`)
+      }
+
+      const ctrlText = fs.readFileSync(path.join(input, '@controller.ts'), 'utf8')
+      const hasMiddleware = /export (const|{)(.*[ ,])?middleware[, }=]/.test(ctrlText)
+
+      if (middleware.length || hasMiddleware) {
+        const m = `${middleware.join(', ')}${middleware.length && hasMiddleware ? ', ' : ''}${
+          hasMiddleware ? `...ctrlMiddleware${controllers.filter(c => c[1]).length}` : ''
+        }`
+        result += `,\n    middleware: ${m.includes(',') ? `[${m}]` : m.replace('...', '')}`
+      }
+
+      controllers.push([`${input}/@controller`, hasMiddleware])
+      result += '\n  }'
+
+      results.push(result)
     }
-
-    result += `,\n    controller: controller${controllers.length}`
-
-    if (fs.existsSync(path.join(input, '@middleware.ts'))) {
-      middleware.push(`...middleware${middlewares.length}`)
-      middlewares.push(`${input}/@middleware`)
-    }
-
-    const ctrlText = fs.readFileSync(path.join(input, '@controller.ts'), 'utf8')
-    const hasMiddleware = /export (const|{)(.*[ ,])?middleware[, }=]/.test(ctrlText)
-
-    if (middleware.length || hasMiddleware) {
-      const m = `${middleware.join(', ')}${middleware.length && hasMiddleware ? ', ' : ''}${
-        hasMiddleware ? `...ctrlMiddleware${controllers.filter(c => c[1]).length}` : ''
-      }`
-      result += `,\n    middleware: ${m.includes(',') ? `[${m}]` : m.replace('...', '')}`
-    }
-
-    controllers.push([`${input}/@controller`, hasMiddleware])
-    result += '\n  }'
 
     const childrenDirs = fs
-      .readdirSync(input)
-      .filter(d => fs.statSync(path.join(input, d)).isDirectory() && !d.startsWith('@'))
+      .readdirSync(input, { withFileTypes: true })
+      .filter(d => d.isDirectory() && !d.name.startsWith('@'))
 
     if (childrenDirs.length) {
-      const names = childrenDirs.filter(d => !d.startsWith('_'))
-      if (names.length) {
-        result += names
-          .map(
-            n =>
-              `,\n${createText(path.posix.join(dirPath, n), middleware, params, appText, userPath)}`
+      results.push(
+        ...childrenDirs
+          .filter(d => !d.name.startsWith('_'))
+          .flatMap(d =>
+            createText(path.posix.join(dirPath, d.name), middleware, params, appText, userPath)
           )
-          .join('')
-      }
+      )
 
-      const value = childrenDirs.find(d => d.startsWith('_'))
+      const value = childrenDirs.find(d => d.name.startsWith('_'))
 
       if (value) {
-        result += `,\n${createText(
-          path.posix.join(dirPath, value),
-          middleware,
-          [...params, [value.slice(1).split('@')[0], value.split('@')[1] ?? 'string']],
-          appText,
-          userPath
-        )}`
+        results.push(
+          ...createText(
+            path.posix.join(dirPath, value.name),
+            middleware,
+            [...params, [value.name.slice(1).split('@')[0], value.name.split('@')[1] ?? 'string']],
+            appText,
+            userPath
+          )
+        )
       }
     }
 
-    return result
+    return results
   }
 
-  const text = createText('', [], [])
+  const text = createText('', [], []).join(',\n')
   const ctrlMiddleware = controllers.filter(c => c[1])
 
-  return `${hasValidators ? "import * as Types from './types'" : ''}${
-    controllers.length ? '\n' : ''
-  }${controllers
-    .map(
-      (ctrl, i) =>
-        `import controller${i}${
-          ctrl[1] ? `, { middleware as ctrlMiddleware${ctrlMiddleware.indexOf(ctrl)} }` : ''
-        } from '${ctrl[0].replace(/^api/, './api').replace(inputDir, './api')}'`
-    )
-    .join('\n')}${middlewares.length ? '\n' : ''}${middlewares
-    .map(
-      (m, i) =>
-        `import middleware${i} from '${m.replace(/^api/, './api').replace(inputDir, './api')}'`
-    )
-    .join('\n')}\n\nexport const controllers = [\n${text}\n]`
+  return {
+    imports: `${hasValidators ? "import * as Types from './types'" : ''}${
+      controllers.length ? '\n' : ''
+    }${controllers
+      .map(
+        (ctrl, i) =>
+          `import controller${i}${
+            ctrl[1] ? `, { middleware as ctrlMiddleware${ctrlMiddleware.indexOf(ctrl)} }` : ''
+          } from '${ctrl[0].replace(/^api/, './api').replace(inputDir, './api')}'`
+      )
+      .join('\n')}${middlewares.length ? '\n' : ''}${middlewares
+      .map(
+        (m, i) =>
+          `import middleware${i} from '${m.replace(/^api/, './api').replace(inputDir, './api')}'`
+      )
+      .join('\n')}`,
+    controllers: text
+  }
 }

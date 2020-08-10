@@ -4,6 +4,7 @@ import createTypeormText from './createTypeormText'
 
 export default (input: string) => {
   const typeormText = createTypeormText(input)
+  const { imports, controllers } = createControllersText(`${input}/api`)
 
   return {
     text: `/* eslint-disable */
@@ -27,7 +28,7 @@ import { validateOrReject } from 'class-validator'
 
 export const createMiddleware = <T extends RequestHandler | RequestHandler[]>(handler: T): T extends RequestHandler[] ? T : [T] => (Array.isArray(handler) ? handler : [handler]) as any
 ${typeormText.imports}
-${createControllersText(`${input}/api`)}
+${imports}
 
 export type MulterFile = Express.Multer.File
 
@@ -236,6 +237,10 @@ const formatMulterData: RequestHandler = ({ body, files }, _res, next) => {
 
   next()
 }
+
+export const controllers = [
+${controllers}
+]
 
 export const entities = [${typeormText.entities}]
 export const migrations = [${typeormText.migrations}]

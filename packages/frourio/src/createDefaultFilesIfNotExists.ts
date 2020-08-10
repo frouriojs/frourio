@@ -11,7 +11,7 @@ export default async (dir: string) => {
   if (!fs.existsSync(controllerFilePath)) {
     fs.promises.writeFile(
       controllerFilePath,
-      "import { createController } from './$relay'\n\nexport default createController({})\n",
+      "import { createController } from './$relay'\n\nexport default createController(() => ({}))\n",
       'utf8'
     )
   }

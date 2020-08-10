@@ -23,68 +23,14 @@ import { Task as Entity0 } from './entity/Task'
 import { TaskSubscriber as Subscriber0 } from './subscriber/TaskSubscriber'
 import * as Types from './types'
 import controller0, { middleware as ctrlMiddleware0 } from './api/@controller'
-import controller1 from './api/multiForm/@controller'
-import controller2 from './api/texts/@controller'
-import controller3 from './api/texts/sample/@controller'
-import controller4, { middleware as ctrlMiddleware1 } from './api/users/@controller'
-import controller5 from './api/users/_userId@number/@controller'
+import controller1 from './api/empty/noEmpty/@controller'
+import controller2 from './api/multiForm/@controller'
+import controller3 from './api/texts/@controller'
+import controller4 from './api/texts/sample/@controller'
+import controller5, { middleware as ctrlMiddleware1 } from './api/users/@controller'
+import controller6 from './api/users/_userId@number/@controller'
 import middleware0 from './api/@middleware'
 import middleware1 from './api/users/@middleware'
-
-export const controllers = [
-  {
-    path: '/',
-    validator: {
-      get: {
-        query: { required: false, Class: Types.ValidQuery }
-      },
-      post: {
-        query: { required: true, Class: Types.ValidQuery },
-        body: { required: true, Class: Types.ValidBody }
-      }
-    },
-    uploader: ['post'],
-    controller: controller0,
-    middleware: [...middleware0, ...ctrlMiddleware0]
-  },
-  {
-    path: '/multiForm',
-    validator: {
-      post: {
-        body: { required: true, Class: Types.ValidMultiForm }
-      }
-    },
-    uploader: ['post'],
-    controller: controller1,
-    middleware: middleware0
-  },
-  {
-    path: '/texts',
-    controller: controller2,
-    middleware: middleware0
-  },
-  {
-    path: '/texts/sample',
-    controller: controller3,
-    middleware: middleware0
-  },
-  {
-    path: '/users',
-    validator: {
-      post: {
-        body: { required: true, Class: Types.ValidUserInfo }
-      }
-    },
-    controller: controller4,
-    middleware: [...middleware0, ...middleware1, ...ctrlMiddleware1]
-  },
-  {
-    path: '/users/:userId',
-    numberTypeParams: ['userId'],
-    controller: controller5,
-    middleware: [...middleware0, ...middleware1]
-  }
-]
 
 export type MulterFile = Express.Multer.File
 
@@ -293,6 +239,66 @@ const formatMulterData: RequestHandler = ({ body, files }, _res, next) => {
 
   next()
 }
+
+export const controllers = [
+  {
+    path: '/',
+    validator: {
+      get: {
+        query: { required: false, Class: Types.ValidQuery }
+      },
+      post: {
+        query: { required: true, Class: Types.ValidQuery },
+        body: { required: true, Class: Types.ValidBody }
+      }
+    },
+    uploader: ['post'],
+    controller: controller0,
+    middleware: [...middleware0, ...ctrlMiddleware0]
+  },
+  {
+    path: '/empty/noEmpty',
+    controller: controller1,
+    middleware: middleware0
+  },
+  {
+    path: '/multiForm',
+    validator: {
+      post: {
+        body: { required: true, Class: Types.ValidMultiForm }
+      }
+    },
+    uploader: ['post'],
+    controller: controller2,
+    middleware: middleware0
+  },
+  {
+    path: '/texts',
+    controller: controller3,
+    middleware: middleware0
+  },
+  {
+    path: '/texts/sample',
+    controller: controller4,
+    middleware: middleware0
+  },
+  {
+    path: '/users',
+    validator: {
+      post: {
+        body: { required: true, Class: Types.ValidUserInfo }
+      }
+    },
+    controller: controller5,
+    middleware: [...middleware0, ...middleware1, ...ctrlMiddleware1]
+  },
+  {
+    path: '/users/:userId',
+    numberTypeParams: ['userId'],
+    controller: controller6,
+    middleware: [...middleware0, ...middleware1]
+  }
+]
 
 export const entities = [Entity0]
 export const migrations = []
