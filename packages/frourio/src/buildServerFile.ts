@@ -19,7 +19,7 @@ import {${hasMulter ? '\n  $arrayTypeKeysName,' : ''}
   HttpStatusOk,
   AspidaMethodParams
 } from 'aspida'
-import { Express, RequestHandler${hasValidator ? ', Request' : ''} } from 'express'${
+import express, { Express, RequestHandler${hasValidator ? ', Request' : ''} } from 'express'${
       hasMulter ? "\nimport multer, { Options } from 'multer'" : ''
     }${hasValidator ? "\nimport { validateOrReject } from 'class-validator'" : ''}
 
@@ -252,6 +252,14 @@ export const subscribers = [${typeormText.subscribers}]
     : ''
 }
 export const apply = (app: Express, config: Config = {}) => {
+  app.use((req, res, next) => {
+    express.json()(req, res, err => {
+      if (err) return res.sendStatus(400)
+
+      next()
+    })
+  })
+
   const ctrls = controllers(${hasMulter ? 'config' : ''})
 
   for (const ctrl of ctrls) {

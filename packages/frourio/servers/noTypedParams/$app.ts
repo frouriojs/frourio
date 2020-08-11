@@ -8,7 +8,7 @@ import {
   HttpStatusOk,
   AspidaMethodParams
 } from 'aspida'
-import { Express, RequestHandler, Request } from 'express'
+import express, { Express, RequestHandler, Request } from 'express'
 import multer, { Options } from 'multer'
 import { validateOrReject } from 'class-validator'
 
@@ -318,6 +318,14 @@ export const migrations = []
 export const subscribers = [Subscriber0]
 
 export const apply = (app: Express, config: Config = {}) => {
+  app.use((req, res, next) => {
+    express.json()(req, res, err => {
+      if (err) return res.sendStatus(400)
+
+      next()
+    })
+  })
+
   const ctrls = controllers(config)
 
   for (const ctrl of ctrls) {

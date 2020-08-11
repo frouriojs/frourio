@@ -8,7 +8,7 @@ import {
   HttpStatusOk,
   AspidaMethodParams
 } from 'aspida'
-import { Express, RequestHandler } from 'express'
+import express, { Express, RequestHandler } from 'express'
 import multer, { Options } from 'multer'
 
 export const createMiddleware = <T extends RequestHandler | RequestHandler[]>(handler: T): T extends RequestHandler[] ? T : [T] => (Array.isArray(handler) ? handler : [handler]) as any
@@ -336,6 +336,14 @@ export const migrations = []
 export const subscribers = [Subscriber0]
 
 export const apply = (app: Express, config: Config = {}) => {
+  app.use((req, res, next) => {
+    express.json()(req, res, err => {
+      if (err) return res.sendStatus(400)
+
+      next()
+    })
+  })
+
   const ctrls = controllers(config)
 
   for (const ctrl of ctrls) {

@@ -52,6 +52,17 @@ test('GET: 400', async () => {
   ])
 })
 
+test('GET: 500', async () => {
+  await expect(client.$500.get()).rejects.toHaveProperty('response.status', 500)
+})
+
+test('PUT: JSON', async () => {
+  const id = 'abcd'
+  const res = await client.texts.sample.$put({ body: { id } })
+  // eslint-disable-next-line
+  expect(res!.id).toBe(id)
+})
+
 test('POST: formdata', async () => {
   const port = '3000'
   const fileName = 'tsconfig.json'

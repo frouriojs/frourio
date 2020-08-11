@@ -6,7 +6,7 @@ import {
   HttpStatusOk,
   AspidaMethodParams
 } from 'aspida'
-import { Express, RequestHandler, Request } from 'express'
+import express, { Express, RequestHandler, Request } from 'express'
 import { validateOrReject } from 'class-validator'
 
 export const createMiddleware = <T extends RequestHandler | RequestHandler[]>(handler: T): T extends RequestHandler[] ? T : [T] => (Array.isArray(handler) ? handler : [handler]) as any
@@ -280,6 +280,14 @@ export const migrations = []
 export const subscribers = [Subscriber0]
 
 export const apply = (app: Express, config: Config = {}) => {
+  app.use((req, res, next) => {
+    express.json()(req, res, err => {
+      if (err) return res.sendStatus(400)
+
+      next()
+    })
+  })
+
   const ctrls = controllers()
 
   for (const ctrl of ctrls) {

@@ -8,7 +8,7 @@ import {
   HttpStatusOk,
   AspidaMethodParams
 } from 'aspida'
-import { Express, RequestHandler, Request } from 'express'
+import express, { Express, RequestHandler, Request } from 'express'
 import multer, { Options } from 'multer'
 import { validateOrReject } from 'class-validator'
 
@@ -18,12 +18,13 @@ import { Task as Entity0 } from './entity/Task'
 import { TaskSubscriber as Subscriber0 } from './subscriber/TaskSubscriber'
 import * as Types from './types'
 import controller0, { middleware as ctrlMiddleware0 } from './api/@controller'
-import controller1 from './api/empty/noEmpty/@controller'
-import controller2 from './api/multiForm/@controller'
-import controller3 from './api/texts/@controller'
-import controller4 from './api/texts/sample/@controller'
-import controller5, { middleware as ctrlMiddleware1 } from './api/users/@controller'
-import controller6 from './api/users/_userId@number/@controller'
+import controller1 from './api/500/@controller'
+import controller2 from './api/empty/noEmpty/@controller'
+import controller3 from './api/multiForm/@controller'
+import controller4 from './api/texts/@controller'
+import controller5 from './api/texts/sample/@controller'
+import controller6, { middleware as ctrlMiddleware1 } from './api/users/@controller'
+import controller7 from './api/users/_userId@number/@controller'
 import middleware0 from './api/@middleware'
 import middleware1 from './api/users/@middleware'
 
@@ -247,13 +248,25 @@ export const controllers = (config: Config): {
       ]
     },
     {
-      path: '/empty/noEmpty',
+      path: '/500',
       methods: [
         {
           name: 'get',
           handlers: [
             ...middleware0,
             methodsToHandler(controller1.get)
+          ]
+        }
+      ]
+    },
+    {
+      path: '/empty/noEmpty',
+      methods: [
+        {
+          name: 'get',
+          handlers: [
+            ...middleware0,
+            methodsToHandler(controller2.get)
           ]
         }
       ]
@@ -270,7 +283,7 @@ export const controllers = (config: Config): {
               validateOrReject(Object.assign(new Types.ValidMultiForm(), req.body))
             ]),
             ...middleware0,
-            methodsToHandler(controller2.post)
+            methodsToHandler(controller3.post)
           ]
         }
       ]
@@ -282,14 +295,14 @@ export const controllers = (config: Config): {
           name: 'get',
           handlers: [
             ...middleware0,
-            methodsToHandler(controller3.get)
+            methodsToHandler(controller4.get)
           ]
         },
         {
           name: 'put',
           handlers: [
             ...middleware0,
-            methodsToHandler(controller3.put)
+            methodsToHandler(controller4.put)
           ]
         }
       ]
@@ -301,7 +314,7 @@ export const controllers = (config: Config): {
           name: 'put',
           handlers: [
             ...middleware0,
-            methodsToHandler(controller4.put)
+            methodsToHandler(controller5.put)
           ]
         }
       ]
@@ -315,7 +328,7 @@ export const controllers = (config: Config): {
             ...middleware0,
             ...middleware1,
             ...ctrlMiddleware1,
-            methodsToHandler(controller5.get)
+            methodsToHandler(controller6.get)
           ]
         },
         {
@@ -327,7 +340,7 @@ export const controllers = (config: Config): {
             ...middleware0,
             ...middleware1,
             ...ctrlMiddleware1,
-            methodsToHandler(controller5.post)
+            methodsToHandler(controller6.post)
           ]
         }
       ]
@@ -341,7 +354,7 @@ export const controllers = (config: Config): {
             createTypedParamsHandler(['userId']),
             ...middleware0,
             ...middleware1,
-            methodsToHandler(controller6.get)
+            methodsToHandler(controller7.get)
           ]
         }
       ]
@@ -354,6 +367,14 @@ export const migrations = []
 export const subscribers = [Subscriber0]
 
 export const apply = (app: Express, config: Config = {}) => {
+  app.use((req, res, next) => {
+    express.json()(req, res, err => {
+      if (err) return res.sendStatus(400)
+
+      next()
+    })
+  })
+
   const ctrls = controllers(config)
 
   for (const ctrl of ctrls) {
