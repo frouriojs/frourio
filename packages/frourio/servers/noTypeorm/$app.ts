@@ -361,7 +361,6 @@ export const run = async (fastify: FastifyInstance, config: Config) => {
 
   await fastify.register(require('fastify-express'), { prefix: config.basePath })
   fastify.use(router)
-  fastify.use(config.basePath || '/', express.static(path.join(__dirname, 'public')))
 
   await fastify.listen(config.port)
 }

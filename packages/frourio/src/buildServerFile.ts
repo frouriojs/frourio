@@ -1,4 +1,3 @@
-import fs from 'fs'
 import path from 'path'
 import createControllersText from './createControllersText'
 import createTypeormText from './createTypeormText'
@@ -10,10 +9,9 @@ export default (input: string) => {
   const hasTypeorm = !!typeormText.imports
   const hasValidator = controllers.includes('validateOrReject(')
   const hasMulter = controllers.includes('formatMulterData,')
-  const hasPublic = fs.existsSync(`${input}/public`)
 
   return {
-    text: `/* eslint-disable */${hasMulter || hasPublic ? "\nimport path from 'path'" : ''}
+    text: `/* eslint-disable */${hasMulter ? "\nimport path from 'path'" : ''}
 import {${hasMulter ? '\n  $arrayTypeKeysName,' : ''}
   LowerHttpMethod,
   AspidaMethods,
@@ -266,11 +264,7 @@ export const run = async (fastify: FastifyInstance, config: Config) => {
   }
 
   await fastify.register(require('fastify-express'), { prefix: config.basePath })
-  fastify.use(router)${
-    hasPublic
-      ? "\n  fastify.use(config.basePath || '/', express.static(path.join(__dirname, 'public')))"
-      : ''
-  }
+  fastify.use(router)
 
   await fastify.listen(config.port)
 }

@@ -106,8 +106,3 @@ test('POST: 400', async () => {
     })
   ).rejects.toHaveProperty('response.status', 400)
 })
-
-test('GET: static', async () => {
-  const res = await axios.get(`http://localhost:${port}/sample.json`)
-  expect(res.data.sample).toBe(true)
-})
