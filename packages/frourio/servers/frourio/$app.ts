@@ -6,13 +6,13 @@ import {
   HttpStatusOk,
   AspidaMethodParams
 } from 'aspida'
-import express, { Express, RequestHandler } from 'express'
+import { Express, RequestHandler } from 'express'
 
 export const createMiddleware = <T extends RequestHandler | RequestHandler[]>(handler: T): T extends RequestHandler[] ? T : [T] => (Array.isArray(handler) ? handler : [handler]) as any
 
 import controller0 from './api/@controller'
 
-export type Config = {
+export type FrourioOptions = {
   basePath?: string
 }
 
@@ -118,44 +118,10 @@ const methodsToHandler = (
   }
 }
 
-export const controllers = (): {
-  path: string
-  methods: {
-    name: LowerHttpMethod
-    handlers: RequestHandler[]
-  }[]
-}[] => {
-  return [
-    {
-      path: '/',
-      methods: [
-        {
-          name: 'get',
-          handlers: [
-            methodsToHandler(controller0.get)
-          ]
-        }
-      ]
-    }
-  ]
-}
+export default (app: Express, options: FrourioOptions = {}) => {
+  const basePath = options.basePath ?? ''
 
-export const apply = (app: Express, config: Config = {}) => {
-  app.use((req, res, next) => {
-    express.json()(req, res, err => {
-      if (err) return res.sendStatus(400)
-
-      next()
-    })
-  })
-
-  const ctrls = controllers()
-
-  for (const ctrl of ctrls) {
-    for (const method of ctrl.methods) {
-      app[method.name](`${config.basePath ?? ''}${ctrl.path}`, method.handlers)
-    }
-  }
+  app.get(`${basePath}/`, methodsToHandler(controller0.get))
 
   return app
 }

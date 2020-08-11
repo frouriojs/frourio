@@ -1,4 +1,4 @@
 import express from 'express'
-import { apply } from './frourio/$app'
+import frourio from './frourio/$app'
 
-apply(express()).listen(3000)
+frourio(express()).listen(3000)

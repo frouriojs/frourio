@@ -25,7 +25,7 @@ import controller6 from './api/users/_userId@number/@controller'
 import middleware0 from './api/@middleware'
 import middleware1 from './api/users/@middleware'
 
-export type Config = {
+export type FrourioOptions = {
   basePath?: string
   multer?: Options
 }
@@ -118,6 +118,14 @@ export type ServerMethods<T extends AspidaMethods, U extends ServerValues> = {
   ) => ServerResponse<T[K]> | Promise<ServerResponse<T[K]>>
 }
 
+const parseJSONBoby: RequestHandler = (req, res, next) => {
+  express.json()(req, res, err => {
+    if (err) return res.sendStatus(400)
+
+    next()
+  })
+}
+
 const createTypedParamsHandler = (numberTypeParams: string[]): RequestHandler => (
   req,
   res,
@@ -202,167 +210,88 @@ const formatMulterData: RequestHandler = ({ body, files }, _res, next) => {
   next()
 }
 
-export const controllers = (config: Config): {
-  path: string
-  methods: {
-    name: LowerHttpMethod
-    handlers: RequestHandler[]
-  }[]
-}[] => {
+export default (app: Express, options: FrourioOptions = {}) => {
+  const basePath = options.basePath ?? ''
   const uploader = multer(
-    config.multer ?? { dest: path.join(__dirname, '.upload'), limits: { fileSize: 1024 ** 3 } }
+      options.multer ?? { dest: path.join(__dirname, '.upload'), limits: { fileSize: 1024 ** 3 } }
   ).any()
 
-  return [
-    {
-      path: '/',
-      methods: [
-        {
-          name: 'get',
-          handlers: [
-            createValidateHandler(req => [
-              Object.keys(req.query).length ? validateOrReject(Object.assign(new Types.ValidQuery(), req.query)) : null
-            ]),
-            ...middleware0,
-            ...ctrlMiddleware0,
-            methodsToHandler(controller0.get)
-          ]
-        },
-        {
-          name: 'post',
-          handlers: [
-            uploader,
-            formatMulterData,
-            createValidateHandler(req => [
-              validateOrReject(Object.assign(new Types.ValidQuery(), req.query)),
-              validateOrReject(Object.assign(new Types.ValidBody(), req.body))
-            ]),
-            ...middleware0,
-            ...ctrlMiddleware0,
-            methodsToHandler(controller0.post)
-          ]
-        }
-      ]
-    },
-    {
-      path: '/empty/noEmpty',
-      methods: [
-        {
-          name: 'get',
-          handlers: [
-            ...middleware0,
-            methodsToHandler(controller1.get)
-          ]
-        }
-      ]
-    },
-    {
-      path: '/multiForm',
-      methods: [
-        {
-          name: 'post',
-          handlers: [
-            uploader,
-            formatMulterData,
-            createValidateHandler(req => [
-              validateOrReject(Object.assign(new Types.ValidMultiForm(), req.body))
-            ]),
-            ...middleware0,
-            methodsToHandler(controller2.post)
-          ]
-        }
-      ]
-    },
-    {
-      path: '/texts',
-      methods: [
-        {
-          name: 'get',
-          handlers: [
-            ...middleware0,
-            methodsToHandler(controller3.get)
-          ]
-        },
-        {
-          name: 'put',
-          handlers: [
-            ...middleware0,
-            methodsToHandler(controller3.put)
-          ]
-        }
-      ]
-    },
-    {
-      path: '/texts/sample',
-      methods: [
-        {
-          name: 'put',
-          handlers: [
-            ...middleware0,
-            methodsToHandler(controller4.put)
-          ]
-        }
-      ]
-    },
-    {
-      path: '/users',
-      methods: [
-        {
-          name: 'get',
-          handlers: [
-            ...middleware0,
-            ...middleware1,
-            ...ctrlMiddleware1,
-            methodsToHandler(controller5.get)
-          ]
-        },
-        {
-          name: 'post',
-          handlers: [
-            createValidateHandler(req => [
-              validateOrReject(Object.assign(new Types.ValidUserInfo(), req.body))
-            ]),
-            ...middleware0,
-            ...middleware1,
-            ...ctrlMiddleware1,
-            methodsToHandler(controller5.post)
-          ]
-        }
-      ]
-    },
-    {
-      path: '/users/:userId',
-      methods: [
-        {
-          name: 'get',
-          handlers: [
-            createTypedParamsHandler(['userId']),
-            ...middleware0,
-            ...middleware1,
-            methodsToHandler(controller6.get)
-          ]
-        }
-      ]
-    }
-  ]
-}
+  app.get(`${basePath}/`, [
+    createValidateHandler(req => [
+      Object.keys(req.query).length ? validateOrReject(Object.assign(new Types.ValidQuery(), req.query)) : null
+    ]),
+    ...middleware0,
+    ...ctrlMiddleware0,
+    methodsToHandler(controller0.get)
+  ])
 
-export const apply = (app: Express, config: Config = {}) => {
-  app.use((req, res, next) => {
-    express.json()(req, res, err => {
-      if (err) return res.sendStatus(400)
+  app.post(`${basePath}/`, [
+    uploader,
+    formatMulterData,
+    createValidateHandler(req => [
+      validateOrReject(Object.assign(new Types.ValidQuery(), req.query)),
+      validateOrReject(Object.assign(new Types.ValidBody(), req.body))
+    ]),
+    ...middleware0,
+    ...ctrlMiddleware0,
+    methodsToHandler(controller0.post)
+  ])
 
-      next()
-    })
-  })
+  app.get(`${basePath}/empty/noEmpty`, [
+    ...middleware0,
+    methodsToHandler(controller1.get)
+  ])
 
-  const ctrls = controllers(config)
+  app.post(`${basePath}/multiForm`, [
+    uploader,
+    formatMulterData,
+    createValidateHandler(req => [
+      validateOrReject(Object.assign(new Types.ValidMultiForm(), req.body))
+    ]),
+    ...middleware0,
+    methodsToHandler(controller2.post)
+  ])
 
-  for (const ctrl of ctrls) {
-    for (const method of ctrl.methods) {
-      app[method.name](`${config.basePath ?? ''}${ctrl.path}`, method.handlers)
-    }
-  }
+  app.get(`${basePath}/texts`, [
+    ...middleware0,
+    methodsToHandler(controller3.get)
+  ])
+
+  app.put(`${basePath}/texts`, [
+    ...middleware0,
+    methodsToHandler(controller3.put)
+  ])
+
+  app.put(`${basePath}/texts/sample`, [
+    parseJSONBoby,
+    ...middleware0,
+    methodsToHandler(controller4.put)
+  ])
+
+  app.get(`${basePath}/users`, [
+    ...middleware0,
+    ...middleware1,
+    ...ctrlMiddleware1,
+    methodsToHandler(controller5.get)
+  ])
+
+  app.post(`${basePath}/users`, [
+    parseJSONBoby,
+    createValidateHandler(req => [
+      validateOrReject(Object.assign(new Types.ValidUserInfo(), req.body))
+    ]),
+    ...middleware0,
+    ...middleware1,
+    ...ctrlMiddleware1,
+    methodsToHandler(controller5.post)
+  ])
+
+  app.get(`${basePath}/users/:userId`, [
+    createTypedParamsHandler(['userId']),
+    ...middleware0,
+    ...middleware1,
+    methodsToHandler(controller6.get)
+  ])
 
   return app
 }

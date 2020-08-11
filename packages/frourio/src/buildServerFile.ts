@@ -5,6 +5,7 @@ import createTypeormText from './createTypeormText'
 export default (input: string) => {
   const typeormText = createTypeormText(input)
   const { imports, controllers } = createControllersText(`${input}/api`)
+  const hasJSONBody = controllers.includes('parseJSONBoby,')
   const hasTypedParams = controllers.includes('createTypedParamsHandler(')
   const hasTypeorm = !!typeormText.imports
   const hasValidator = controllers.includes('validateOrReject(')
@@ -19,14 +20,16 @@ import {${hasMulter ? '\n  $arrayTypeKeysName,' : ''}
   HttpStatusOk,
   AspidaMethodParams
 } from 'aspida'
-import express, { Express, RequestHandler${hasValidator ? ', Request' : ''} } from 'express'${
-      hasMulter ? "\nimport multer, { Options } from 'multer'" : ''
-    }${hasValidator ? "\nimport { validateOrReject } from 'class-validator'" : ''}
+import ${hasJSONBody ? 'express, ' : ''}{ Express, RequestHandler${
+      hasValidator ? ', Request' : ''
+    } } from 'express'${hasMulter ? "\nimport multer, { Options } from 'multer'" : ''}${
+      hasValidator ? "\nimport { validateOrReject } from 'class-validator'" : ''
+    }
 
 export const createMiddleware = <T extends RequestHandler | RequestHandler[]>(handler: T): T extends RequestHandler[] ? T : [T] => (Array.isArray(handler) ? handler : [handler]) as any
 ${typeormText.imports}${imports}
 
-export type Config = {
+export type FrourioOptions = {
   basePath?: string
 ${
   hasMulter
@@ -127,8 +130,20 @@ export type ServerMethods<T extends AspidaMethods, U extends ServerValues> = {
   ) => ServerResponse<T[K]> | Promise<ServerResponse<T[K]>>
 }
 ${
-  hasTypedParams
+  hasJSONBody
     ? `
+const parseJSONBoby: RequestHandler = (req, res, next) => {
+  express.json()(req, res, err => {
+    if (err) return res.sendStatus(400)
+
+    next()
+  })
+}
+`
+    : ''
+}${
+      hasTypedParams
+        ? `
 const createTypedParamsHandler = (numberTypeParams: string[]): RequestHandler => (
   req,
   res,
@@ -150,8 +165,8 @@ const createTypedParamsHandler = (numberTypeParams: string[]): RequestHandler =>
   next()
 }
 `
-    : ''
-}${
+        : ''
+    }${
       hasValidator
         ? `
 const createValidateHandler = (validators: (req: Request) => (Promise<void> | null)[]): RequestHandler =>
@@ -222,52 +237,26 @@ const formatMulterData: RequestHandler = ({ body, files }, _res, next) => {
 }
 `
     : ''
-}
-export const controllers = (${hasMulter ? 'config: Config' : ''}): {
-  path: string
-  methods: {
-    name: LowerHttpMethod
-    handlers: RequestHandler[]
-  }[]
-}[] => {${
-      hasMulter
+}${
+      hasTypeorm
         ? `
-  const uploader = multer(
-    config.multer ?? { dest: path.join(__dirname, '.upload'), limits: { fileSize: 1024 ** 3 } }
-  ).any()
-`
-        : ''
-    }
-  return [
-${controllers}
-  ]
-}
-${
-  hasTypeorm
-    ? `
 export const entities = [${typeormText.entities}]
 export const migrations = [${typeormText.migrations}]
 export const subscribers = [${typeormText.subscribers}]
 `
+        : ''
+    }
+export default (app: Express, options: FrourioOptions = {}) => {
+  const basePath = options.basePath ?? ''
+${
+  hasMulter
+    ? `  const uploader = multer(
+      options.multer ?? { dest: path.join(__dirname, '.upload'), limits: { fileSize: 1024 ** 3 } }
+  ).any()
+`
     : ''
 }
-export const apply = (app: Express, config: Config = {}) => {
-  app.use((req, res, next) => {
-    express.json()(req, res, err => {
-      if (err) return res.sendStatus(400)
-
-      next()
-    })
-  })
-
-  const ctrls = controllers(${hasMulter ? 'config' : ''})
-
-  for (const ctrl of ctrls) {
-    for (const method of ctrl.methods) {
-      app[method.name](\`\${config.basePath ?? ''}\${ctrl.path}\`, method.handlers)
-    }
-  }
-
+${controllers}
   return app
 }
 `,
