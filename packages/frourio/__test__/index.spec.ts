@@ -6,7 +6,7 @@ import axios from 'axios'
 import { $arrayTypeKeysName } from 'aspida'
 import aspida from '@aspida/axios'
 import api from '../servers/all/api/$api'
-import { apply } from '../servers/all/$app'
+import frourio from '../servers/all/$app'
 
 const port = 11111
 const baseURL = `http://localhost:${port}`
@@ -14,7 +14,7 @@ const client = api(aspida(undefined, { baseURL }))
 let server: Server
 
 beforeEach(cb => {
-  server = apply(express()).listen(port, cb)
+  server = frourio(express()).listen(port, cb)
 })
 
 afterEach(fn => {
