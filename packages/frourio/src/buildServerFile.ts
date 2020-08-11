@@ -13,9 +13,7 @@ export default (input: string) => {
   const hasPublic = fs.existsSync(`${input}/public`)
 
   return {
-    text: `/* eslint-disable */${hasTypeorm ? "\nimport 'reflect-metadata'" : ''}${
-      hasMulter || hasPublic ? "\nimport path from 'path'" : ''
-    }
+    text: `/* eslint-disable */${hasMulter || hasPublic ? "\nimport path from 'path'" : ''}
 import {${hasMulter ? '\n  $arrayTypeKeysName,' : ''}
   LowerHttpMethod,
   AspidaMethods,
@@ -24,8 +22,8 @@ import {${hasMulter ? '\n  $arrayTypeKeysName,' : ''}
   AspidaMethodParams
 } from 'aspida'
 import express, { RequestHandler${hasValidator ? ', Request' : ''} } from 'express'
-import fastify from 'fastify'${hasMulter ? "\nimport multer, { Options } from 'multer'" : ''}${
-      hasTypeorm ? "\nimport { createConnection, ConnectionOptions } from 'typeorm'" : ''
+import { FastifyInstance } from 'fastify'${
+      hasMulter ? "\nimport multer, { Options } from 'multer'" : ''
     }${hasValidator ? "\nimport { validateOrReject } from 'class-validator'" : ''}
 
 export const createMiddleware = <T extends RequestHandler | RequestHandler[]>(handler: T): T extends RequestHandler[] ? T : [T] => (Array.isArray(handler) ? handler : [handler]) as any
@@ -33,7 +31,7 @@ ${typeormText.imports}${imports}
 
 export type Config = {
   port: number
-  basePath?: string${hasTypeorm ? '\n  typeorm?: ConnectionOptions' : ''}
+  basePath?: string
 ${
   hasMulter
     ? `  multer?: Options
@@ -257,45 +255,24 @@ export const subscribers = [${typeormText.subscribers}]
 `
     : ''
 }
-export const run = async (config: Config) => {${
-      hasTypeorm
-        ? `
-  const typeormPromise = config.typeorm ? createConnection({
-    entities,
-    migrations,
-    subscribers,
-    ...config.typeorm
-  }) : null
-`
-        : ''
-    }
+export const run = async (fastify: FastifyInstance, config: Config) => {
   const router = express.Router()
-  const basePath = config.basePath ? \`/\${config.basePath}\`.replace('//', '/') : ''
   const ctrls = controllers(${hasMulter ? 'config' : ''})
 
   for (const ctrl of ctrls) {
     for (const method of ctrl.methods) {
-      router[method.name](\`\${basePath}\${ctrl.path}\`, method.handlers)
+      router[method.name](ctrl.path, method.handlers)
     }
   }
 
-  const app = fastify()
-  await app.register(require('fastify-express'))
-  app.use(router)${
-    hasPublic ? "\n  app.use(basePath, express.static(path.join(__dirname, 'public')))" : ''
+  await fastify.register(require('fastify-express'), { prefix: config.basePath })
+  fastify.use(router)${
+    hasPublic
+      ? "\n  fastify.use(config.basePath || '/', express.static(path.join(__dirname, 'public')))"
+      : ''
   }
 
-  ${
-    hasTypeorm
-      ? `const [connection] = await Promise.all([
-    typeormPromise,
-    app.listen(config.port)
-  ])`
-      : 'await app.listen(config.port)'
-  }
-
-  console.log(\`Frourio is running on http://localhost:\${config.port}\`)
-  return { app${hasTypeorm ? ', connection' : ''} }
+  await fastify.listen(config.port)
 }
 `,
     filePath: path.posix.join(input, '$app.ts')

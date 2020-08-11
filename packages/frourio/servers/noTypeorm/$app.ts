@@ -9,7 +9,7 @@ import {
   AspidaMethodParams
 } from 'aspida'
 import express, { RequestHandler, Request } from 'express'
-import fastify from 'fastify'
+import { FastifyInstance } from 'fastify'
 import multer, { Options } from 'multer'
 import { validateOrReject } from 'class-validator'
 
@@ -349,24 +349,19 @@ export const controllers = (config: Pick<Config, 'multer'>): {
   ]
 }
 
-export const run = async (config: Config) => {
+export const run = async (fastify: FastifyInstance, config: Config) => {
   const router = express.Router()
-  const basePath = config.basePath ? `/${config.basePath}`.replace('//', '/') : ''
   const ctrls = controllers(config)
 
   for (const ctrl of ctrls) {
     for (const method of ctrl.methods) {
-      router[method.name](`${basePath}${ctrl.path}`, method.handlers)
+      router[method.name](ctrl.path, method.handlers)
     }
   }
 
-  const app = fastify()
-  await app.register(require('fastify-express'))
-  app.use(router)
-  app.use(basePath, express.static(path.join(__dirname, 'public')))
+  await fastify.register(require('fastify-express'), { prefix: config.basePath })
+  fastify.use(router)
+  fastify.use(config.basePath || '/', express.static(path.join(__dirname, 'public')))
 
-  await app.listen(config.port)
-
-  console.log(`Frourio is running on http://localhost:${config.port}`)
-  return { app }
+  await fastify.listen(config.port)
 }

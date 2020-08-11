@@ -7,7 +7,7 @@ import {
   AspidaMethodParams
 } from 'aspida'
 import express, { RequestHandler } from 'express'
-import fastify from 'fastify'
+import { FastifyInstance } from 'fastify'
 
 export const createMiddleware = <T extends RequestHandler | RequestHandler[]>(handler: T): T extends RequestHandler[] ? T : [T] => (Array.isArray(handler) ? handler : [handler]) as any
 
@@ -142,23 +142,18 @@ export const controllers = (): {
   ]
 }
 
-export const run = async (config: Config) => {
+export const run = async (fastify: FastifyInstance, config: Config) => {
   const router = express.Router()
-  const basePath = config.basePath ? `/${config.basePath}`.replace('//', '/') : ''
   const ctrls = controllers()
 
   for (const ctrl of ctrls) {
     for (const method of ctrl.methods) {
-      router[method.name](`${basePath}${ctrl.path}`, method.handlers)
+      router[method.name](ctrl.path, method.handlers)
     }
   }
 
-  const app = fastify()
-  await app.register(require('fastify-express'))
-  app.use(router)
+  await fastify.register(require('fastify-express'), { prefix: config.basePath })
+  fastify.use(router)
 
-  await app.listen(config.port)
-
-  console.log(`Frourio is running on http://localhost:${config.port}`)
-  return { app }
+  await fastify.listen(config.port)
 }

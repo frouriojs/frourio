@@ -1,5 +1,6 @@
 import { Server } from 'http'
 import fs from 'fs'
+import fastify from 'fastify'
 import FormData from 'form-data'
 import axios from 'axios'
 import { $arrayTypeKeysName } from 'aspida'
@@ -13,7 +14,9 @@ const client = api(aspida(undefined, { baseURL }))
 let server: Server
 
 beforeEach(async () => {
-  server = (await run({ port })).app.server
+  const app = fastify()
+  await run(app, { port })
+  server = app.server
 })
 
 afterEach(fn => {
