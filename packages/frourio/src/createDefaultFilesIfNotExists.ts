@@ -1,27 +1,41 @@
 import fs from 'fs'
 import path from 'path'
 
-export default async (dir: string) => {
+export default (dir: string) => {
   const indexFilePath = path.join(dir, 'index.ts')
+
   if (!fs.existsSync(indexFilePath)) {
-    fs.promises.writeFile(indexFilePath, 'export type Methods = {}\n', 'utf8')
+    fs.writeFileSync(
+      indexFilePath,
+      `export type Methods = {
+  get: {
+    resBody: string
+  }
+}
+`,
+      'utf8'
+    )
   }
 
   const controllerFilePath = path.join(dir, '@controller.ts')
+
   if (!fs.existsSync(controllerFilePath)) {
-    fs.promises.writeFile(
+    fs.writeFileSync(
       controllerFilePath,
-      "import { createController } from './$relay'\n\nexport default createController(() => ({}))\n",
+      `import { createController } from './$relay'
+
+export default createController(() => ({
+  get: () => ({ status: 200, body: 'Hello' })
+}))
+`,
       'utf8'
     )
   }
 
   const middlewareFilePath = path.join(dir, '@middleware.ts')
-  if (
-    fs.existsSync(middlewareFilePath) &&
-    !(await fs.promises.readFile(middlewareFilePath, 'utf8'))
-  ) {
-    fs.promises.writeFile(
+
+  if (fs.existsSync(middlewareFilePath) && !fs.readFileSync(middlewareFilePath, 'utf8')) {
+    fs.writeFileSync(
       middlewareFilePath,
       "import { createMiddleware } from './$relay'\n\nexport default createMiddleware([])\n",
       'utf8'
