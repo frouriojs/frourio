@@ -1,22 +1,20 @@
 import { Server } from 'http'
 import fs from 'fs'
-import fastify from 'fastify'
+import express from 'express'
 import FormData from 'form-data'
 import axios from 'axios'
 import { $arrayTypeKeysName } from 'aspida'
 import aspida from '@aspida/axios'
 import api from '../servers/all/api/$api'
-import { run } from '../servers/all/$app'
+import { apply } from '../servers/all/$app'
 
 const port = 11111
 const baseURL = `http://localhost:${port}`
 const client = api(aspida(undefined, { baseURL }))
 let server: Server
 
-beforeEach(async () => {
-  const app = fastify()
-  await run(app, { port })
-  server = app.server
+beforeEach(cb => {
+  server = apply(express()).listen(port, cb)
 })
 
 afterEach(fn => {

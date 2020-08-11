@@ -8,8 +8,7 @@ import {
   HttpStatusOk,
   AspidaMethodParams
 } from 'aspida'
-import express, { RequestHandler, Request } from 'express'
-import { FastifyInstance } from 'fastify'
+import { Express, RequestHandler, Request } from 'express'
 import multer, { Options } from 'multer'
 import { validateOrReject } from 'class-validator'
 
@@ -28,7 +27,6 @@ import middleware0 from './api/@middleware'
 import middleware1 from './api/users/@middleware'
 
 export type Config = {
-  port: number
   basePath?: string
   multer?: Options
 }
@@ -184,7 +182,7 @@ const formatMulterData: RequestHandler = ({ body, files }, _res, next) => {
   next()
 }
 
-export const controllers = (config: Pick<Config, 'multer'>): {
+export const controllers = (config: Config): {
   path: string
   methods: {
     name: LowerHttpMethod
@@ -319,18 +317,14 @@ export const entities = [Entity0]
 export const migrations = []
 export const subscribers = [Subscriber0]
 
-export const run = async (fastify: FastifyInstance, config: Config) => {
-  const router = express.Router()
+export const apply = (app: Express, config: Config = {}) => {
   const ctrls = controllers(config)
 
   for (const ctrl of ctrls) {
     for (const method of ctrl.methods) {
-      router[method.name](ctrl.path, method.handlers)
+      app[method.name](`${config.basePath ?? ''}${ctrl.path}`, method.handlers)
     }
   }
 
-  await fastify.register(require('fastify-express'), { prefix: config.basePath })
-  fastify.use(router)
-
-  await fastify.listen(config.port)
+  return app
 }

@@ -19,8 +19,7 @@ import {${hasMulter ? '\n  $arrayTypeKeysName,' : ''}
   HttpStatusOk,
   AspidaMethodParams
 } from 'aspida'
-import express, { RequestHandler${hasValidator ? ', Request' : ''} } from 'express'
-import { FastifyInstance } from 'fastify'${
+import { Express, RequestHandler${hasValidator ? ', Request' : ''} } from 'express'${
       hasMulter ? "\nimport multer, { Options } from 'multer'" : ''
     }${hasValidator ? "\nimport { validateOrReject } from 'class-validator'" : ''}
 
@@ -28,7 +27,6 @@ export const createMiddleware = <T extends RequestHandler | RequestHandler[]>(ha
 ${typeormText.imports}${imports}
 
 export type Config = {
-  port: number
   basePath?: string
 ${
   hasMulter
@@ -225,7 +223,7 @@ const formatMulterData: RequestHandler = ({ body, files }, _res, next) => {
 `
     : ''
 }
-export const controllers = (${hasMulter ? "config: Pick<Config, 'multer'>" : ''}): {
+export const controllers = (${hasMulter ? 'config: Config' : ''}): {
   path: string
   methods: {
     name: LowerHttpMethod
@@ -253,20 +251,16 @@ export const subscribers = [${typeormText.subscribers}]
 `
     : ''
 }
-export const run = async (fastify: FastifyInstance, config: Config) => {
-  const router = express.Router()
+export const apply = (app: Express, config: Config = {}) => {
   const ctrls = controllers(${hasMulter ? 'config' : ''})
 
   for (const ctrl of ctrls) {
     for (const method of ctrl.methods) {
-      router[method.name](ctrl.path, method.handlers)
+      app[method.name](\`\${config.basePath ?? ''}\${ctrl.path}\`, method.handlers)
     }
   }
 
-  await fastify.register(require('fastify-express'), { prefix: config.basePath })
-  fastify.use(router)
-
-  await fastify.listen(config.port)
+  return app
 }
 `,
     filePath: path.posix.join(input, '$app.ts')

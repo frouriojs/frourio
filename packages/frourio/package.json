@@ -24,12 +24,8 @@
   ],
   "dependencies": {
     "@types/minimist": "^1.2.0",
-    "@types/multer": "^1.4.3",
     "aspida": "^0.20.2",
     "class-validator": "^0.12.2",
-    "fastify": "^3.2.0",
-    "fastify-express": "^0.1.0",
-    "multer": "^1.4.2",
     "typescript": "^3.9.7",
     "velona": "^0.5.1"
   }

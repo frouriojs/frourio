@@ -1,6 +1,4 @@
-import fastify from 'fastify'
-import { run } from './frourio/$app'
+import express from 'express'
+import { apply } from './frourio/$app'
 
-const app = fastify()
-const port = 3000
-run(app, { port }).then(() => console.log(`Frourio is running on http://localhost:${port}`))
+apply(express()).listen(3000)
