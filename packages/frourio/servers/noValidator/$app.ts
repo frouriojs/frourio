@@ -13,8 +13,6 @@ import multer, { Options } from 'multer'
 
 export const createMiddleware = <T extends RequestHandler | RequestHandler[]>(handler: T): T extends RequestHandler[] ? T : [T] => (Array.isArray(handler) ? handler : [handler]) as any
 
-import { Task as Entity0 } from './entity/Task'
-import { TaskSubscriber as Subscriber0 } from './subscriber/TaskSubscriber'
 import controller0, { middleware as ctrlMiddleware0 } from './api/@controller'
 import controller1 from './api/empty/noEmpty/@controller'
 import controller2 from './api/multiForm/@controller'
@@ -206,10 +204,6 @@ const formatMulterData: RequestHandler = ({ body, files }, _res, next) => {
 
   next()
 }
-
-export const entities = [Entity0]
-export const migrations = []
-export const subscribers = [Subscriber0]
 
 export default (app: Express, options: FrourioOptions = {}) => {
   const basePath = options.basePath ?? ''

@@ -1,13 +1,10 @@
 import path from 'path'
 import createControllersText from './createControllersText'
-import createTypeormText from './createTypeormText'
 
 export default (input: string) => {
-  const typeormText = createTypeormText(input)
   const { imports, controllers } = createControllersText(`${input}/api`)
   const hasJSONBody = controllers.includes('parseJSONBoby,')
   const hasTypedParams = controllers.includes('createTypedParamsHandler(')
-  const hasTypeorm = !!typeormText.imports
   const hasValidator = controllers.includes('validateOrReject(')
   const hasMulter = controllers.includes('formatMulterData,')
 
@@ -27,7 +24,7 @@ import ${hasJSONBody ? 'express, ' : ''}{ Express, RequestHandler${
     }
 
 export const createMiddleware = <T extends RequestHandler | RequestHandler[]>(handler: T): T extends RequestHandler[] ? T : [T] => (Array.isArray(handler) ? handler : [handler]) as any
-${typeormText.imports}${imports}
+${imports}
 
 export type FrourioOptions = {
   basePath?: string
@@ -237,15 +234,7 @@ const formatMulterData: RequestHandler = ({ body, files }, _res, next) => {
 }
 `
     : ''
-}${
-      hasTypeorm
-        ? `
-export const entities = [${typeormText.entities}]
-export const migrations = [${typeormText.migrations}]
-export const subscribers = [${typeormText.subscribers}]
-`
-        : ''
-    }
+}
 export default (app: Express, options: FrourioOptions = {}) => {
   const basePath = options.basePath ?? ''
 ${
