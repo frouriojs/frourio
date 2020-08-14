@@ -96,7 +96,7 @@ o- /server/api/test/_testId/index.ts
 ## Support
 
 <a href="https://twitter.com/solufa2020">
-  <img src="https://aspidajs.github.io/aspida/assets/images/twitter.svg" width="50" alt="Twitter" />
+  <img src="https://aspida.github.io/aspida/assets/images/twitter.svg" width="50" alt="Twitter" />
 </a>
 
 ## License
