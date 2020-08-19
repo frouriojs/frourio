@@ -8,20 +8,33 @@ import {
   HttpStatusOk,
   AspidaMethodParams
 } from 'aspida'
+import { Deps } from 'velona'
 import express, { Express, RequestHandler } from 'express'
 import multer, { Options } from 'multer'
 
-export const createMiddleware = <T extends RequestHandler | RequestHandler[]>(handler: T): T extends RequestHandler[] ? T : [T] => (Array.isArray(handler) ? handler : [handler]) as any
+type Hooks = {
+  onRequest?: RequestHandler | RequestHandler[]
+  preParsing?: RequestHandler | RequestHandler[]
+  preValidation?: RequestHandler | RequestHandler[]
+  preHandler?: RequestHandler | RequestHandler[]
+  onSend?: RequestHandler | RequestHandler[]
+}
 
-import controller0, { middleware as ctrlMiddleware0 } from './api/@controller'
-import controller1 from './api/empty/noEmpty/@controller'
-import controller2 from './api/multiForm/@controller'
-import controller3 from './api/texts/@controller'
-import controller4 from './api/texts/sample/@controller'
-import controller5, { middleware as ctrlMiddleware1 } from './api/users/@controller'
-import controller6 from './api/users/_userId@number/@controller'
-import middleware0 from './api/@middleware'
-import middleware1 from './api/users/@middleware'
+export function createHooks(hooks: () => Hooks): Hooks
+export function createHooks<T extends Record<string, any>>(deps: T, cb: (deps: Deps<T>) => Hooks): Hooks & { inject: (d: Deps<T>) => Hooks }
+export function createHooks<T extends Record<string, any>>(hooks: () => Hooks | T, cb?: (deps: Deps<T>) => Hooks) {
+  return typeof hooks === 'function' ? hooks() : { ...cb!(hooks), inject: (d: Deps<T>) => cb!(d) }
+}
+
+import controller0, { hooks as ctrlHooks0 } from './api/controller'
+import controller1 from './api/empty/noEmpty/controller'
+import controller2 from './api/multiForm/controller'
+import controller3 from './api/texts/controller'
+import controller4 from './api/texts/sample/controller'
+import controller5, { hooks as ctrlHooks1 } from './api/users/controller'
+import controller6 from './api/users/_userId@number/controller'
+import hooks0 from './api/hooks'
+import hooks1 from './api/users/hooks'
 
 export type FrourioOptions = {
   basePath?: string
@@ -205,6 +218,9 @@ const formatMulterData: RequestHandler = ({ body, files }, _res, next) => {
   next()
 }
 
+const margeHook = (...args: (RequestHandler | RequestHandler[] | undefined)[]) =>
+  args.filter(Boolean).flatMap(handler => Array.isArray(handler) ? handler : [handler]) as RequestHandler[]
+
 export default (app: Express, options: FrourioOptions = {}) => {
   const basePath = options.basePath ?? ''
   const uploader = multer(
@@ -212,67 +228,85 @@ export default (app: Express, options: FrourioOptions = {}) => {
   ).any()
 
   app.get(`${basePath}/`, [
-    ...middleware0,
-    ...ctrlMiddleware0,
-    methodsToHandler(controller0.get)
+    ...margeHook(hooks0.onRequest, ctrlHooks0.onRequest),
+    ...margeHook(hooks0.preHandler, ctrlHooks0.preHandler),
+    methodsToHandler(controller0.get),
+    ...margeHook(hooks0.onSend, ctrlHooks0.onSend)
   ])
 
   app.post(`${basePath}/`, [
+    ...margeHook(hooks0.onRequest, ctrlHooks0.onRequest),
+    ...margeHook(hooks0.preParsing, ctrlHooks0.preParsing),
     uploader,
     formatMulterData,
-    ...middleware0,
-    ...ctrlMiddleware0,
-    methodsToHandler(controller0.post)
+    ...margeHook(hooks0.preHandler, ctrlHooks0.preHandler),
+    methodsToHandler(controller0.post),
+    ...margeHook(hooks0.onSend, ctrlHooks0.onSend)
   ])
 
   app.get(`${basePath}/empty/noEmpty`, [
-    ...middleware0,
-    methodsToHandler(controller1.get)
+    ...margeHook(hooks0.onRequest),
+    ...margeHook(hooks0.preHandler),
+    methodsToHandler(controller1.get),
+    ...margeHook(hooks0.onSend)
   ])
 
   app.post(`${basePath}/multiForm`, [
+    ...margeHook(hooks0.onRequest),
+    ...margeHook(hooks0.preParsing),
     uploader,
     formatMulterData,
-    ...middleware0,
-    methodsToHandler(controller2.post)
+    ...margeHook(hooks0.preHandler),
+    methodsToHandler(controller2.post),
+    ...margeHook(hooks0.onSend)
   ])
 
   app.get(`${basePath}/texts`, [
-    ...middleware0,
-    methodsToHandler(controller3.get)
+    ...margeHook(hooks0.onRequest),
+    ...margeHook(hooks0.preHandler),
+    methodsToHandler(controller3.get),
+    ...margeHook(hooks0.onSend)
   ])
 
   app.put(`${basePath}/texts`, [
-    ...middleware0,
-    methodsToHandler(controller3.put)
+    ...margeHook(hooks0.onRequest),
+    ...margeHook(hooks0.preHandler),
+    methodsToHandler(controller3.put),
+    ...margeHook(hooks0.onSend)
   ])
 
   app.put(`${basePath}/texts/sample`, [
+    ...margeHook(hooks0.onRequest),
+    ...margeHook(hooks0.preParsing),
     parseJSONBoby,
-    ...middleware0,
-    methodsToHandler(controller4.put)
+    ...margeHook(hooks0.preHandler),
+    methodsToHandler(controller4.put),
+    ...margeHook(hooks0.onSend)
   ])
 
   app.get(`${basePath}/users`, [
-    ...middleware0,
-    ...middleware1,
-    ...ctrlMiddleware1,
-    methodsToHandler(controller5.get)
+    ...margeHook(hooks0.onRequest, hooks1.onRequest, ctrlHooks1.onRequest),
+    ...margeHook(hooks0.preHandler, hooks1.preHandler, ctrlHooks1.preHandler),
+    methodsToHandler(controller5.get),
+    ...margeHook(hooks0.onSend, hooks1.onSend, ctrlHooks1.onSend)
   ])
 
   app.post(`${basePath}/users`, [
+    ...margeHook(hooks0.onRequest, hooks1.onRequest, ctrlHooks1.onRequest),
+    ...margeHook(hooks0.preParsing, hooks1.preParsing, ctrlHooks1.preParsing),
     parseJSONBoby,
-    ...middleware0,
-    ...middleware1,
-    ...ctrlMiddleware1,
-    methodsToHandler(controller5.post)
+    ...margeHook(hooks0.preHandler, hooks1.preHandler, ctrlHooks1.preHandler),
+    methodsToHandler(controller5.post),
+    ...margeHook(hooks0.onSend, hooks1.onSend, ctrlHooks1.onSend)
   ])
 
   app.get(`${basePath}/users/:userId`, [
+    ...margeHook(hooks0.onRequest, hooks1.onRequest),
+    ...margeHook(hooks0.preValidation, hooks1.preValidation),
     createTypedParamsHandler(['userId']),
-    ...middleware0,
-    ...middleware1,
-    methodsToHandler(controller6.get)
+    ...margeHook(hooks0.preHandler, hooks1.preHandler),
+    methodsToHandler(controller6.get),
+    ...margeHook(hooks0.onSend, hooks1.onSend)
   ])
 
   return app

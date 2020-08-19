@@ -13,7 +13,7 @@ test('createDefaultFilesIfNotExists', () => {
 }
 `)
 
-  expect(fs.readFileSync(`${dir}/@controller.ts`, 'utf8'))
+  expect(fs.readFileSync(`${dir}/controller.ts`, 'utf8'))
     .toBe(`import { createController } from './$relay'
 
 export default createController(() => ({
@@ -21,13 +21,21 @@ export default createController(() => ({
 }))
 `)
 
-  expect(fs.existsSync(`${dir}/@middleware.ts`)).toBeFalsy()
+  expect(fs.existsSync(`${dir}/hooks.ts`)).toBeFalsy()
 
-  fs.writeFileSync(`${dir}/@middleware.ts`, '', 'utf8')
+  fs.writeFileSync(`${dir}/hooks.ts`, '', 'utf8')
   createDefaultFilesIfNotExists(dir)
 
-  expect(fs.readFileSync(`${dir}/@middleware.ts`, 'utf8')).toBe(
-    "import { createMiddleware } from './$relay'\n\nexport default createMiddleware([])\n"
+  expect(fs.readFileSync(`${dir}/hooks.ts`, 'utf8')).toBe(
+    `import { createHooks } from './$relay'
+
+export default createHooks(() => ({
+  onRequest: (req, res, next) => {
+    console.log('Directory level onRequest hook:', req.path)
+    next()
+  }
+}))
+`
   )
 
   fs.rmdirSync(dir, { recursive: true })

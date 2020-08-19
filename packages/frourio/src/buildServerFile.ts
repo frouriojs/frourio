@@ -17,13 +17,26 @@ import {${hasMulter ? '\n  $arrayTypeKeysName,' : ''}
   HttpStatusOk,
   AspidaMethodParams
 } from 'aspida'
+import { Deps } from 'velona'
 import ${hasJSONBody ? 'express, ' : ''}{ Express, RequestHandler${
       hasValidator ? ', Request' : ''
     } } from 'express'${hasMulter ? "\nimport multer, { Options } from 'multer'" : ''}${
       hasValidator ? "\nimport { validateOrReject } from 'class-validator'" : ''
     }
 
-export const createMiddleware = <T extends RequestHandler | RequestHandler[]>(handler: T): T extends RequestHandler[] ? T : [T] => (Array.isArray(handler) ? handler : [handler]) as any
+type Hooks = {
+  onRequest?: RequestHandler | RequestHandler[]
+  preParsing?: RequestHandler | RequestHandler[]
+  preValidation?: RequestHandler | RequestHandler[]
+  preHandler?: RequestHandler | RequestHandler[]
+  onSend?: RequestHandler | RequestHandler[]
+}
+
+export function createHooks(hooks: () => Hooks): Hooks
+export function createHooks<T extends Record<string, any>>(deps: T, cb: (deps: Deps<T>) => Hooks): Hooks & { inject: (d: Deps<T>) => Hooks }
+export function createHooks<T extends Record<string, any>>(hooks: () => Hooks | T, cb?: (deps: Deps<T>) => Hooks) {
+  return typeof hooks === 'function' ? hooks() : { ...cb!(hooks), inject: (d: Deps<T>) => cb!(d) }
+}
 ${imports}
 
 export type FrourioOptions = {
@@ -234,7 +247,14 @@ const formatMulterData: RequestHandler = ({ body, files }, _res, next) => {
 }
 `
     : ''
-}
+}${
+      controllers.includes('margeHook')
+        ? `
+const margeHook = (...args: (RequestHandler | RequestHandler[] | undefined)[]) =>
+  args.filter(Boolean).flatMap(handler => Array.isArray(handler) ? handler : [handler]) as RequestHandler[]
+`
+        : ''
+    }
 export default (app: Express, options: FrourioOptions = {}) => {
   const basePath = options.basePath ?? ''
 ${

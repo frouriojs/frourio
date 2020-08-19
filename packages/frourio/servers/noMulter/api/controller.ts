@@ -1,9 +1,11 @@
-import { createController, createMiddleware } from './$relay'
+import { createController, createHooks } from './$relay'
 
-export const middleware = createMiddleware((req, res, next) => {
-  console.log('Controller level middleware:', req.path)
-  next()
-})
+export const hooks = createHooks(() => ({
+  onRequest: (req, res, next) => {
+    console.log('Controller level onRequest hook:', req.path)
+    next()
+  }
+}))
 
 export default createController(() => ({
   get: async v => {

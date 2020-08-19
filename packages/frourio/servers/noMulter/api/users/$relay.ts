@@ -1,14 +1,14 @@
 /* eslint-disable */
 import { Deps } from 'velona'
-import { ServerMethods, createMiddleware } from '../../$app'
-import { User } from './@middleware'
+import { ServerMethods, createHooks } from '../../$app'
+import { User } from './hooks'
 import { Methods } from './'
 
 type ControllerMethods = ServerMethods<Methods, {
   user: User
 }>
 
-export { createMiddleware }
+export { createHooks }
 
 export function createController(methods: () => ControllerMethods): ControllerMethods
 export function createController<T extends Record<string, any>>(deps: T, cb: (deps: Deps<T>) => ControllerMethods): ControllerMethods & { inject: (d: Deps<T>) => ControllerMethods }

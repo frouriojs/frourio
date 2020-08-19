@@ -17,7 +17,7 @@ export default (dir: string) => {
     )
   }
 
-  const controllerFilePath = path.join(dir, '@controller.ts')
+  const controllerFilePath = path.join(dir, 'controller.ts')
 
   if (!fs.existsSync(controllerFilePath)) {
     fs.writeFileSync(
@@ -32,12 +32,20 @@ export default createController(() => ({
     )
   }
 
-  const middlewareFilePath = path.join(dir, '@middleware.ts')
+  const hooksFilePath = path.join(dir, 'hooks.ts')
 
-  if (fs.existsSync(middlewareFilePath) && !fs.readFileSync(middlewareFilePath, 'utf8')) {
+  if (fs.existsSync(hooksFilePath) && !fs.readFileSync(hooksFilePath, 'utf8')) {
     fs.writeFileSync(
-      middlewareFilePath,
-      "import { createMiddleware } from './$relay'\n\nexport default createMiddleware([])\n",
+      hooksFilePath,
+      `import { createHooks } from './$relay'
+
+export default createHooks(() => ({
+  onRequest: (req, res, next) => {
+    console.log('Directory level onRequest hook:', req.path)
+    next()
+  }
+}))
+`,
       'utf8'
     )
   }

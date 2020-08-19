@@ -6,11 +6,24 @@ import {
   HttpStatusOk,
   AspidaMethodParams
 } from 'aspida'
+import { Deps } from 'velona'
 import { Express, RequestHandler } from 'express'
 
-export const createMiddleware = <T extends RequestHandler | RequestHandler[]>(handler: T): T extends RequestHandler[] ? T : [T] => (Array.isArray(handler) ? handler : [handler]) as any
+type Hooks = {
+  onRequest?: RequestHandler | RequestHandler[]
+  preParsing?: RequestHandler | RequestHandler[]
+  preValidation?: RequestHandler | RequestHandler[]
+  preHandler?: RequestHandler | RequestHandler[]
+  onSend?: RequestHandler | RequestHandler[]
+}
 
-import controller0 from './api/@controller'
+export function createHooks(hooks: () => Hooks): Hooks
+export function createHooks<T extends Record<string, any>>(deps: T, cb: (deps: Deps<T>) => Hooks): Hooks & { inject: (d: Deps<T>) => Hooks }
+export function createHooks<T extends Record<string, any>>(hooks: () => Hooks | T, cb?: (deps: Deps<T>) => Hooks) {
+  return typeof hooks === 'function' ? hooks() : { ...cb!(hooks), inject: (d: Deps<T>) => cb!(d) }
+}
+
+import controller0 from './api/controller'
 
 export type FrourioOptions = {
   basePath?: string
