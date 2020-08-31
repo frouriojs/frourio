@@ -23,7 +23,7 @@
     "server"
   ],
   "dependencies": {
-    "aspida": "^0.20.3",
+    "aspida": "^0.21.0",
     "velona": "^0.5.1"
   }
 }
