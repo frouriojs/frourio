@@ -70,7 +70,7 @@
     "@types/jest": "^26.0.10",
     "@types/multer": "^1.4.4",
     "@typescript-eslint/eslint-plugin": "^3.9.0",
-    "@typescript-eslint/parser": "^3.9.0",
+    "@typescript-eslint/parser": "^3.10.1",
     "axios": "^0.19.2",
     "class-validator": "^0.12.2",
     "eslint": "^7.7.0",
