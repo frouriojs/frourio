@@ -1,3 +1,4 @@
+/* eslint-disable jest/no-done-callback */
 import { Server } from 'http'
 import fs from 'fs'
 import express from 'express'

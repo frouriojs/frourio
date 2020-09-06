@@ -26,12 +26,15 @@ test('build', () => {
       const result = build(input)
       expect(result.text).toBe(fs.readFileSync(result.filePath, 'utf8').replace(/\r/g, ''))
 
-      const [target] = aspidaBuild({
-        input: `${input}/api`,
-        baseURL: '',
-        trailingSlash: false,
-        outputEachDir: false
-      })
+      const [target] = aspidaBuild(
+        {
+          input: `${input}/api`,
+          baseURL: '',
+          trailingSlash: false,
+          outputEachDir: false
+        },
+        true
+      )
       expect(target.text).toBe(fs.readFileSync(target.filePath, 'utf8').replace(/\r/g, ''))
     })
 })

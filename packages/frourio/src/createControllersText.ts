@@ -81,7 +81,9 @@ export function createController<T extends Record<string, any>>(methods: () => C
                 .getProperties()
                 .map(p => {
                   const typeNode = checker.typeToTypeNode(
-                    checker.getTypeOfSymbolAtLocation(p, p.valueDeclaration)
+                    checker.getTypeOfSymbolAtLocation(p, p.valueDeclaration),
+                    undefined,
+                    undefined
                   )
 
                   return {
@@ -126,7 +128,9 @@ export function createController<T extends Record<string, any>>(methods: () => C
             .getProperties()
             .map(p => {
               const typeNode = checker.typeToTypeNode(
-                checker.getTypeOfSymbolAtLocation(p, p.valueDeclaration)
+                checker.getTypeOfSymbolAtLocation(p, p.valueDeclaration),
+                undefined,
+                undefined
               )
 
               return {

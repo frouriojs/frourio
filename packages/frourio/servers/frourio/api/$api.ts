@@ -2,15 +2,17 @@
 import { AspidaClient } from 'aspida'
 import { Methods as Methods0 } from '.'
 
-const GET = 'GET'
 const api = <T>({ baseURL, fetch }: AspidaClient<T>) => {
   const prefix = (baseURL === undefined ? '' : baseURL).replace(/\/$/, '')
+
+  const GET = 'GET'
 
   return {
     get: (option?: { config?: T }) =>
       fetch<Methods0['get']['resBody']>(prefix, '', GET, option).text(),
     $get: (option?: { config?: T }) =>
-      fetch<Methods0['get']['resBody']>(prefix, '', GET, option).text().then(r => r.body)
+      fetch<Methods0['get']['resBody']>(prefix, '', GET, option).text().then(r => r.body),
+    $path: () => `${prefix}${''}`
   }
 }
 
