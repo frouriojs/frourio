@@ -1,7 +1,10 @@
 import path from 'path'
 import fs from 'fs'
-import { parse } from 'aspida/dist/commands'
+import ts from 'typescript'
 import createDefaultFiles from './createDefaultFilesIfNotExists'
+
+const hooksEvents = ['onRequest', 'preParsing', 'preValidation', 'preHandler', 'onSend'] as const
+type HooksEvent = typeof hooksEvents[number]
 
 export default (inputDir: string) => {
   const hooksList: string[] = []
@@ -9,7 +12,7 @@ export default (inputDir: string) => {
 
   const createText = (
     dirPath: string,
-    hooks: string[],
+    hooks: { name: string; events: { type: HooksEvent; isArray: boolean }[] }[],
     params: [string, string][],
     appPath = '$app',
     user = ''
@@ -18,7 +21,7 @@ export default (inputDir: string) => {
     const appText = `../${appPath}`
     const userPath =
       fs.existsSync(path.join(input, 'hooks.ts')) &&
-      parse(fs.readFileSync(path.join(input, 'hooks.ts'), 'utf8'), 'User')
+      /(^|\n)export .+ User(,| )/.test(fs.readFileSync(path.join(input, 'hooks.ts'), 'utf8'))
         ? './hooks'
         : user
         ? `./.${user}`
@@ -50,82 +53,173 @@ export function createController<T extends Record<string, any>>(methods: () => C
 
     createDefaultFiles(input)
 
-    const validatorPrefix = 'Valid'
-    const methods = parse(fs.readFileSync(path.join(input, 'index.ts'), 'utf8'), 'Methods')
+    const indexFile = path.join(input, 'index.ts')
+    const hooksFile = path.join(input, 'hooks.ts')
+    const controllerFile = path.join(input, 'controller.ts')
+    const program = ts.createProgram([indexFile, hooksFile, controllerFile], {})
+    const source = program.getSourceFile(indexFile)
     const results: string[] = []
 
-    if (methods?.length) {
-      if (fs.existsSync(path.join(input, 'hooks.ts'))) {
-        hooks.push(`hooks${hooksList.length}`)
-        hooksList.push(`${input}/hooks`)
-      }
+    if (source) {
+      const checker = program.getTypeChecker()
+      const methods = ts.forEachChild(source, node =>
+        (ts.isTypeAliasDeclaration(node) || ts.isInterfaceDeclaration(node)) &&
+        node.name.escapedText === 'Methods' &&
+        node.modifiers?.some(m => m.kind === ts.SyntaxKind.ExportKeyword)
+          ? checker.getTypeAtLocation(node).getProperties()
+          : undefined
+      )
 
-      const ctrlText = fs.readFileSync(path.join(input, 'controller.ts'), 'utf8')
-      const hasHooks = /export (const|{)(.*[ ,])?hooks[, }=]/.test(ctrlText)
-      const genHookText = (prop: string) =>
-        hooks.length || hasHooks
-          ? `...margeHook(${
-              hooks.length ? `${hooks.join(`.${prop}, `)}.${prop}${hasHooks ? ', ' : ''}` : ''
-            }${hasHooks ? `ctrlHooks${controllers.filter(c => c[1]).length}.${prop}` : ''})`
-          : ''
+      if (methods?.length) {
+        const hooksSource = program.getSourceFile(hooksFile)
 
-      results.push(
-        methods
-          .map(m => {
-            const validateInfo = [
-              { name: 'query', val: m.props.query },
-              { name: 'body', val: m.props.reqBody },
-              { name: 'headers', val: m.props.reqHeaders }
-            ].filter(
-              (prop): prop is { name: string; val: { value: string; hasQuestion: boolean } } =>
-                !!prop.val?.value.startsWith(validatorPrefix)
-            )
+        if (hooksSource) {
+          const events = ts.forEachChild(hooksSource, node => {
+            if (ts.isExportAssignment(node)) {
+              return checker
+                .getTypeAtLocation(node.expression)
+                .getProperties()
+                .map(p => {
+                  const typeNode = checker.typeToTypeNode(
+                    checker.getTypeOfSymbolAtLocation(p, p.valueDeclaration)
+                  )
 
-            const handlers = [
-              genHookText('onRequest'),
-              m.props.reqFormat?.value === 'FormData' || (!m.props.reqFormat && m.props.reqBody)
-                ? genHookText('preParsing')
-                : '',
-              ...(m.props.reqFormat?.value === 'FormData' ? ['uploader', 'formatMulterData'] : []),
-              !m.props.reqFormat && m.props.reqBody ? 'parseJSONBoby' : '',
-              validateInfo.length || dirPath.includes('@number')
-                ? genHookText('preValidation')
-                : '',
-              validateInfo.length
-                ? `createValidateHandler(req => [
+                  return {
+                    type: p.name as HooksEvent,
+                    isArray: typeNode
+                      ? ts.isArrayTypeNode(typeNode) || ts.isTupleTypeNode(typeNode)
+                      : false
+                  }
+                })
+            }
+          })
+
+          if (events) {
+            hooks.push({ name: `hooks${hooksList.length}`, events })
+            hooksList.push(`${input}/hooks`)
+          }
+        }
+
+        const controllerSource = program.getSourceFile(controllerFile)
+        let ctrlHooksNode: ts.Node | undefined
+
+        if (controllerSource) {
+          ctrlHooksNode = ts.forEachChild(controllerSource, node => {
+            if (
+              ts.isVariableStatement(node) &&
+              node.modifiers?.some(m => m.kind === ts.SyntaxKind.ExportKeyword)
+            ) {
+              return node.declarationList.declarations.find(d => d.name.getText() === 'hooks')
+            } else if (ts.isExportDeclaration(node)) {
+              const { exportClause } = node
+              if (exportClause && ts.isNamedExports(exportClause)) {
+                return exportClause.elements.find(el => el.name.text === 'hooks')
+              }
+            }
+          })
+        }
+
+        const ctrlHooksEvents =
+          ctrlHooksNode &&
+          checker
+            .getTypeAtLocation(ctrlHooksNode)
+            .getProperties()
+            .map(p => {
+              const typeNode = checker.typeToTypeNode(
+                checker.getTypeOfSymbolAtLocation(p, p.valueDeclaration)
+              )
+
+              return {
+                type: p.name as HooksEvent,
+                isArray: typeNode
+                  ? ts.isArrayTypeNode(typeNode) || ts.isTupleTypeNode(typeNode)
+                  : false
+              }
+            })
+
+        const genHookTexts = (event: HooksEvent) => [
+          ...hooks.flatMap(h => {
+            const ev = h.events.find(e => e.type === event)
+            return ev ? [`${ev.isArray ? '...' : ''}${h.name}.${event}`] : []
+          }),
+          ...(ctrlHooksEvents?.map(e =>
+            e.type === event
+              ? `${e.isArray ? '...' : ''}ctrlHooks${controllers.filter(c => c[1]).length}.${event}`
+              : ''
+          ) ?? [])
+        ]
+
+        results.push(
+          methods
+            .map(m => {
+              const props = checker.getTypeOfSymbolAtLocation(m, m.valueDeclaration).getProperties()
+              const validateInfo = [
+                { name: 'query', val: props.find(p => p.name === 'query') },
+                { name: 'body', val: props.find(p => p.name === 'reqBody') },
+                { name: 'headers', val: props.find(p => p.name === 'reqHeaders') }
+              ]
+                .filter((prop): prop is { name: string; val: ts.Symbol } => !!prop.val)
+                .map(({ name, val }) => ({
+                  name,
+                  type: checker.getTypeOfSymbolAtLocation(val, val.valueDeclaration),
+                  hasQuestion: val.declarations.some(
+                    d => d.getChildAt(1).kind === ts.SyntaxKind.QuestionToken
+                  )
+                }))
+                .filter(({ type }) => type.isClass())
+
+              const reqFormat = props.find(p => p.name === 'reqFormat')
+              const isFormData =
+                (reqFormat &&
+                  checker.typeToString(
+                    checker.getTypeOfSymbolAtLocation(reqFormat, reqFormat.valueDeclaration)
+                  )) === 'FormData'
+              const reqBody = props.find(p => p.name === 'reqBody')
+
+              const handlers = [
+                ...genHookTexts('onRequest'),
+                ...(isFormData || (!reqFormat && reqBody) ? genHookTexts('preParsing') : []),
+                ...(isFormData ? ['uploader', 'formatMulterData'] : []),
+                !reqFormat && reqBody ? 'parseJSONBoby' : '',
+                ...(validateInfo.length || dirPath.includes('@number')
+                  ? genHookTexts('preValidation')
+                  : []),
+                validateInfo.length
+                  ? `createValidateHandler(req => [
 ${validateInfo
   .map(
     v =>
       `      ${
-        v.val.hasQuestion ? `Object.keys(req.${v.name}).length ? ` : ''
-      }validateOrReject(Object.assign(new Types.${v.val.value}(), req.${v.name}))${
-        v.val.hasQuestion ? ' : null' : ''
+        v.hasQuestion ? `Object.keys(req.${v.name}).length ? ` : ''
+      }validateOrReject(Object.assign(new Types.${checker.typeToString(v.type)}(), req.${v.name}))${
+        v.hasQuestion ? ' : null' : ''
       }`
   )
   .join(',\n')}\n    ])`
-                : '',
-              dirPath.includes('@number')
-                ? `createTypedParamsHandler(['${dirPath
-                    .split('/')
-                    .filter(p => p.includes('@number'))
-                    .map(p => p.split('@')[0].slice(1))
-                    .join("', '")}'])`
-                : '',
-              genHookText('preHandler'),
-              `methodsToHandler(controller${controllers.length}.${m.name})`,
-              genHookText('onSend')
-            ].filter(Boolean)
+                  : '',
+                dirPath.includes('@number')
+                  ? `createTypedParamsHandler(['${dirPath
+                      .split('/')
+                      .filter(p => p.includes('@number'))
+                      .map(p => p.split('@')[0].slice(1))
+                      .join("', '")}'])`
+                  : '',
+                ...genHookTexts('preHandler'),
+                `methodsToHandler(controller${controllers.length}.${m.name})`,
+                ...genHookTexts('onSend')
+              ].filter(Boolean)
 
-            return `  app.${m.name}(\`\${basePath}${`/${dirPath}`
-              .replace(/\/_/g, '/:')
-              .replace(/@.+?($|\/)/g, '')}\`, ${
-              handlers.length === 1 ? handlers[0] : `[\n    ${handlers.join(',\n    ')}\n  ]`
-            })\n`
-          })
-          .join('\n')
-      )
+              return `  app.${m.name}(\`\${basePath}${`/${dirPath}`
+                .replace(/\/_/g, '/:')
+                .replace(/@.+?($|\/)/g, '')}\`, ${
+                handlers.length === 1 ? handlers[0] : `[\n    ${handlers.join(',\n    ')}\n  ]`
+              })\n`
+            })
+            .join('\n')
+        )
 
-      controllers.push([`${input}/controller`, hasHooks])
+        controllers.push([`${input}/controller`, !!ctrlHooksEvents])
+      }
     }
 
     const childrenDirs = fs

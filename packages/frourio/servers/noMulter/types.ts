@@ -1,6 +1,6 @@
 import { IsNumberString, IsBooleanString, IsPort, IsInt, MaxLength } from 'class-validator'
 
-export class ValidQuery {
+export class Query {
   @IsNumberString()
   id: string
 
@@ -8,12 +8,12 @@ export class ValidQuery {
   disable: string
 }
 
-export class ValidBody {
+export class Body {
   @IsPort()
   port: string
 }
 
-export class ValidUserInfo {
+export class UserInfo {
   @IsInt()
   id: number
 

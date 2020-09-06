@@ -32,10 +32,10 @@ type Hooks = {
   onSend?: RequestHandler | RequestHandler[]
 }
 
-export function createHooks(hooks: () => Hooks): Hooks
-export function createHooks<T extends Record<string, any>>(deps: T, cb: (deps: Deps<T>) => Hooks): Hooks & { inject: (d: Deps<T>) => Hooks }
-export function createHooks<T extends Record<string, any>>(hooks: () => Hooks | T, cb?: (deps: Deps<T>) => Hooks) {
-  return typeof hooks === 'function' ? hooks() : { ...cb!(hooks), inject: (d: Deps<T>) => cb!(d) }
+export function createHooks<T extends Hooks>(hooks: () => T): T
+export function createHooks<T extends Hooks, U extends Record<string, any>>(deps: U, cb: (deps: Deps<U>) => T): T & { inject: (d: Deps<U>) => T }
+export function createHooks<T extends Hooks, U extends Record<string, any>>(hooks: () => T | U, cb?: (deps: Deps<U>) => T) {
+  return typeof hooks === 'function' ? hooks() : { ...cb!(hooks), inject: (d: Deps<U>) => cb!(d) }
 }
 ${imports}
 
@@ -247,14 +247,7 @@ const formatMulterData: RequestHandler = ({ body, files }, _res, next) => {
 }
 `
     : ''
-}${
-      controllers.includes('margeHook')
-        ? `
-const margeHook = (...args: (RequestHandler | RequestHandler[] | undefined)[]) =>
-  args.filter(Boolean).flatMap(handler => Array.isArray(handler) ? handler : [handler]) as RequestHandler[]
-`
-        : ''
-    }
+}
 export default (app: Express, options: FrourioOptions = {}) => {
   const basePath = options.basePath ?? ''
 ${

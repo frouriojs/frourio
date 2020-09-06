@@ -1,9 +1,9 @@
-import { ValidMultiForm } from '../../types'
+import { MultiForm } from '../../types'
 
 export type Methods = {
   post: {
     reqFormat: FormData
-    reqBody: ValidMultiForm
+    reqBody: MultiForm
     resBody: {
       empty: number
       name: number

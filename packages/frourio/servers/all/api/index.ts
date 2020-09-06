@@ -1,16 +1,16 @@
-import { ValidQuery, ValidBody } from '../types'
+import { Query, Body } from '../types'
 
 export type Methods = {
   get: {
-    query?: ValidQuery
+    query?: Query
     status: 200
     resBody?: { id: number }
   }
 
   post: {
-    query: ValidQuery
+    query: Query
     reqFormat: FormData
-    reqBody: ValidBody
+    reqBody: Body
     status: 201
     resBody: {
       id: number

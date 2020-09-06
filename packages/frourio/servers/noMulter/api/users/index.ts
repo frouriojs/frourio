@@ -1,11 +1,11 @@
-import { ValidUserInfo } from '../../types'
+import { UserInfo } from '../../types'
 
 export type Methods = {
   get: {
-    resBody: ValidUserInfo[]
+    resBody: UserInfo[]
   }
 
   post: {
-    reqBody: ValidUserInfo
+    reqBody: UserInfo
   }
 }

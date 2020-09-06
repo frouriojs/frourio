@@ -9,7 +9,7 @@ import {
   ArrayNotEmpty
 } from 'class-validator'
 
-export class ValidQuery {
+export class Query {
   @IsNumberString()
   id: string
 
@@ -17,14 +17,14 @@ export class ValidQuery {
   disable: string
 }
 
-export class ValidBody {
+export class Body {
   @IsPort()
   port: string
 
   file: File
 }
 
-export class ValidUserInfo {
+export class UserInfo {
   @IsInt()
   id: number
 
@@ -32,7 +32,7 @@ export class ValidUserInfo {
   name: string
 }
 
-export class ValidMultiForm {
+export class MultiForm {
   @IsInt({ each: true })
   empty: number[]
 

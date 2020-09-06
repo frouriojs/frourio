@@ -8,12 +8,12 @@ export type Body = {
   file: File
 }
 
-export class UserInfo {
+export type UserInfo = {
   id: number
   name: string
 }
 
-export class MultiForm {
+export type MultiForm = {
   empty: number[]
   name: string
   icon: Blob

@@ -1,10 +1,11 @@
 import { createController, createHooks } from './$relay'
+import { depend } from 'velona'
 
-export const hooks = createHooks(() => ({
-  onRequest: (req, res, next) => {
-    console.log('Controller level onRequest hook:', req.path)
+const hooks = createHooks({ print: (...args: string[]) => console.log(...args) }, ({ print }) => ({
+  onRequest: depend({}, (deps, req, res, next) => {
+    print('Controller level onRequest hook:', req.path)
     next()
-  }
+  })
 }))
 
 export default createController(() => ({
@@ -17,3 +18,5 @@ export default createController(() => ({
     body: { id: +v.query.id, port: v.body.port, fileName: v.body.file.originalname }
   })
 }))
+
+export { hooks }

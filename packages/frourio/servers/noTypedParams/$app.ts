@@ -21,10 +21,10 @@ type Hooks = {
   onSend?: RequestHandler | RequestHandler[]
 }
 
-export function createHooks(hooks: () => Hooks): Hooks
-export function createHooks<T extends Record<string, any>>(deps: T, cb: (deps: Deps<T>) => Hooks): Hooks & { inject: (d: Deps<T>) => Hooks }
-export function createHooks<T extends Record<string, any>>(hooks: () => Hooks | T, cb?: (deps: Deps<T>) => Hooks) {
-  return typeof hooks === 'function' ? hooks() : { ...cb!(hooks), inject: (d: Deps<T>) => cb!(d) }
+export function createHooks<T extends Hooks>(hooks: () => T): T
+export function createHooks<T extends Hooks, U extends Record<string, any>>(deps: U, cb: (deps: Deps<U>) => T): T & { inject: (d: Deps<U>) => T }
+export function createHooks<T extends Hooks, U extends Record<string, any>>(hooks: () => T | U, cb?: (deps: Deps<U>) => T) {
+  return typeof hooks === 'function' ? hooks() : { ...cb!(hooks), inject: (d: Deps<U>) => cb!(d) }
 }
 
 import * as Types from './types'
@@ -201,9 +201,6 @@ const formatMulterData: RequestHandler = ({ body, files }, _res, next) => {
   next()
 }
 
-const margeHook = (...args: (RequestHandler | RequestHandler[] | undefined)[]) =>
-  args.filter(Boolean).flatMap(handler => Array.isArray(handler) ? handler : [handler]) as RequestHandler[]
-
 export default (app: Express, options: FrourioOptions = {}) => {
   const basePath = options.basePath ?? ''
   const uploader = multer(
@@ -211,93 +208,73 @@ export default (app: Express, options: FrourioOptions = {}) => {
   ).any()
 
   app.get(`${basePath}/`, [
-    ...margeHook(hooks0.onRequest, ctrlHooks0.onRequest),
-    ...margeHook(hooks0.preValidation, ctrlHooks0.preValidation),
+    hooks0.onRequest,
+    ctrlHooks0.onRequest,
     createValidateHandler(req => [
-      Object.keys(req.query).length ? validateOrReject(Object.assign(new Types.ValidQuery(), req.query)) : null
+      Object.keys(req.query).length ? validateOrReject(Object.assign(new Types.Query(), req.query)) : null
     ]),
-    ...margeHook(hooks0.preHandler, ctrlHooks0.preHandler),
-    methodsToHandler(controller0.get),
-    ...margeHook(hooks0.onSend, ctrlHooks0.onSend)
+    methodsToHandler(controller0.get)
   ])
 
   app.post(`${basePath}/`, [
-    ...margeHook(hooks0.onRequest, ctrlHooks0.onRequest),
-    ...margeHook(hooks0.preParsing, ctrlHooks0.preParsing),
+    hooks0.onRequest,
+    ctrlHooks0.onRequest,
     uploader,
     formatMulterData,
-    ...margeHook(hooks0.preValidation, ctrlHooks0.preValidation),
     createValidateHandler(req => [
-      validateOrReject(Object.assign(new Types.ValidQuery(), req.query)),
-      validateOrReject(Object.assign(new Types.ValidBody(), req.body))
+      validateOrReject(Object.assign(new Types.Query(), req.query)),
+      validateOrReject(Object.assign(new Types.Body(), req.body))
     ]),
-    ...margeHook(hooks0.preHandler, ctrlHooks0.preHandler),
-    methodsToHandler(controller0.post),
-    ...margeHook(hooks0.onSend, ctrlHooks0.onSend)
+    methodsToHandler(controller0.post)
   ])
 
   app.get(`${basePath}/empty/noEmpty`, [
-    ...margeHook(hooks0.onRequest),
-    ...margeHook(hooks0.preHandler),
-    methodsToHandler(controller1.get),
-    ...margeHook(hooks0.onSend)
+    hooks0.onRequest,
+    methodsToHandler(controller1.get)
   ])
 
   app.post(`${basePath}/multiForm`, [
-    ...margeHook(hooks0.onRequest),
-    ...margeHook(hooks0.preParsing),
+    hooks0.onRequest,
     uploader,
     formatMulterData,
-    ...margeHook(hooks0.preValidation),
     createValidateHandler(req => [
-      validateOrReject(Object.assign(new Types.ValidMultiForm(), req.body))
+      validateOrReject(Object.assign(new Types.MultiForm(), req.body))
     ]),
-    ...margeHook(hooks0.preHandler),
-    methodsToHandler(controller2.post),
-    ...margeHook(hooks0.onSend)
+    methodsToHandler(controller2.post)
   ])
 
   app.get(`${basePath}/texts`, [
-    ...margeHook(hooks0.onRequest),
-    ...margeHook(hooks0.preHandler),
-    methodsToHandler(controller3.get),
-    ...margeHook(hooks0.onSend)
+    hooks0.onRequest,
+    methodsToHandler(controller3.get)
   ])
 
   app.put(`${basePath}/texts`, [
-    ...margeHook(hooks0.onRequest),
-    ...margeHook(hooks0.preHandler),
-    methodsToHandler(controller3.put),
-    ...margeHook(hooks0.onSend)
+    hooks0.onRequest,
+    methodsToHandler(controller3.put)
   ])
 
   app.put(`${basePath}/texts/sample`, [
-    ...margeHook(hooks0.onRequest),
-    ...margeHook(hooks0.preParsing),
+    hooks0.onRequest,
     parseJSONBoby,
-    ...margeHook(hooks0.preHandler),
-    methodsToHandler(controller4.put),
-    ...margeHook(hooks0.onSend)
+    methodsToHandler(controller4.put)
   ])
 
   app.get(`${basePath}/users`, [
-    ...margeHook(hooks0.onRequest, hooks1.onRequest, ctrlHooks1.onRequest),
-    ...margeHook(hooks0.preHandler, hooks1.preHandler, ctrlHooks1.preHandler),
-    methodsToHandler(controller5.get),
-    ...margeHook(hooks0.onSend, hooks1.onSend, ctrlHooks1.onSend)
+    hooks0.onRequest,
+    hooks1.onRequest,
+    ...ctrlHooks1.preHandler,
+    methodsToHandler(controller5.get)
   ])
 
   app.post(`${basePath}/users`, [
-    ...margeHook(hooks0.onRequest, hooks1.onRequest, ctrlHooks1.onRequest),
-    ...margeHook(hooks0.preParsing, hooks1.preParsing, ctrlHooks1.preParsing),
+    hooks0.onRequest,
+    hooks1.onRequest,
     parseJSONBoby,
-    ...margeHook(hooks0.preValidation, hooks1.preValidation, ctrlHooks1.preValidation),
     createValidateHandler(req => [
-      validateOrReject(Object.assign(new Types.ValidUserInfo(), req.body))
+      validateOrReject(Object.assign(new Types.UserInfo(), req.body))
     ]),
-    ...margeHook(hooks0.preHandler, hooks1.preHandler, ctrlHooks1.preHandler),
-    methodsToHandler(controller5.post),
-    ...margeHook(hooks0.onSend, hooks1.onSend, ctrlHooks1.onSend)
+    ...ctrlHooks1.preHandler,
+    methodsToHandler(controller5.post)
   ])
 
   return app
