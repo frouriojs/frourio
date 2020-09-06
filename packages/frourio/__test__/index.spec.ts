@@ -4,7 +4,6 @@ import fs from 'fs'
 import express from 'express'
 import FormData from 'form-data'
 import axios from 'axios'
-import { $arrayTypeKeysName } from 'aspida'
 import aspida from '@aspida/axios'
 import api from '../servers/all/api/$api'
 import frourio from '../servers/all/$app'
@@ -87,12 +86,10 @@ test('POST: multi file upload', async () => {
   form.append('icon', fileST)
   form.append('files', fileST)
   form.append('files', fileST)
-  form.append($arrayTypeKeysName, ['empty', 'vals', 'files'].join(','))
   const res = await axios.post(`${baseURL}/multiForm`, form, {
     headers: form.getHeaders()
   })
   expect(res.data).toEqual({
-    [$arrayTypeKeysName]: undefined,
     empty: 0,
     name: -1,
     icon: -1,
@@ -108,7 +105,6 @@ test('POST: 400', async () => {
   form.append('name', 'sample')
   form.append('vals', 'dammy')
   form.append('icon', fileST)
-  form.append($arrayTypeKeysName, ['empty', 'vals', 'files'].join(','))
 
   await expect(
     axios.post(`${baseURL}/multiForm`, form, {
