@@ -33,8 +33,10 @@ export class UserInfo {
 }
 
 export class MultiForm {
+  optionalArr?: string[]
+
   @IsInt({ each: true })
-  empty: number[]
+  empty?: number[]
 
   @IsString()
   name: string

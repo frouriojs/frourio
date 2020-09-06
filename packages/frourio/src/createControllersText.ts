@@ -183,7 +183,29 @@ export function createController<T extends Record<string, any>>(methods: () => C
               const handlers = [
                 ...genHookTexts('onRequest'),
                 ...(isFormData || (!reqFormat && reqBody) ? genHookTexts('preParsing') : []),
-                ...(isFormData ? ['uploader', 'formatMulterData'] : []),
+                ...(isFormData && reqBody
+                  ? [
+                      'uploader',
+                      `formatMulterData([${checker
+                        .getTypeOfSymbolAtLocation(reqBody, reqBody.valueDeclaration)
+                        .getProperties()
+                        .map(p => {
+                          const node = checker.typeToTypeNode(
+                            checker.getTypeOfSymbolAtLocation(p, p.valueDeclaration),
+                            undefined,
+                            undefined
+                          )
+
+                          return node && (ts.isArrayTypeNode(node) || ts.isTupleTypeNode(node))
+                            ? `['${p.name}', ${p.declarations.some(d =>
+                                d.getChildren().some(c => c.kind === ts.SyntaxKind.QuestionToken)
+                              )}]`
+                            : undefined
+                        })
+                        .filter(Boolean)
+                        .join(', ')}])`
+                    ]
+                  : []),
                 !reqFormat && reqBody ? 'parseJSONBoby' : '',
                 ...(validateInfo.length || dirPath.includes('@number')
                   ? genHookTexts('preValidation')

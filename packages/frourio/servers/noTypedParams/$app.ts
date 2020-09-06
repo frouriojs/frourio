@@ -1,7 +1,6 @@
 /* eslint-disable */
 import path from 'path'
 import {
-  $arrayTypeKeysName,
   LowerHttpMethod,
   AspidaMethods,
   HttpMethod,
@@ -167,35 +166,24 @@ const methodsToHandler = (
   }
 }
 
-const formatMulterData: RequestHandler = ({ body, files }, _res, next) => {
-  if (body[$arrayTypeKeysName]) {
-    const arrayTypeKeys: string[] = body[$arrayTypeKeysName].split(',')
-
-    for (const key of arrayTypeKeys) {
-      if (body[key] === undefined) body[key] = []
-      else if (!Array.isArray(body[key])) {
-        body[key] = [body[key]]
-      }
+const formatMulterData = (arrayTypeKeys: [string, boolean][]): RequestHandler => ({ body, files }, _res, next) => {
+  for (const [key] of arrayTypeKeys) {
+    if (body[key] === undefined) body[key] = []
+    else if (!Array.isArray(body[key])) {
+      body[key] = [body[key]]
     }
+  }
 
-    for (const file of files as MulterFile[]) {
-      if (Array.isArray(body[file.fieldname])) {
-        body[file.fieldname].push(file)
-      } else {
-        body[file.fieldname] = file
-      }
+  for (const file of files as MulterFile[]) {
+    if (Array.isArray(body[file.fieldname])) {
+      body[file.fieldname].push(file)
+    } else {
+      body[file.fieldname] = file
     }
+  }
 
-    delete body[$arrayTypeKeysName]
-  } else {
-    for (const file of files as MulterFile[]) {
-      if (Array.isArray(body[file.fieldname])) {
-        body[file.fieldname].push(file)
-      } else {
-        body[file.fieldname] =
-          body[file.fieldname] === undefined ? file : [body[file.fieldname], file]
-      }
-    }
+  for (const [key, isOptional] of arrayTypeKeys) {
+    if (!body[key].length && isOptional) delete body[key]
   }
 
   next()
@@ -220,7 +208,7 @@ export default (app: Express, options: FrourioOptions = {}) => {
     hooks0.onRequest,
     ctrlHooks0.onRequest,
     uploader,
-    formatMulterData,
+    formatMulterData([]),
     createValidateHandler(req => [
       validateOrReject(Object.assign(new Types.Query(), req.query)),
       validateOrReject(Object.assign(new Types.Body(), req.body))
@@ -236,7 +224,7 @@ export default (app: Express, options: FrourioOptions = {}) => {
   app.post(`${basePath}/multiForm`, [
     hooks0.onRequest,
     uploader,
-    formatMulterData,
+    formatMulterData([['empty', false], ['vals', false], ['files', false]]),
     createValidateHandler(req => [
       validateOrReject(Object.assign(new Types.MultiForm(), req.body))
     ]),

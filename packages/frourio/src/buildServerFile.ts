@@ -3,14 +3,14 @@ import createControllersText from './createControllersText'
 
 export default (input: string) => {
   const { imports, controllers } = createControllersText(`${input}/api`)
-  const hasJSONBody = controllers.includes('parseJSONBoby,')
-  const hasTypedParams = controllers.includes('createTypedParamsHandler(')
-  const hasValidator = controllers.includes('validateOrReject(')
-  const hasMulter = controllers.includes('formatMulterData,')
+  const hasJSONBody = controllers.includes('  parseJSONBoby,')
+  const hasTypedParams = controllers.includes('  createTypedParamsHandler(')
+  const hasValidator = controllers.includes('  validateOrReject(')
+  const hasMulter = controllers.includes('  uploader,')
 
   return {
     text: `/* eslint-disable */${hasMulter ? "\nimport path from 'path'" : ''}
-import {${hasMulter ? '\n  $arrayTypeKeysName,' : ''}
+import {
   LowerHttpMethod,
   AspidaMethods,
   HttpMethod,
@@ -212,35 +212,24 @@ const methodsToHandler = (
 ${
   hasMulter
     ? `
-const formatMulterData: RequestHandler = ({ body, files }, _res, next) => {
-  if (body[$arrayTypeKeysName]) {
-    const arrayTypeKeys: string[] = body[$arrayTypeKeysName].split(',')
-
-    for (const key of arrayTypeKeys) {
-      if (body[key] === undefined) body[key] = []
-      else if (!Array.isArray(body[key])) {
-        body[key] = [body[key]]
-      }
+const formatMulterData = (arrayTypeKeys: [string, boolean][]): RequestHandler => ({ body, files }, _res, next) => {
+  for (const [key] of arrayTypeKeys) {
+    if (body[key] === undefined) body[key] = []
+    else if (!Array.isArray(body[key])) {
+      body[key] = [body[key]]
     }
+  }
 
-    for (const file of files as MulterFile[]) {
-      if (Array.isArray(body[file.fieldname])) {
-        body[file.fieldname].push(file)
-      } else {
-        body[file.fieldname] = file
-      }
+  for (const file of files as MulterFile[]) {
+    if (Array.isArray(body[file.fieldname])) {
+      body[file.fieldname].push(file)
+    } else {
+      body[file.fieldname] = file
     }
+  }
 
-    delete body[$arrayTypeKeysName]
-  } else {
-    for (const file of files as MulterFile[]) {
-      if (Array.isArray(body[file.fieldname])) {
-        body[file.fieldname].push(file)
-      } else {
-        body[file.fieldname] =
-          body[file.fieldname] === undefined ? file : [body[file.fieldname], file]
-      }
-    }
+  for (const [key, isOptional] of arrayTypeKeys) {
+    if (!body[key].length && isOptional) delete body[key]
   }
 
   next()
