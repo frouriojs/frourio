@@ -3,6 +3,7 @@ import createControllersText from './createControllersText'
 
 export default (input: string) => {
   const { imports, controllers } = createControllersText(`${input}/api`)
+  const hasNumberTypeQuery = controllers.includes('  parseNumberTypeQueryParams(')
   const hasJSONBody = controllers.includes('  parseJSONBoby,')
   const hasTypedParams = controllers.includes('  createTypedParamsHandler(')
   const hasValidator = controllers.includes('  validateOrReject(')
@@ -140,8 +141,49 @@ export type ServerMethods<T extends AspidaMethods, U extends ServerValues> = {
   ) => ServerResponse<T[K]> | Promise<ServerResponse<T[K]>>
 }
 ${
-  hasJSONBody
+  hasNumberTypeQuery
     ? `
+const parseNumberTypeQueryParams = (numberTypeParams: [string, boolean, boolean][]): RequestHandler => ({ query }, res, next) => {
+  for (const [key, isOptional, isArray] of numberTypeParams) {
+    const param = query[key]
+
+    if (isArray) {
+      if (!isOptional && param === undefined) {
+        query[key] = []
+      } else if (!isOptional || param !== undefined) {
+        if (!Array.isArray(param)) {
+          res.sendStatus(400)
+          return
+        }
+
+        const vals = (param as string[]).map(Number)
+
+        if (vals.some(isNaN)) {
+          res.sendStatus(400)
+          return
+        }
+
+        query[key] = vals as any
+      }
+    } else if (!isOptional || param !== undefined) {
+      const val = Number(param)
+
+      if (isNaN(val)) {
+        res.sendStatus(400)
+        return
+      }
+
+      query[key] = val as any
+    }
+  }
+
+  next()
+}
+`
+    : ''
+}${
+      hasJSONBody
+        ? `
 const parseJSONBoby: RequestHandler = (req, res, next) => {
   express.json()(req, res, err => {
     if (err) return res.sendStatus(400)
@@ -150,8 +192,8 @@ const parseJSONBoby: RequestHandler = (req, res, next) => {
   })
 }
 `
-    : ''
-}${
+        : ''
+    }${
       hasTypedParams
         ? `
 const createTypedParamsHandler = (numberTypeParams: string[]): RequestHandler => (

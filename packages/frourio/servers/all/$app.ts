@@ -131,6 +131,43 @@ export type ServerMethods<T extends AspidaMethods, U extends ServerValues> = {
   ) => ServerResponse<T[K]> | Promise<ServerResponse<T[K]>>
 }
 
+const parseNumberTypeQueryParams = (numberTypeParams: [string, boolean, boolean][]): RequestHandler => ({ query }, res, next) => {
+  for (const [key, isOptional, isArray] of numberTypeParams) {
+    const param = query[key]
+
+    if (isArray) {
+      if (!isOptional && param === undefined) {
+        query[key] = []
+      } else if (!isOptional || param !== undefined) {
+        if (!Array.isArray(param)) {
+          res.sendStatus(400)
+          return
+        }
+
+        const vals = (param as string[]).map(Number)
+
+        if (vals.some(isNaN)) {
+          res.sendStatus(400)
+          return
+        }
+
+        query[key] = vals as any
+      }
+    } else if (!isOptional || param !== undefined) {
+      const val = Number(param)
+
+      if (isNaN(val)) {
+        res.sendStatus(400)
+        return
+      }
+
+      query[key] = val as any
+    }
+  }
+
+  next()
+}
+
 const parseJSONBoby: RequestHandler = (req, res, next) => {
   express.json()(req, res, err => {
     if (err) return res.sendStatus(400)
@@ -221,6 +258,7 @@ export default (app: Express, options: FrourioOptions = {}) => {
   app.get(`${basePath}/`, [
     ...hooks0.onRequest,
     ctrlHooks0.onRequest,
+    parseNumberTypeQueryParams([['requiredNum', false, false], ['optionalNum', true, false], ['optionalNumArr', true, true], ['emptyNum', true, false], ['requiredNumArr', false, true]]),
     createValidateHandler(req => [
       Object.keys(req.query).length ? validateOrReject(Object.assign(new Types.Query(), req.query)) : null
     ]),
@@ -231,6 +269,7 @@ export default (app: Express, options: FrourioOptions = {}) => {
     ...hooks0.onRequest,
     ctrlHooks0.onRequest,
     hooks0.preParsing,
+    parseNumberTypeQueryParams([['requiredNum', false, false], ['optionalNum', true, false], ['optionalNumArr', true, true], ['emptyNum', true, false], ['requiredNumArr', false, true]]),
     uploader,
     formatMulterData([]),
     createValidateHandler(req => [

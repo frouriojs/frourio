@@ -23,7 +23,9 @@ afterEach(fn => {
 })
 
 test('GET: 200', async () => {
-  const res = await client.$get({ query: { id: '1', disable: 'false' } })
+  const res = await client.$get({
+    query: { requiredNum: 1, requiredNumArr: [1, 2], id: '1', disable: 'false' }
+  })
   expect(res?.id).toBe(1)
 })
 
@@ -41,14 +43,14 @@ test('GET: params.userId', async () => {
 
 test('GET: 400', async () => {
   await Promise.all([
-    expect(client.get({ query: { id: '1', disable: 'no boolean' } })).rejects.toHaveProperty(
-      'response.status',
-      400
-    ),
-    expect(client.get({ query: { id: 'no number', disable: 'true' } })).rejects.toHaveProperty(
-      'response.status',
-      400
-    )
+    expect(
+      client.get({ query: { requiredNum: 0, requiredNumArr: [], id: '1', disable: 'no boolean' } })
+    ).rejects.toHaveProperty('response.status', 400),
+    expect(
+      client.get({
+        query: { requiredNum: 1, requiredNumArr: [1, 2], id: 'no number', disable: 'true' }
+      })
+    ).rejects.toHaveProperty('response.status', 400)
   ])
 })
 
@@ -70,7 +72,7 @@ test('POST: formdata', async () => {
   form.append('file', fs.createReadStream(fileName))
   const res = await axios.post(baseURL, form, {
     headers: form.getHeaders(),
-    params: { id: 1, disable: true }
+    params: { requiredNum: 0, requiredNumArr: [], id: 1, disable: true }
   })
   expect(res.data.port).toBe(port)
   expect(res.data.fileName).toBe(fileName)

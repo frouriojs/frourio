@@ -157,8 +157,29 @@ export function createController<T extends Record<string, any>>(methods: () => C
           methods
             .map(m => {
               const props = checker.getTypeOfSymbolAtLocation(m, m.valueDeclaration).getProperties()
+              const query = props.find(p => p.name === 'query')
+              const numberTypeQueryParams =
+                query &&
+                checker
+                  .getTypeOfSymbolAtLocation(query, query.valueDeclaration)
+                  .getProperties()
+                  .map(p => {
+                    const typeString = checker.typeToString(
+                      checker.getTypeOfSymbolAtLocation(p, p.valueDeclaration)
+                    )
+                    return typeString === 'number'
+                      ? `['${p.name}', ${p.declarations.some(d =>
+                          d.getChildren().some(c => c.kind === ts.SyntaxKind.QuestionToken)
+                        )}, false]`
+                      : typeString === 'number[]'
+                      ? `['${p.name}', ${p.declarations.some(d =>
+                          d.getChildren().some(c => c.kind === ts.SyntaxKind.QuestionToken)
+                        )}, true]`
+                      : null
+                  })
+                  .filter(Boolean)
               const validateInfo = [
-                { name: 'query', val: props.find(p => p.name === 'query') },
+                { name: 'query', val: query },
                 { name: 'body', val: props.find(p => p.name === 'reqBody') },
                 { name: 'headers', val: props.find(p => p.name === 'reqHeaders') }
               ]
@@ -183,6 +204,9 @@ export function createController<T extends Record<string, any>>(methods: () => C
               const handlers = [
                 ...genHookTexts('onRequest'),
                 ...(isFormData || (!reqFormat && reqBody) ? genHookTexts('preParsing') : []),
+                numberTypeQueryParams && numberTypeQueryParams.length
+                  ? `parseNumberTypeQueryParams([${numberTypeQueryParams.join(', ')}])`
+                  : '',
                 ...(isFormData && reqBody
                   ? [
                       'uploader',

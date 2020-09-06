@@ -11,6 +11,16 @@ import {
 } from 'class-validator'
 
 export class Query {
+  requiredNum: number
+  optionalNum?: number
+  optionalNumArr?: Array<number>
+
+  @IsOptional()
+  emptyNum?: number
+
+  @IsInt({ each: true })
+  requiredNumArr: number[]
+
   @IsNumberString()
   id: string
 
