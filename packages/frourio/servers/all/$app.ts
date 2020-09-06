@@ -254,7 +254,7 @@ export default (app: Express, options: FrourioOptions = {}) => {
     ...hooks0.onRequest,
     hooks0.preParsing,
     uploader,
-    formatMulterData([['optionalArr', true], ['empty', true], ['vals', false], ['files', false]]),
+    formatMulterData([['requiredArr', false], ['optionalArr', true], ['empty', true], ['vals', false], ['files', false]]),
     createValidateHandler(req => [
       validateOrReject(Object.assign(new Types.MultiForm(), req.body))
     ]),

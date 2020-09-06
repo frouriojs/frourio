@@ -59,8 +59,7 @@ test('GET: 500', async () => {
 test('PUT: JSON', async () => {
   const id = 'abcd'
   const res = await client.texts.sample.$put({ body: { id } })
-  // eslint-disable-next-line
-  expect(res!.id).toBe(id)
+  expect(res?.id).toBe(id)
 })
 
 test('POST: formdata', async () => {
@@ -81,6 +80,7 @@ test('POST: multi file upload', async () => {
   const fileName = 'tsconfig.json'
   const form = new FormData()
   const fileST = fs.createReadStream(fileName)
+  form.append('optionalArr', 'sample')
   form.append('name', 'sample')
   form.append('vals', 'dammy')
   form.append('icon', fileST)
@@ -89,8 +89,10 @@ test('POST: multi file upload', async () => {
   const res = await axios.post(`${baseURL}/multiForm`, form, {
     headers: form.getHeaders()
   })
+
   expect(res.data).toEqual({
-    empty: 0,
+    requiredArr: 0,
+    optionalArr: 1,
     name: -1,
     icon: -1,
     vals: 1,

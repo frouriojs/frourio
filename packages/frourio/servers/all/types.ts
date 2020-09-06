@@ -6,6 +6,7 @@ import {
   MaxLength,
   IsString,
   Allow,
+  IsOptional,
   ArrayNotEmpty
 } from 'class-validator'
 
@@ -33,8 +34,10 @@ export class UserInfo {
 }
 
 export class MultiForm {
+  requiredArr: string[]
   optionalArr?: string[]
 
+  @IsOptional()
   @IsInt({ each: true })
   empty?: number[]
 
