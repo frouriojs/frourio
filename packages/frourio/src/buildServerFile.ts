@@ -38,7 +38,8 @@ export function createHooks<T extends Hooks, U extends Record<string, any>>(deps
 export function createHooks<T extends Hooks, U extends Record<string, any>>(hooks: () => T | U, cb?: (deps: Deps<U>) => T) {
   return typeof hooks === 'function' ? hooks() : { ...cb!(hooks), inject: (d: Deps<U>) => cb!(d) }
 }
-${imports}
+
+${hasValidator ? `import * as Validators from './validators'${imports ? '\n' : ''}` : ''}${imports}
 
 export type FrourioOptions = {
   basePath?: string

@@ -26,7 +26,7 @@ export function createHooks<T extends Hooks, U extends Record<string, any>>(hook
   return typeof hooks === 'function' ? hooks() : { ...cb!(hooks), inject: (d: Deps<U>) => cb!(d) }
 }
 
-import * as Types from './types'
+import * as Validators from './validators'
 import controller0, { hooks as ctrlHooks0 } from './api/controller'
 import controller1 from './api/500/controller'
 import controller2 from './api/empty/noEmpty/controller'
@@ -260,7 +260,7 @@ export default (app: Express, options: FrourioOptions = {}) => {
     ctrlHooks0.onRequest,
     parseNumberTypeQueryParams([['requiredNum', false, false], ['optionalNum', true, false], ['optionalNumArr', true, true], ['emptyNum', true, false], ['requiredNumArr', false, true]]),
     createValidateHandler(req => [
-      Object.keys(req.query).length ? validateOrReject(Object.assign(new Types.Query(), req.query)) : null
+      Object.keys(req.query).length ? validateOrReject(Object.assign(new Validators.Query(), req.query)) : null
     ]),
     methodsToHandler(controller0.get)
   ])
@@ -273,8 +273,8 @@ export default (app: Express, options: FrourioOptions = {}) => {
     uploader,
     formatMulterData([]),
     createValidateHandler(req => [
-      validateOrReject(Object.assign(new Types.Query(), req.query)),
-      validateOrReject(Object.assign(new Types.Body(), req.body))
+      validateOrReject(Object.assign(new Validators.Query(), req.query)),
+      validateOrReject(Object.assign(new Validators.Body(), req.body))
     ]),
     methodsToHandler(controller0.post)
   ])
@@ -295,7 +295,7 @@ export default (app: Express, options: FrourioOptions = {}) => {
     uploader,
     formatMulterData([['requiredArr', false], ['optionalArr', true], ['empty', true], ['vals', false], ['files', false]]),
     createValidateHandler(req => [
-      validateOrReject(Object.assign(new Types.MultiForm(), req.body))
+      validateOrReject(Object.assign(new Validators.MultiForm(), req.body))
     ]),
     methodsToHandler(controller3.post)
   ])
@@ -330,7 +330,7 @@ export default (app: Express, options: FrourioOptions = {}) => {
     hooks0.preParsing,
     parseJSONBoby,
     createValidateHandler(req => [
-      validateOrReject(Object.assign(new Types.UserInfo(), req.body))
+      validateOrReject(Object.assign(new Validators.UserInfo(), req.body))
     ]),
     ...ctrlHooks1.preHandler,
     methodsToHandler(controller6.post)

@@ -24,7 +24,7 @@ export function createHooks<T extends Hooks, U extends Record<string, any>>(hook
   return typeof hooks === 'function' ? hooks() : { ...cb!(hooks), inject: (d: Deps<U>) => cb!(d) }
 }
 
-import * as Types from './types'
+import * as Validators from './validators'
 import controller0, { hooks as ctrlHooks0 } from './api/controller'
 import controller1 from './api/empty/noEmpty/controller'
 import controller2 from './api/texts/controller'
@@ -179,7 +179,7 @@ export default (app: Express, options: FrourioOptions = {}) => {
     hooks0.onRequest,
     ctrlHooks0.onRequest,
     createValidateHandler(req => [
-      Object.keys(req.query).length ? validateOrReject(Object.assign(new Types.Query(), req.query)) : null
+      Object.keys(req.query).length ? validateOrReject(Object.assign(new Validators.Query(), req.query)) : null
     ]),
     methodsToHandler(controller0.get)
   ])
@@ -189,8 +189,8 @@ export default (app: Express, options: FrourioOptions = {}) => {
     ctrlHooks0.onRequest,
     parseJSONBoby,
     createValidateHandler(req => [
-      validateOrReject(Object.assign(new Types.Query(), req.query)),
-      validateOrReject(Object.assign(new Types.Body(), req.body))
+      validateOrReject(Object.assign(new Validators.Query(), req.query)),
+      validateOrReject(Object.assign(new Validators.Body(), req.body))
     ]),
     methodsToHandler(controller0.post)
   ])
@@ -228,7 +228,7 @@ export default (app: Express, options: FrourioOptions = {}) => {
     hooks1.onRequest,
     parseJSONBoby,
     createValidateHandler(req => [
-      validateOrReject(Object.assign(new Types.UserInfo(), req.body))
+      validateOrReject(Object.assign(new Validators.UserInfo(), req.body))
     ]),
     ...ctrlHooks1.preHandler,
     methodsToHandler(controller4.post)

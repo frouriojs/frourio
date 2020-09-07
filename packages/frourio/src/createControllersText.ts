@@ -241,9 +241,9 @@ ${validateInfo
     v =>
       `      ${
         v.hasQuestion ? `Object.keys(req.${v.name}).length ? ` : ''
-      }validateOrReject(Object.assign(new Types.${checker.typeToString(v.type)}(), req.${v.name}))${
-        v.hasQuestion ? ' : null' : ''
-      }`
+      }validateOrReject(Object.assign(new Validators.${checker.typeToString(v.type)}(), req.${
+        v.name
+      }))${v.hasQuestion ? ' : null' : ''}`
   )
   .join(',\n')}\n    ])`
                   : '',
@@ -307,9 +307,7 @@ ${validateInfo
   const ctrlHooks = controllers.filter(c => c[1])
 
   return {
-    imports: `\n${
-      text.includes('validateOrReject') ? "import * as Types from './types'\n" : ''
-    }${controllers
+    imports: `${controllers
       .map(
         (ctrl, i) =>
           `import controller${i}${
