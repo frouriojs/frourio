@@ -1,8 +1,8 @@
 import path from 'path'
-import createControllersText from './createControllersText'
+import defineControllersText from './defineControllersText'
 
 export default (input: string) => {
-  const { imports, controllers } = createControllersText(`${input}/api`)
+  const { imports, controllers } = defineControllersText(`${input}/api`)
   const hasNumberTypeQuery = controllers.includes('  parseNumberTypeQueryParams(')
   const hasJSONBody = controllers.includes('  parseJSONBoby,')
   const hasTypedParams = controllers.includes('  createTypedParamsHandler(')

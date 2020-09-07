@@ -22,9 +22,9 @@ export default (dir: string) => {
   if (!fs.existsSync(controllerFilePath)) {
     fs.writeFileSync(
       controllerFilePath,
-      `import { createController } from './$relay'
+      `import { defineController } from './$relay'
 
-export default createController(() => ({
+export default defineController(() => ({
   get: () => ({ status: 200, body: 'Hello' })
 }))
 `,

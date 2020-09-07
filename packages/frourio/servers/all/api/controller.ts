@@ -1,4 +1,4 @@
-import { createController, defineHooks } from './$relay'
+import { defineController, defineHooks } from './$relay'
 import { depend } from 'velona'
 
 const hooks = defineHooks({ print: (...args: string[]) => console.log(...args) }, ({ print }) => ({
@@ -8,7 +8,7 @@ const hooks = defineHooks({ print: (...args: string[]) => console.log(...args) }
   })
 }))
 
-export default createController(() => ({
+export default defineController(() => ({
   get: async v => {
     return await { status: 200, body: { id: +(v.query?.id || 0) } }
   },

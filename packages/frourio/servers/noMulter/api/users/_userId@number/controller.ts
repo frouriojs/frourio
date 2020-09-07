@@ -1,5 +1,5 @@
-import { createController } from './$relay'
+import { defineController } from './$relay'
 
-export default createController(() => ({
+export default defineController(() => ({
   get: ({ params }) => ({ status: 200, body: { id: params.userId, name: 'bbb' } })
 }))

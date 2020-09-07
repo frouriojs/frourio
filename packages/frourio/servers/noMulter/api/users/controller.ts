@@ -1,4 +1,4 @@
-import { createController, defineHooks } from './$relay'
+import { defineController, defineHooks } from './$relay'
 
 const hooks = defineHooks(() => ({
   preHandler: [
@@ -11,7 +11,7 @@ const hooks = defineHooks(() => ({
 
 export { hooks }
 
-export default createController(() => ({
+export default defineController(() => ({
   get: async () => ({ status: 200, body: [{ id: 1, name: 'aa' }] }),
   post: () => ({ status: 204 })
 }))

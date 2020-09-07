@@ -1,4 +1,4 @@
-import { createController, defineHooks } from './$relay'
+import { defineController, defineHooks } from './$relay'
 
 export const hooks = defineHooks(() => ({
   onRequest: (req, res, next) => {
@@ -7,7 +7,7 @@ export const hooks = defineHooks(() => ({
   }
 }))
 
-export default createController(() => ({
+export default defineController(() => ({
   get: async v => {
     return await { status: 200, body: { id: +(v.query?.id || 0) } }
   },

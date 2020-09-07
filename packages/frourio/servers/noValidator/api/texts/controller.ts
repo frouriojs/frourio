@@ -1,6 +1,6 @@
-import { createController } from './$relay'
+import { defineController } from './$relay'
 
 // @ts-expect-error
-export default createController(() => ({
+export default defineController(() => ({
   get: ({ query }) => ({ status: 200, body: query.val })
 }))

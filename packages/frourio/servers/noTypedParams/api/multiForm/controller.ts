@@ -1,7 +1,7 @@
-import { createController } from './$relay'
+import { defineController } from './$relay'
 import { Methods } from './'
 
-export default createController(() => ({
+export default defineController(() => ({
   post: ({ body }) => ({
     status: 201,
     body: Object.entries(body).reduce(

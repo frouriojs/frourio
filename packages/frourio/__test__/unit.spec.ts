@@ -14,9 +14,9 @@ test('createDefaultFilesIfNotExists', () => {
 `)
 
   expect(fs.readFileSync(`${dir}/controller.ts`, 'utf8'))
-    .toBe(`import { createController } from './$relay'
+    .toBe(`import { defineController } from './$relay'
 
-export default createController(() => ({
+export default defineController(() => ({
   get: () => ({ status: 200, body: 'Hello' })
 }))
 `)
