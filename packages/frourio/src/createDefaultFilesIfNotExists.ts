@@ -37,9 +37,9 @@ export default createController(() => ({
   if (fs.existsSync(hooksFilePath) && !fs.readFileSync(hooksFilePath, 'utf8')) {
     fs.writeFileSync(
       hooksFilePath,
-      `import { createHooks } from './$relay'
+      `import { defineHooks } from './$relay'
 
-export default createHooks(() => ({
+export default defineHooks(() => ({
   onRequest: (req, res, next) => {
     console.log('Directory level onRequest hook:', req.path)
     next()

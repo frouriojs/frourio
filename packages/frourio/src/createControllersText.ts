@@ -28,7 +28,7 @@ export default (inputDir: string) => {
         : ''
 
     const relayPath = path.join(input, '$relay.ts')
-    const text = `/* eslint-disable */\nimport { Deps } from 'velona'\nimport { ServerMethods, createHooks } from '${appText}'\n${
+    const text = `/* eslint-disable */\nimport { Deps } from 'velona'\nimport { ServerMethods, defineHooks } from '${appText}'\n${
       userPath ? `import { User } from '${userPath}'\n` : ''
     }import { Methods } from './'\n\ntype ControllerMethods = ServerMethods<Methods, {${
       userPath ? '\n  user: User\n' : ''
@@ -38,7 +38,7 @@ export default (inputDir: string) => {
         : ''
     }}>
 
-export { createHooks }
+export { defineHooks }
 
 export function createController(methods: () => ControllerMethods): ControllerMethods
 export function createController<T extends Record<string, any>>(deps: T, cb: (deps: Deps<T>) => ControllerMethods): ControllerMethods & { inject: (d: Deps<T>) => ControllerMethods }

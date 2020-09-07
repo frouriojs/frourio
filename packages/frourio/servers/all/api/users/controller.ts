@@ -1,6 +1,6 @@
-import { createController, createHooks } from './$relay'
+import { createController, defineHooks } from './$relay'
 
-const hooks = createHooks(() => ({
+const hooks = defineHooks(() => ({
   preHandler: [
     (req, res, next) => {
       console.log('Controller level preHandler hook:', req.path)

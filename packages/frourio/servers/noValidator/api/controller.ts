@@ -1,6 +1,6 @@
-import { createController, createHooks } from './$relay'
+import { createController, defineHooks } from './$relay'
 
-export const hooks = createHooks(() => ({
+export const hooks = defineHooks(() => ({
   onRequest: (req, res, next) => {
     console.log('Controller level onRequest hook:', req.path)
     next()

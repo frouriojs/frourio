@@ -27,9 +27,9 @@ export default createController(() => ({
   createDefaultFilesIfNotExists(dir)
 
   expect(fs.readFileSync(`${dir}/hooks.ts`, 'utf8')).toBe(
-    `import { createHooks } from './$relay'
+    `import { defineHooks } from './$relay'
 
-export default createHooks(() => ({
+export default defineHooks(() => ({
   onRequest: (req, res, next) => {
     console.log('Directory level onRequest hook:', req.path)
     next()

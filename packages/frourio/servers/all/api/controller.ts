@@ -1,7 +1,7 @@
-import { createController, createHooks } from './$relay'
+import { createController, defineHooks } from './$relay'
 import { depend } from 'velona'
 
-const hooks = createHooks({ print: (...args: string[]) => console.log(...args) }, ({ print }) => ({
+const hooks = defineHooks({ print: (...args: string[]) => console.log(...args) }, ({ print }) => ({
   onRequest: depend({}, (deps, req, res, next) => {
     print('Controller level onRequest hook:', req.path)
     next()
