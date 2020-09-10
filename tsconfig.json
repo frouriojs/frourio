@@ -10,6 +10,11 @@
     "lib": ["esnext", "dom"],
     "module": "commonjs",
     "moduleResolution": "node",
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["packages/frourio/servers/all/api/*"],
+      "validators": ["packages/frourio/servers/all/validators"]
+    },
     "sourceMap": true,
     "strict": true,
     "strictPropertyInitialization": false,
