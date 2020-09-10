@@ -1,4 +1,4 @@
-import { UserInfo } from '../../../validators'
+import { UserInfo } from 'validators'
 
 export type Methods = {
   get: {

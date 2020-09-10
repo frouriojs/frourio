@@ -1,8 +1,8 @@
 import path from 'path'
 import createControllersText from './createControllersText'
 
-export default (input: string) => {
-  const { imports, controllers } = createControllersText(`${input}/api`)
+export default (input: string, project?: string) => {
+  const { imports, controllers } = createControllersText(`${input}/api`, project)
   const hasNumberTypeQuery = controllers.includes('  parseNumberTypeQueryParams(')
   const hasJSONBody = controllers.includes('  parseJSONBoby,')
   const hasTypedParams = controllers.includes('  createTypedParamsHandler(')

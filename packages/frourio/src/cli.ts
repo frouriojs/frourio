@@ -5,17 +5,15 @@ import build from './buildServerFile'
 
 export const run = (args: string[]) => {
   const argv = minimist(args, {
-    string: ['version', 'dir', 'watch'],
-    alias: { v: 'version', d: 'dir', w: 'watch' }
+    string: ['version', 'dir', 'watch', 'project'],
+    alias: { v: 'version', d: 'dir', w: 'watch', p: 'project' }
   })
-  const dirs = ((argv.dir as string) ?? '.').split(',')
+  const dir = argv.dir ?? '.'
 
+  // eslint-disable-next-line no-unused-expressions
   argv.version !== undefined
     ? console.log(`v${require('../package.json').version}`)
     : argv.watch !== undefined
-    ? dirs.forEach(dir => {
-        write(build(dir))
-        watch(dir, () => write(build(dir)))
-      })
-    : dirs.forEach(dir => write(build(dir)))
+    ? (write(build(dir, argv.project)), watch(dir, () => write(build(dir, argv.project))))
+    : write(build(dir, argv.project))
 }

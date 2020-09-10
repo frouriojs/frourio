@@ -4,7 +4,7 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "npm run build && cd packages/frourio/servers && aspida && node ../bin/index.js -d all,frourio,noMulter,noTypedParams,noValidator",
+    "dev": "npm run build && cd packages/frourio/servers && aspida && node build.js",
     "build": "npm run rimraf -- packages/frourio/dist && tsc -p packages/frourio",
     "build:benchmark": "npm run rimraf -- benchmark && tsc -p tsconfig.benchmark.json",
     "rimraf": "node -e \"require('fs').rmdirSync(process.argv[1], { recursive: true })\"",

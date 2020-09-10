@@ -1,4 +1,4 @@
-import { MultiForm } from '../../validators'
+import { MultiForm } from 'validators'
 
 export type Methods = {
   post: {

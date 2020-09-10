@@ -6,9 +6,23 @@ import createDefaultFiles from './createDefaultFilesIfNotExists'
 const hooksEvents = ['onRequest', 'preParsing', 'preValidation', 'preHandler', 'onSend'] as const
 type HooksEvent = typeof hooksEvents[number]
 
-export default (inputDir: string) => {
+export default (inputDir: string, project: string | undefined) => {
   const hooksList: string[] = []
   const controllers: [string, boolean][] = []
+  const configDir = project?.replace(/\/[^/]+\.json$/, '') ?? inputDir
+  const configFileName = ts.findConfigFile(
+    configDir,
+    ts.sys.fileExists,
+    project?.endsWith('.json') ? project.split('/').pop() : undefined
+  )
+
+  const compilerOptions = configFileName
+    ? ts.parseJsonConfigFileContent(
+        ts.readConfigFile(configFileName, ts.sys.readFile).config,
+        ts.sys,
+        configDir
+      )
+    : undefined
 
   const createText = (
     dirPath: string,
@@ -56,7 +70,12 @@ export function defineController<T extends Record<string, any>>(methods: () => C
     const indexFile = path.join(input, 'index.ts')
     const hooksFile = path.join(input, 'hooks.ts')
     const controllerFile = path.join(input, 'controller.ts')
-    const program = ts.createProgram([indexFile, hooksFile, controllerFile], {})
+    const program = ts.createProgram(
+      [indexFile, hooksFile, controllerFile],
+      compilerOptions?.options
+        ? { baseUrl: compilerOptions?.options.baseUrl, paths: compilerOptions?.options.paths }
+        : {}
+    )
     const source = program.getSourceFile(indexFile)
     const results: string[] = []
 

@@ -1,4 +1,4 @@
-import { defineController, defineHooks } from './$relay'
+import { defineController, defineHooks } from '~/$relay'
 import { depend } from 'velona'
 
 const hooks = defineHooks({ print: (...args: string[]) => console.log(...args) }, ({ print }) => ({
