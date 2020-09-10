@@ -5,10 +5,10 @@ import build from './buildServerFile'
 
 export const run = (args: string[]) => {
   const argv = minimist(args, {
-    string: ['version', 'dir', 'watch', 'project'],
-    alias: { v: 'version', d: 'dir', w: 'watch', p: 'project' }
+    string: ['version', 'watch', 'project'],
+    alias: { v: 'version', w: 'watch', p: 'project' }
   })
-  const dir = argv.dir ?? '.'
+  const dir = '.'
 
   // eslint-disable-next-line no-unused-expressions
   argv.version !== undefined

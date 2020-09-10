@@ -6,14 +6,14 @@ import createDefaultFiles from './createDefaultFilesIfNotExists'
 const hooksEvents = ['onRequest', 'preParsing', 'preValidation', 'preHandler', 'onSend'] as const
 type HooksEvent = typeof hooksEvents[number]
 
-export default (inputDir: string, project: string | undefined) => {
+export default (appDir: string, project: string) => {
   const hooksList: string[] = []
   const controllers: [string, boolean][] = []
-  const configDir = project?.replace(/\/[^/]+\.json$/, '') ?? inputDir
+  const configDir = project.replace(/\/[^/]+\.json$/, '')
   const configFileName = ts.findConfigFile(
     configDir,
     ts.sys.fileExists,
-    project?.endsWith('.json') ? project.split('/').pop() : undefined
+    project.endsWith('.json') ? project.split('/').pop() : undefined
   )
 
   const compilerOptions = configFileName
@@ -31,7 +31,7 @@ export default (inputDir: string, project: string | undefined) => {
     appPath = '$app',
     user = ''
   ) => {
-    const input = path.posix.join(inputDir, dirPath)
+    const input = path.posix.join(appDir, dirPath)
     const appText = `../${appPath}`
     const userPath =
       fs.existsSync(path.join(input, 'hooks.ts')) &&
@@ -331,11 +331,11 @@ ${validateInfo
         (ctrl, i) =>
           `import controller${i}${
             ctrl[1] ? `, { hooks as ctrlHooks${ctrlHooks.indexOf(ctrl)} }` : ''
-          } from '${ctrl[0].replace(/^api/, './api').replace(inputDir, './api')}'`
+          } from '${ctrl[0].replace(/^api/, './api').replace(appDir, './api')}'`
       )
       .join('\n')}${hooksList.length ? '\n' : ''}${hooksList
       .map(
-        (m, i) => `import hooks${i} from '${m.replace(/^api/, './api').replace(inputDir, './api')}'`
+        (m, i) => `import hooks${i} from '${m.replace(/^api/, './api').replace(appDir, './api')}'`
       )
       .join('\n')}`,
     controllers: text
