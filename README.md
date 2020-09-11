@@ -1,20 +1,30 @@
-# frourio
+<br />
+<div align="center">
+  <img src="https://frouriojs.github.io/frourio/assets/images/ogp.png" width="1280" alt="frourio" />
+</div>
 
-<a href="https://www.npmjs.com/package/frourio">
-  <img src="https://img.shields.io/npm/v/frourio" alt="npm version" />
-</a>
-<a href="https://github.com/frouriojs/frourio/actions?query=workflow%3A%22Node.js+CI%22">
-  <img src="https://github.com/frouriojs/frourio/workflows/Node.js%20CI/badge.svg?branch=master" alt="Node.js CI" />
-</a>
-<a href="https://codecov.io/gh/frouriojs/frourio">
-  <img src="https://img.shields.io/codecov/c/github/frouriojs/frourio.svg" alt="Codecov" />
-</a>
-<a href="https://github.com/frouriojs/frourio/blob/master/packages/frourio/LICENSE">
-  <img src="https://img.shields.io/npm/l/frourio" alt="License" />
-</a>
+<div align="center">
+  <a href="https://www.npmjs.com/package/frourio">
+    <img src="https://img.shields.io/npm/v/frourio" alt="npm version" />
+  </a>
+  <a href="https://github.com/frouriojs/frourio/actions?query=workflow%3A%22Node.js+CI%22">
+    <img src="https://github.com/frouriojs/frourio/workflows/Node.js%20CI/badge.svg?branch=master" alt="Node.js CI" />
+  </a>
+  <a href="https://codecov.io/gh/frouriojs/frourio">
+    <img src="https://img.shields.io/codecov/c/github/frouriojs/frourio.svg" alt="Codecov" />
+  </a>
+  <a href="https://lgtm.com/projects/g/frouriojs/frourio/context:javascript">
+    <img src="https://img.shields.io/lgtm/grade/javascript/g/frouriojs/frourio.svg" alt="Language grade: JavaScript" />
+  </a>
+  <a href="https://github.com/frouriojs/frourio/blob/master/packages/frourio/LICENSE">
+    <img src="https://img.shields.io/npm/l/frourio" alt="License" />
+  </a>
+</div>
 
-> Perfectly type-checkable REST framework for TypeScript.
-
+<p align="center">Frourio is a perfectly type-checkable REST framework for TypeScript.</p>
+<br />
+<br />
+<br />
 
 ## Why frourio ?
 
@@ -49,7 +59,7 @@ The front is checked by the type to see if it is making an API request as define
    <img src="https://frouriojs.github.io/frourio/assets/images/architecture.png" width="900" alt="Architecture of create-frourio-app" />
 </div>
 
-## Usage
+## Install
 
 Make sure you have [npx](https://www.npmjs.com/package/npx) installed (`npx` is shipped by default since [npm](https://www.npmjs.com/get-npm) `5.2.0`)
 
@@ -74,25 +84,6 @@ yarn create frourio-app <my-project>
 Frourio requires TypeScript 3.9 or higher.  
 If the TypeScript version of VSCode is low, an error is displayed during development.
 
-## Type definition of API endpoints
-
-aspida: `/apis` --> frourio: `/server/api`
-
-[See: Create an endpoint type definition file | aspida](https://github.com/aspidajs/aspida#create-an-endpoint-type-definition-file)
-
-#### Warning !
-examples.
-
-> GET: /api/test
-
-x- /server/api/test.ts  
-o- /server/api/test/index.ts
-
-> GET: /api/test/{testId}
-
-x- /server/api/test/_testId.ts  
-o- /server/api/test/_testId/index.ts
-
 ## Support
 
 <a href="https://twitter.com/solufa2020">
@@ -101,4 +92,4 @@ o- /server/api/test/_testId/index.ts
 
 ## License
 
-frourio is licensed under a [MIT License](https://github.com/frouriojs/frourio/blob/master/packages/frourio/LICENSE).
+Frourio is licensed under a [MIT License](https://github.com/frouriojs/frourio/blob/master/packages/frourio/LICENSE).

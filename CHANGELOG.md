@@ -2,6 +2,64 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.12.0](https://github.com/frouriojs/frourio/compare/v0.11.0...v0.12.0) (2020-09-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* override createController
+
+### Features
+
+* add benchmark ([ef5d373](https://github.com/frouriojs/frourio/commit/ef5d373ffcdde0d1452dcb4223e3de52ac8ad754))
+* add createHooks ([da05725](https://github.com/frouriojs/frourio/commit/da05725ee95d0b34c0f8488bbdeb6377cb63f171))
+* add noPublic ([8e2490b](https://github.com/frouriojs/frourio/commit/8e2490b4dd87779d8417cb01add7ffa31df71af2))
+* add noTypedParams ([ed36c1e](https://github.com/frouriojs/frourio/commit/ed36c1e9c0616ae9ba63113a837637cd0e13cfb5))
+* add noTypeorm ([a432380](https://github.com/frouriojs/frourio/commit/a432380e9340eb689ed6367cce8327b80c4b64e0))
+* build for benchmark ([79034f3](https://github.com/frouriojs/frourio/commit/79034f3eaf59a8f8bcc2509add95069e6028e38a))
+* combine index.ts into $app.ts ([2293cd9](https://github.com/frouriojs/frourio/commit/2293cd92d5ff6b3bcedcd9e9ad067cf009ff2e2e))
+* delete cors and helmet ([d17e07d](https://github.com/frouriojs/frourio/commit/d17e07d986226b3f7257e015fb92813aa25b8bc4))
+* generate controllers array ([babecd9](https://github.com/frouriojs/frourio/commit/babecd95eaf7f354f1dd0b6bc9c9029426896f80))
+* ignore empty dirs ([61320be](https://github.com/frouriojs/frourio/commit/61320beaf5f20fab718f23a160cc3381de6eafdb))
+* integrate fastify and express ([8203dbb](https://github.com/frouriojs/frourio/commit/8203dbbca94f12a9a71a8fbd137e0667b3afdb39))
+* override createController ([ac6e61b](https://github.com/frouriojs/frourio/commit/ac6e61b19d48485dfb81cac5ac90b9808e620aa0))
+* parse with tsc ([1880be1](https://github.com/frouriojs/frourio/commit/1880be1fe3b8355e49acf47ebb35aeb4bdd19f18))
+* remove dir option ([25f5844](https://github.com/frouriojs/frourio/commit/25f5844697895b15a98facf98432070d0d0a124b))
+* remove fastify ([6d59a3d](https://github.com/frouriojs/frourio/commit/6d59a3d60875f6ccddcc3688a506baf10cc297fc))
+* remove multer when not in use ([3456679](https://github.com/frouriojs/frourio/commit/34566790bce5ae2501752eec9b988aa7b9623351))
+* remove public dir ([b334555](https://github.com/frouriojs/frourio/commit/b33455528e293d565d9acae319ecd12284130078))
+* remove typeorm from deps ([76ff7ec](https://github.com/frouriojs/frourio/commit/76ff7ecb674dca0565b7c7305e14a2c94e9bc82f))
+* remove typeorm from deps ([5f04bd8](https://github.com/frouriojs/frourio/commit/5f04bd8d2b6817887ece972f60244b722aecf26f))
+* rename createController to defineController ([cb6889b](https://github.com/frouriojs/frourio/commit/cb6889b7eac208e0baa4ad7d5d361ffcd0182db5))
+* rename createHooks to defineHooks ([17a04aa](https://github.com/frouriojs/frourio/commit/17a04aa4cee1c7f090287757999f3999132a75d6))
+* rename types to validators ([ad0adac](https://github.com/frouriojs/frourio/commit/ad0adac86dd639531018ed923f2d42301242c2fc))
+* suport fastify ([efce77e](https://github.com/frouriojs/frourio/commit/efce77e251fe7aeb5f1e3980cb26ebd8518feeec))
+* support crlf ([e8829d8](https://github.com/frouriojs/frourio/commit/e8829d8c728bf6ebec6f2978ef2166b327c670f6))
+* support number type query params ([e859624](https://github.com/frouriojs/frourio/commit/e85962430b0fabc4df4075172942d7975f8a64ab))
+* support paths from tsconfig ([c5c9eac](https://github.com/frouriojs/frourio/commit/c5c9eac62b6e8bbbac7e4815a872a07f59c01da2))
+* support velona ([521edec](https://github.com/frouriojs/frourio/commit/521edec2f0c7c221e02a205cb6f6411782c215be))
+* update aspida@0.20.2 ([0018225](https://github.com/frouriojs/frourio/commit/00182254793792a4960f0e45950d8605d1c8e04c))
+
+
+### Bug Fixes
+
+* delete $arrayTypeKeysName ([f21b612](https://github.com/frouriojs/frourio/commit/f21b612bd744fc5f05401a8de690325fa907014f))
+* parse JSON ([6d06947](https://github.com/frouriojs/frourio/commit/6d06947b541e334d4d553e0e8649d9acea1922c7))
+
+
+### Refactors
+
+* add createValidateHandler ([997bc0f](https://github.com/frouriojs/frourio/commit/997bc0f68d44dce42c9a5350f86984fe1b8ed808))
+* apply router to app ([d99f5ed](https://github.com/frouriojs/frourio/commit/d99f5ed0f247aab3e3ad978a2ca736bca02572ba))
+* optimize controllers ([0641d38](https://github.com/frouriojs/frourio/commit/0641d38e45bb45568f787a1e4cb0c540c434dd8e))
+* optimize deps ([83b8d4e](https://github.com/frouriojs/frourio/commit/83b8d4e591148a6ee870c9d133b97eee6c31d217))
+
+
+### Documentation
+
+* fix broken twitter image link ([9e8ea10](https://github.com/frouriojs/frourio/commit/9e8ea10be447b78d3845b1b6f2c8be08d0da1cfa))
+* update README ([a69a219](https://github.com/frouriojs/frourio/commit/a69a2190e98a811549cc1dcf19939d99f06731b2))
+
 ## [0.11.0](https://github.com/frouriojs/frourio/compare/v0.10.4...v0.11.0) (2020-07-19)
 
 

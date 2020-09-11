@@ -1,25 +1,48 @@
 import path from 'path'
 import fs from 'fs'
-import parseInterface from 'aspida/dist/parseInterface'
+import ts from 'typescript'
 import createDefaultFiles from './createDefaultFilesIfNotExists'
 
-export default (inputDir: string) => {
-  const middlewares: string[] = []
-  const controllers: [string, boolean][] = []
-  let hasValidators = false
+const hooksEvents = ['onRequest', 'preParsing', 'preValidation', 'preHandler', 'onSend'] as const
+type HooksEvent = typeof hooksEvents[number]
 
-  const createText = (input: string, indent: string, params: [string, string][], user = '') => {
-    let result = ''
+export default (appDir: string, project: string) => {
+  const hooksList: string[] = []
+  const controllers: [string, boolean][] = []
+  const configDir = project.replace(/\/[^/]+\.json$/, '')
+  const configFileName = ts.findConfigFile(
+    configDir,
+    ts.sys.fileExists,
+    project.endsWith('.json') ? project.split('/').pop() : undefined
+  )
+
+  const compilerOptions = configFileName
+    ? ts.parseJsonConfigFileContent(
+        ts.readConfigFile(configFileName, ts.sys.readFile).config,
+        ts.sys,
+        configDir
+      )
+    : undefined
+
+  const createText = (
+    dirPath: string,
+    hooks: { name: string; events: { type: HooksEvent; isArray: boolean }[] }[],
+    params: [string, string][],
+    appPath = '$app',
+    user = ''
+  ) => {
+    const input = path.posix.join(appDir, dirPath)
+    const appText = `../${appPath}`
     const userPath =
-      fs.existsSync(path.join(input, '@middleware.ts')) &&
-      parseInterface(fs.readFileSync(path.join(input, '@middleware.ts'), 'utf8'), 'User')
-        ? './@middleware'
+      fs.existsSync(path.join(input, 'hooks.ts')) &&
+      /(^|\n)export .+ User(,| )/.test(fs.readFileSync(path.join(input, 'hooks.ts'), 'utf8'))
+        ? './hooks'
         : user
         ? `./.${user}`
         : ''
 
     const relayPath = path.join(input, '$relay.ts')
-    const text = `/* eslint-disable */\nimport { RequestHandler } from 'express'\nimport { ServerMethods } from 'frourio'\n${
+    const text = `/* eslint-disable */\nimport { Deps } from 'velona'\nimport { ServerMethods, defineHooks } from '${appText}'\n${
       userPath ? `import { User } from '${userPath}'\n` : ''
     }import { Methods } from './'\n\ntype ControllerMethods = ServerMethods<Methods, {${
       userPath ? '\n  user: User\n' : ''
@@ -29,16 +52,13 @@ export default (inputDir: string) => {
         : ''
     }}>
 
-export const createMiddleware = <
-  T extends RequestHandler | [] | [RequestHandler, ...RequestHandler[]]
->(handler: T): T => handler
+export { defineHooks }
 
-export const createController = (methods: ControllerMethods) => methods
-
-export const createInjectableController = <T>(
-  cb: (deps: T) => ControllerMethods,
-  deps: T
-) => ({ ...cb(deps), inject: (d: T) => cb(d) })
+export function defineController(methods: () => ControllerMethods): ControllerMethods
+export function defineController<T extends Record<string, any>>(deps: T, cb: (deps: Deps<T>) => ControllerMethods): ControllerMethods & { inject: (d: Deps<T>) => ControllerMethods }
+export function defineController<T extends Record<string, any>>(methods: () => ControllerMethods | T, cb?: (deps: Deps<T>) => ControllerMethods) {
+  return typeof methods === 'function' ? methods() : { ...cb!(methods), inject: (d: Deps<T>) => cb!(d) }
+}
 `
 
     if (!fs.existsSync(relayPath) || fs.readFileSync(relayPath, 'utf8') !== text) {
@@ -47,122 +67,277 @@ export const createInjectableController = <T>(
 
     createDefaultFiles(input)
 
-    const validatorPrefix = 'Valid'
-    const methods = parseInterface(fs.readFileSync(path.join(input, 'index.ts'), 'utf8'), 'Methods')
-    if (methods) {
-      const validateInfo = methods
-        .map(m => {
-          const props: [string, { value: string; hasQuestion: boolean }][] = []
-          if (m.props.query?.value.startsWith(validatorPrefix)) {
-            props.push(['query', m.props.query])
-          }
-          if (m.props.reqBody?.value.startsWith(validatorPrefix)) {
-            props.push(['body', m.props.reqBody])
-          }
-          if (m.props.reqHeaders?.value.startsWith(validatorPrefix)) {
-            props.push(['headers', m.props.reqHeaders])
-          }
-          return { method: m.name, props }
-        })
-        .filter(v => v.props.length)
+    const indexFile = path.join(input, 'index.ts')
+    const hooksFile = path.join(input, 'hooks.ts')
+    const controllerFile = path.join(input, 'controller.ts')
+    const program = ts.createProgram(
+      [indexFile, hooksFile, controllerFile],
+      compilerOptions?.options
+        ? { baseUrl: compilerOptions?.options.baseUrl, paths: compilerOptions?.options.paths }
+        : {}
+    )
+    const source = program.getSourceFile(indexFile)
+    const results: string[] = []
 
-      if (validateInfo.length) {
-        hasValidators = true
-        result += `,\n${indent}validator: {\n${validateInfo
-          .map(
-            v =>
-              `  ${indent}${v.method}: {\n${v.props
-                .map(
-                  p =>
-                    `    ${indent}${p[0]}: { required: ${!p[1].hasQuestion}, Class: Types.${
-                      p[1].value
-                    } }`
-                )
-                .join(',\n')}\n  ${indent}}`
-          )
-          .join(',\n')}\n${indent}}`
+    if (source) {
+      const checker = program.getTypeChecker()
+      const methods = ts.forEachChild(source, node =>
+        (ts.isTypeAliasDeclaration(node) || ts.isInterfaceDeclaration(node)) &&
+        node.name.escapedText === 'Methods' &&
+        node.modifiers?.some(m => m.kind === ts.SyntaxKind.ExportKeyword)
+          ? checker.getTypeAtLocation(node).getProperties()
+          : undefined
+      )
+
+      if (methods?.length) {
+        const hooksSource = program.getSourceFile(hooksFile)
+
+        if (hooksSource) {
+          const events = ts.forEachChild(hooksSource, node => {
+            if (ts.isExportAssignment(node)) {
+              return checker
+                .getTypeAtLocation(node.expression)
+                .getProperties()
+                .map(p => {
+                  const typeNode = checker.typeToTypeNode(
+                    checker.getTypeOfSymbolAtLocation(p, p.valueDeclaration),
+                    undefined,
+                    undefined
+                  )
+
+                  return {
+                    type: p.name as HooksEvent,
+                    isArray: typeNode
+                      ? ts.isArrayTypeNode(typeNode) || ts.isTupleTypeNode(typeNode)
+                      : false
+                  }
+                })
+            }
+          })
+
+          if (events) {
+            hooks.push({ name: `hooks${hooksList.length}`, events })
+            hooksList.push(`${input}/hooks`)
+          }
+        }
+
+        const controllerSource = program.getSourceFile(controllerFile)
+        let ctrlHooksNode: ts.Node | undefined
+
+        if (controllerSource) {
+          ctrlHooksNode = ts.forEachChild(controllerSource, node => {
+            if (
+              ts.isVariableStatement(node) &&
+              node.modifiers?.some(m => m.kind === ts.SyntaxKind.ExportKeyword)
+            ) {
+              return node.declarationList.declarations.find(d => d.name.getText() === 'hooks')
+            } else if (ts.isExportDeclaration(node)) {
+              const { exportClause } = node
+              if (exportClause && ts.isNamedExports(exportClause)) {
+                return exportClause.elements.find(el => el.name.text === 'hooks')
+              }
+            }
+          })
+        }
+
+        const ctrlHooksEvents =
+          ctrlHooksNode &&
+          checker
+            .getTypeAtLocation(ctrlHooksNode)
+            .getProperties()
+            .map(p => {
+              const typeNode = checker.typeToTypeNode(
+                checker.getTypeOfSymbolAtLocation(p, p.valueDeclaration),
+                undefined,
+                undefined
+              )
+
+              return {
+                type: p.name as HooksEvent,
+                isArray: typeNode
+                  ? ts.isArrayTypeNode(typeNode) || ts.isTupleTypeNode(typeNode)
+                  : false
+              }
+            })
+
+        const genHookTexts = (event: HooksEvent) => [
+          ...hooks.flatMap(h => {
+            const ev = h.events.find(e => e.type === event)
+            return ev ? [`${ev.isArray ? '...' : ''}${h.name}.${event}`] : []
+          }),
+          ...(ctrlHooksEvents?.map(e =>
+            e.type === event
+              ? `${e.isArray ? '...' : ''}ctrlHooks${controllers.filter(c => c[1]).length}.${event}`
+              : ''
+          ) ?? [])
+        ]
+
+        results.push(
+          methods
+            .map(m => {
+              const props = checker.getTypeOfSymbolAtLocation(m, m.valueDeclaration).getProperties()
+              const query = props.find(p => p.name === 'query')
+              const numberTypeQueryParams =
+                query &&
+                checker
+                  .getTypeOfSymbolAtLocation(query, query.valueDeclaration)
+                  .getProperties()
+                  .map(p => {
+                    const typeString = checker.typeToString(
+                      checker.getTypeOfSymbolAtLocation(p, p.valueDeclaration)
+                    )
+                    return typeString === 'number'
+                      ? `['${p.name}', ${p.declarations.some(d =>
+                          d.getChildren().some(c => c.kind === ts.SyntaxKind.QuestionToken)
+                        )}, false]`
+                      : typeString === 'number[]'
+                      ? `['${p.name}', ${p.declarations.some(d =>
+                          d.getChildren().some(c => c.kind === ts.SyntaxKind.QuestionToken)
+                        )}, true]`
+                      : null
+                  })
+                  .filter(Boolean)
+              const validateInfo = [
+                { name: 'query', val: query },
+                { name: 'body', val: props.find(p => p.name === 'reqBody') },
+                { name: 'headers', val: props.find(p => p.name === 'reqHeaders') }
+              ]
+                .filter((prop): prop is { name: string; val: ts.Symbol } => !!prop.val)
+                .map(({ name, val }) => ({
+                  name,
+                  type: checker.getTypeOfSymbolAtLocation(val, val.valueDeclaration),
+                  hasQuestion: val.declarations.some(
+                    d => d.getChildAt(1).kind === ts.SyntaxKind.QuestionToken
+                  )
+                }))
+                .filter(({ type }) => type.isClass())
+
+              const reqFormat = props.find(p => p.name === 'reqFormat')
+              const isFormData =
+                (reqFormat &&
+                  checker.typeToString(
+                    checker.getTypeOfSymbolAtLocation(reqFormat, reqFormat.valueDeclaration)
+                  )) === 'FormData'
+              const reqBody = props.find(p => p.name === 'reqBody')
+
+              const handlers = [
+                ...genHookTexts('onRequest'),
+                ...(isFormData || (!reqFormat && reqBody) ? genHookTexts('preParsing') : []),
+                numberTypeQueryParams && numberTypeQueryParams.length
+                  ? `parseNumberTypeQueryParams([${numberTypeQueryParams.join(', ')}])`
+                  : '',
+                ...(isFormData && reqBody
+                  ? [
+                      'uploader',
+                      `formatMulterData([${checker
+                        .getTypeOfSymbolAtLocation(reqBody, reqBody.valueDeclaration)
+                        .getProperties()
+                        .map(p => {
+                          const node = checker.typeToTypeNode(
+                            checker.getTypeOfSymbolAtLocation(p, p.valueDeclaration),
+                            undefined,
+                            undefined
+                          )
+
+                          return node && (ts.isArrayTypeNode(node) || ts.isTupleTypeNode(node))
+                            ? `['${p.name}', ${p.declarations.some(d =>
+                                d.getChildren().some(c => c.kind === ts.SyntaxKind.QuestionToken)
+                              )}]`
+                            : undefined
+                        })
+                        .filter(Boolean)
+                        .join(', ')}])`
+                    ]
+                  : []),
+                !reqFormat && reqBody ? 'parseJSONBoby' : '',
+                ...(validateInfo.length || dirPath.includes('@number')
+                  ? genHookTexts('preValidation')
+                  : []),
+                validateInfo.length
+                  ? `createValidateHandler(req => [
+${validateInfo
+  .map(
+    v =>
+      `      ${
+        v.hasQuestion ? `Object.keys(req.${v.name}).length ? ` : ''
+      }validateOrReject(Object.assign(new Validators.${checker.typeToString(v.type)}(), req.${
+        v.name
+      }))${v.hasQuestion ? ' : null' : ''}`
+  )
+  .join(',\n')}\n    ])`
+                  : '',
+                dirPath.includes('@number')
+                  ? `createTypedParamsHandler(['${dirPath
+                      .split('/')
+                      .filter(p => p.includes('@number'))
+                      .map(p => p.split('@')[0].slice(1))
+                      .join("', '")}'])`
+                  : '',
+                ...genHookTexts('preHandler'),
+                `methodsToHandler(controller${controllers.length}.${m.name})`,
+                ...genHookTexts('onSend')
+              ].filter(Boolean)
+
+              return `  app.${m.name}(\`\${basePath}${`/${dirPath}`
+                .replace(/\/_/g, '/:')
+                .replace(/@.+?($|\/)/g, '')}\`, ${
+                handlers.length === 1 ? handlers[0] : `[\n    ${handlers.join(',\n    ')}\n  ]`
+              })\n`
+            })
+            .join('\n')
+        )
+
+        controllers.push([`${input}/controller`, !!ctrlHooksEvents])
       }
-
-      const uploaders = methods
-        .filter(m => m.props.reqFormat?.value === 'FormData')
-        .map(m => m.name)
-      if (uploaders.length) {
-        result += `,\n${indent}uploader: ['${uploaders.join("', '")}']`
-      }
-    }
-
-    result += `,\n${indent}controller: controller${controllers.length}`
-    const ctrlText = fs.readFileSync(path.join(input, '@controller.ts'), 'utf8')
-    const hasMiddleware = /export (const|{)(.*[ ,])?middleware[, }=]/.test(ctrlText)
-
-    if (hasMiddleware) {
-      result += `,\n${indent}ctrlMiddleware: ctrlMiddleware${controllers.filter(c => c[1]).length}`
-    }
-
-    controllers.push([`${input}/@controller`, hasMiddleware])
-
-    if (fs.existsSync(path.join(input, '@middleware.ts'))) {
-      result += `,\n${indent}middleware: middleware${middlewares.length}`
-      middlewares.push(`${input}/@middleware`)
     }
 
     const childrenDirs = fs
-      .readdirSync(input)
-      .filter(d => fs.statSync(path.join(input, d)).isDirectory() && !d.startsWith('@'))
+      .readdirSync(input, { withFileTypes: true })
+      .filter(d => d.isDirectory() && !d.name.startsWith('@'))
 
     if (childrenDirs.length) {
-      result += `,\n${indent}children: {\n`
-      const names = childrenDirs.filter(d => !d.startsWith('_'))
-      if (names.length) {
-        result += `  ${indent}names: [\n`
-        result += names
-          .map(
-            n =>
-              `    ${indent}{\n      ${indent}name: '/${n}'${createText(
-                path.posix.join(input, n),
-                `      ${indent}`,
-                params,
-                userPath
-              )}\n    ${indent}}`
+      results.push(
+        ...childrenDirs
+          .filter(d => !d.name.startsWith('_'))
+          .flatMap(d =>
+            createText(path.posix.join(dirPath, d.name), hooks, params, appText, userPath)
           )
-          .join(',\n')
-        result += `\n  ${indent}]`
-      }
+      )
 
-      const value = childrenDirs.find(d => d.startsWith('_'))
+      const value = childrenDirs.find(d => d.name.startsWith('_'))
 
       if (value) {
-        result += `${
-          names.length ? ',\n' : ''
-        }  ${indent}value: {\n    ${indent}name: '/${value}'${createText(
-          path.posix.join(input, value),
-          `    ${indent}`,
-          [...params, [value.slice(1).split('@')[0], value.split('@')[1] ?? 'string']],
-          userPath
-        )}\n  ${indent}}`
+        results.push(
+          ...createText(
+            path.posix.join(dirPath, value.name),
+            hooks,
+            [...params, [value.name.slice(1).split('@')[0], value.name.split('@')[1] ?? 'string']],
+            appText,
+            userPath
+          )
+        )
       }
-      result += `\n${indent}}`
     }
 
-    return result
+    return results
   }
 
-  const text = createText(inputDir, '  ', [])
-  const ctrlMiddleware = controllers.filter(c => c[1])
+  const text = createText('', [], []).join('\n')
+  const ctrlHooks = controllers.filter(c => c[1])
 
-  return `${hasValidators ? "import * as Types from './types'" : ''}${
-    controllers.length ? '\n' : ''
-  }${controllers
-    .map(
-      (ctrl, i) =>
-        `import controller${i}${
-          ctrl[1] ? `, { middleware as ctrlMiddleware${ctrlMiddleware.indexOf(ctrl)} }` : ''
-        } from '${ctrl[0].replace(/^api/, './api').replace(inputDir, './api')}'`
-    )
-    .join('\n')}${middlewares.length ? '\n' : ''}${middlewares
-    .map(
-      (m, i) =>
-        `import middleware${i} from '${m.replace(/^api/, './api').replace(inputDir, './api')}'`
-    )
-    .join('\n')}\n\nexport const controllers = {\n  name: '/'${text}\n}`
+  return {
+    imports: `${controllers
+      .map(
+        (ctrl, i) =>
+          `import controller${i}${
+            ctrl[1] ? `, { hooks as ctrlHooks${ctrlHooks.indexOf(ctrl)} }` : ''
+          } from '${ctrl[0].replace(/^api/, './api').replace(appDir, './api')}'`
+      )
+      .join('\n')}${hooksList.length ? '\n' : ''}${hooksList
+      .map(
+        (m, i) => `import hooks${i} from '${m.replace(/^api/, './api').replace(appDir, './api')}'`
+      )
+      .join('\n')}`,
+    controllers: text
+  }
 }

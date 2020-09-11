@@ -1,29 +1,51 @@
 import fs from 'fs'
 import path from 'path'
 
-export default async (dir: string) => {
+export default (dir: string) => {
   const indexFilePath = path.join(dir, 'index.ts')
-  if (!fs.existsSync(indexFilePath)) {
-    fs.promises.writeFile(indexFilePath, 'export type Methods = {}\n', 'utf8')
-  }
 
-  const controllerFilePath = path.join(dir, '@controller.ts')
-  if (!fs.existsSync(controllerFilePath)) {
-    fs.promises.writeFile(
-      controllerFilePath,
-      "import { createController } from './$relay'\n\nexport default createController({})\n",
+  if (!fs.existsSync(indexFilePath)) {
+    fs.writeFileSync(
+      indexFilePath,
+      `export type Methods = {
+  get: {
+    resBody: string
+  }
+}
+`,
       'utf8'
     )
   }
 
-  const middlewareFilePath = path.join(dir, '@middleware.ts')
-  if (
-    fs.existsSync(middlewareFilePath) &&
-    !(await fs.promises.readFile(middlewareFilePath, 'utf8'))
-  ) {
-    fs.promises.writeFile(
-      middlewareFilePath,
-      "import { createMiddleware } from './$relay'\n\nexport default createMiddleware([])\n",
+  const controllerFilePath = path.join(dir, 'controller.ts')
+
+  if (!fs.existsSync(controllerFilePath)) {
+    fs.writeFileSync(
+      controllerFilePath,
+      `import { defineController } from './$relay'
+
+export default defineController(() => ({
+  get: () => ({ status: 200, body: 'Hello' })
+}))
+`,
+      'utf8'
+    )
+  }
+
+  const hooksFilePath = path.join(dir, 'hooks.ts')
+
+  if (fs.existsSync(hooksFilePath) && !fs.readFileSync(hooksFilePath, 'utf8')) {
+    fs.writeFileSync(
+      hooksFilePath,
+      `import { defineHooks } from './$relay'
+
+export default defineHooks(() => ({
+  onRequest: (req, res, next) => {
+    console.log('Directory level onRequest hook:', req.path)
+    next()
+  }
+}))
+`,
       'utf8'
     )
   }

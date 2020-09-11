@@ -1,78 +1,297 @@
 import path from 'path'
-import { Template } from 'aspida/dist/buildTemplate'
 import createControllersText from './createControllersText'
-import createTypeormText from './createTypeormText'
 
-export default (input: string): Template => {
-  const typeormText = createTypeormText(input)
+export default (input: string, project?: string) => {
+  const { imports, controllers } = createControllersText(`${input}/api`, project ?? input)
+  const hasNumberTypeQuery = controllers.includes('  parseNumberTypeQueryParams(')
+  const hasJSONBody = controllers.includes('  parseJSONBoby,')
+  const hasTypedParams = controllers.includes('  createTypedParamsHandler(')
+  const hasValidator = controllers.includes('  validateOrReject(')
+  const hasMulter = controllers.includes('  uploader,')
 
   return {
-    text: `/* eslint-disable */
-import 'reflect-metadata'
-import { Server } from 'http'
-import path from 'path'
-import express, { Express } from 'express'
-import multer from 'multer'
-import helmet from 'helmet'
-import cors from 'cors'
-import { createConnection, Connection } from 'typeorm'
-import { createRouter, Config } from 'frourio'${typeormText.imports}
-${createControllersText(`${input}/api`)}
+    text: `/* eslint-disable */${hasMulter ? "\nimport path from 'path'" : ''}
+import {
+  LowerHttpMethod,
+  AspidaMethods,
+  HttpMethod,
+  HttpStatusOk,
+  AspidaMethodParams
+} from 'aspida'
+import { Deps } from 'velona'
+import ${hasJSONBody ? 'express, ' : ''}{ Express, RequestHandler${
+      hasValidator ? ', Request' : ''
+    } } from 'express'${hasMulter ? "\nimport multer, { Options } from 'multer'" : ''}${
+      hasValidator ? "\nimport { validateOrReject } from 'class-validator'" : ''
+    }
 
-export const entities = [${typeormText.entities}]
-export const migrations = [${typeormText.migrations}]
-export const subscribers = [${typeormText.subscribers}]
-export const run = async (config: Config) => {
-  const app = express()
-  const router = createRouter(
-    controllers,
-    multer(
-      config.multer ?? { dest: path.join(__dirname, '.upload'), limits: { fileSize: 1024 ** 3 } }
-    ).any()
-  )
+type Hooks = {
+  onRequest?: RequestHandler | RequestHandler[]
+  preParsing?: RequestHandler | RequestHandler[]
+  preValidation?: RequestHandler | RequestHandler[]
+  preHandler?: RequestHandler | RequestHandler[]
+  onSend?: RequestHandler | RequestHandler[]
+}
 
-  if (config.helmet) app.use(helmet(config.helmet === true ? {} : config.helmet))
-  if (config.cors) app.use(cors(config.cors === true ? {} : config.cors))
+export function defineHooks<T extends Hooks>(hooks: () => T): T
+export function defineHooks<T extends Hooks, U extends Record<string, any>>(deps: U, cb: (deps: Deps<U>) => T): T & { inject: (d: Deps<U>) => T }
+export function defineHooks<T extends Hooks, U extends Record<string, any>>(hooks: () => T | U, cb?: (deps: Deps<U>) => T) {
+  return typeof hooks === 'function' ? hooks() : { ...cb!(hooks), inject: (d: Deps<U>) => cb!(d) }
+}
 
-  app.use((req, res, next) => {
-    express.json()(req, res, err => {
-      if (err) return res.sendStatus(400)
+${hasValidator ? `import * as Validators from './validators'${imports ? '\n' : ''}` : ''}${imports}
 
-      next()
-    })
-  })
+export type FrourioOptions = {
+  basePath?: string
+${
+  hasMulter
+    ? `  multer?: Options
+}
 
-  const staticMiddleware = express.static(path.join(__dirname, 'public'))
-  if (config.basePath && config.basePath !== '/') {
-    const staticPath = config.basePath.startsWith('/') ? config.basePath : \`/\${config.basePath}\`
-    app.use(staticPath, router)
-    app.use(staticPath, staticMiddleware)
-  } else {
-    app.use(router)
-    app.use(staticMiddleware)
+export type MulterFile = Express.Multer.File`
+    : '}'
+}
+
+type HttpStatusNoOk =
+  | 301
+  | 302
+  | 400
+  | 401
+  | 402
+  | 403
+  | 404
+  | 405
+  | 406
+  | 409
+  | 500
+  | 501
+  | 502
+  | 503
+  | 504
+  | 505
+
+type PartiallyPartial<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>
+
+type BaseResponse<T, U, V> = {
+  status: V extends number ? V : HttpStatusOk
+  body: T
+  headers: U
+}
+
+type ServerResponse<K extends AspidaMethodParams> =
+  | (K['resBody'] extends {} | null
+      ? K['resHeaders'] extends {}
+        ? BaseResponse<K['resBody'], K['resHeaders'], K['status']>
+        : PartiallyPartial<
+            BaseResponse<
+              K['resBody'],
+              K['resHeaders'] extends {} | undefined ? K['resHeaders'] : undefined,
+              K['status']
+            >,
+            'headers'
+          >
+      : K['resHeaders'] extends {}
+      ? PartiallyPartial<
+          BaseResponse<
+            K['resBody'] extends {} | null | undefined ? K['resBody'] : undefined,
+            K['resHeaders'],
+            K['status']
+          >,
+          'body'
+        >
+      : PartiallyPartial<
+          BaseResponse<
+            K['resBody'] extends {} | null | undefined ? K['resBody'] : undefined,
+            K['resHeaders'] extends {} | undefined ? K['resHeaders'] : undefined,
+            K['status']
+          >,
+          'body' | 'headers'
+        >)
+  | PartiallyPartial<BaseResponse<any, any, HttpStatusNoOk>, 'body' | 'headers'>
+
+type ServerValues = {
+  params?: Record<string, any>
+  user?: any
+}
+${
+  hasMulter
+    ? `
+type BlobToFile<T extends AspidaMethodParams> = T['reqFormat'] extends FormData
+  ? {
+      [P in keyof T['reqBody']]: Required<T['reqBody']>[P] extends Blob
+        ? MulterFile
+        : Required<T['reqBody']>[P] extends Blob[]
+        ? MulterFile[]
+        : T['reqBody'][P]
+    }
+  : T['reqBody']
+`
+    : ''
+}
+type RequestParams<T extends AspidaMethodParams> = {
+  path: string
+  method: HttpMethod
+  query: T['query']
+  body: ${hasMulter ? 'BlobToFile<T>' : "T['reqBody']"}
+  headers: T['reqHeaders']
+}
+
+export type ServerMethods<T extends AspidaMethods, U extends ServerValues> = {
+  [K in keyof T]: (
+    req: RequestParams<T[K]> & U
+  ) => ServerResponse<T[K]> | Promise<ServerResponse<T[K]>>
+}
+${
+  hasNumberTypeQuery
+    ? `
+const parseNumberTypeQueryParams = (numberTypeParams: [string, boolean, boolean][]): RequestHandler => ({ query }, res, next) => {
+  for (const [key, isOptional, isArray] of numberTypeParams) {
+    const param = query[key]
+
+    if (isArray) {
+      if (!isOptional && param === undefined) {
+        query[key] = []
+      } else if (!isOptional || param !== undefined) {
+        if (!Array.isArray(param)) {
+          res.sendStatus(400)
+          return
+        }
+
+        const vals = (param as string[]).map(Number)
+
+        if (vals.some(isNaN)) {
+          res.sendStatus(400)
+          return
+        }
+
+        query[key] = vals as any
+      }
+    } else if (!isOptional || param !== undefined) {
+      const val = Number(param)
+
+      if (isNaN(val)) {
+        res.sendStatus(400)
+        return
+      }
+
+      query[key] = val as any
+    }
   }
 
-  let connection: Connection
+  next()
+}
+`
+    : ''
+}${
+      hasJSONBody
+        ? `
+const parseJSONBoby: RequestHandler = (req, res, next) => {
+  express.json()(req, res, err => {
+    if (err) return res.sendStatus(400)
 
-  if (config.typeorm) {
-    connection = await createConnection({
-      entities,
-      migrations,
-      subscribers,
-      ...config.typeorm
-    })
+    next()
+  })
+}
+`
+        : ''
+    }${
+      hasTypedParams
+        ? `
+const createTypedParamsHandler = (numberTypeParams: string[]): RequestHandler => (
+  req,
+  res,
+  next
+) => {
+  const typedParams: Record<string, string | number> = { ...req.params }
+
+  for (const key of numberTypeParams) {
+    const val = Number(typedParams[key])
+    if (isNaN(val)) {
+      res.sendStatus(400)
+      return
+    }
+
+    typedParams[key] = val
   }
 
-  return new Promise<{
-    app: Express
-    server: Server
-    connection?: Connection
-  }>(resolve => {
-    const server = app.listen(config.port, () => {
-      console.log(\`Frourio is running on http://localhost:\${config.port}\`)
-      resolve({ app, server, connection })
+  ;(req as any).typedParams = typedParams
+  next()
+}
+`
+        : ''
+    }${
+      hasValidator
+        ? `
+const createValidateHandler = (validators: (req: Request) => (Promise<void> | null)[]): RequestHandler =>
+  (req, res, next) => Promise.all(validators(req)).then(() => next()).catch(() => res.sendStatus(400))
+`
+        : ''
+    }
+const methodsToHandler = (
+  methodCallback: ServerMethods<any, any>[LowerHttpMethod]
+): RequestHandler => async (req, res) => {
+  try {
+    const result = methodCallback({
+      query: req.query,
+      path: req.path,
+      method: req.method as HttpMethod,
+      body: req.body,
+      headers: req.headers,
+      params: (req as any).typedParams,
+      user: (req as any).user
     })
-  })
+
+    const { status, body, headers } = result instanceof Promise ? await result : result
+
+    for (const key in headers) {
+      res.setHeader(key, headers[key])
+    }
+
+    res.status(status).send(body)
+  } catch (e) {
+    res.sendStatus(500)
+  }
+}
+${
+  hasMulter
+    ? `
+const formatMulterData = (arrayTypeKeys: [string, boolean][]): RequestHandler => ({ body, files }, _res, next) => {
+  for (const [key] of arrayTypeKeys) {
+    if (body[key] === undefined) body[key] = []
+    else if (!Array.isArray(body[key])) {
+      body[key] = [body[key]]
+    }
+  }
+
+  for (const file of files as MulterFile[]) {
+    if (Array.isArray(body[file.fieldname])) {
+      body[file.fieldname].push(file)
+    } else {
+      body[file.fieldname] = file
+    }
+  }
+
+  for (const [key, isOptional] of arrayTypeKeys) {
+    if (!body[key].length && isOptional) delete body[key]
+  }
+
+  next()
+}
+`
+    : ''
+}
+export default (app: Express, options: FrourioOptions = {}) => {
+  const basePath = options.basePath ?? ''
+${
+  hasMulter
+    ? `  const uploader = multer(
+      options.multer ?? { dest: path.join(__dirname, '.upload'), limits: { fileSize: 1024 ** 3 } }
+  ).any()
+`
+    : ''
+}
+${controllers}
+  return app
 }
 `,
     filePath: path.posix.join(input, '$app.ts')

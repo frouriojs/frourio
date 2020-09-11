@@ -1,31 +1,19 @@
 import minimist from 'minimist'
 import write from 'aspida/dist/writeRouteFile'
-import watch from 'aspida/dist/cli/watchInputDir'
-import { Command, nullCommand } from 'aspida/dist/cli/command'
-import { version as versionCommand } from 'aspida/dist/cli/version'
+import watch from 'aspida/dist/watchInputDir'
 import build from './buildServerFile'
 
-const options: minimist.Opts = {
-  string: ['version', 'dir', 'build', 'watch'],
-  alias: { v: 'version', d: 'dir', b: 'build', w: 'watch' }
-}
-
 export const run = (args: string[]) => {
-  const argv = minimist(args, options)
-  const dirs = ((argv.dir as string) ?? '.').split(',')
-  const commands: Command[] = [
-    argv.version !== undefined ? versionCommand : nullCommand,
-    argv.build !== undefined ? { exec: () => dirs.forEach(dir => write(build(dir))) } : nullCommand,
-    argv.watch !== undefined
-      ? {
-          exec: () =>
-            dirs.forEach(dir => {
-              write(build(dir))
-              watch(dir, () => write(build(dir)))
-            })
-        }
-      : nullCommand
-  ]
+  const argv = minimist(args, {
+    string: ['version', 'watch', 'project'],
+    alias: { v: 'version', w: 'watch', p: 'project' }
+  })
+  const dir = '.'
 
-  commands.forEach(c => c.exec())
+  // eslint-disable-next-line no-unused-expressions
+  argv.version !== undefined
+    ? console.log(`v${require('../package.json').version}`)
+    : argv.watch !== undefined
+    ? (write(build(dir, argv.project)), watch(dir, () => write(build(dir, argv.project))))
+    : write(build(dir, argv.project))
 }
