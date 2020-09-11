@@ -65,12 +65,12 @@
     ]
   },
   "devDependencies": {
-    "@aspida/axios": "^0.11.2",
+    "@aspida/axios": "^0.11.3",
     "@types/express": "^4.17.7",
     "@types/jest": "^26.0.13",
     "@types/multer": "^1.4.4",
-    "@typescript-eslint/eslint-plugin": "^4.0.1",
-    "@typescript-eslint/parser": "^4.0.1",
+    "@typescript-eslint/eslint-plugin": "^4.1.0",
+    "@typescript-eslint/parser": "^4.1.0",
     "axios": "^0.20.0",
     "class-validator": "^0.12.2",
     "eslint": "^7.8.1",

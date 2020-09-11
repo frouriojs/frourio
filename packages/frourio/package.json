@@ -6,7 +6,7 @@
   "license": "MIT",
   "main": "dist/index.js",
   "bin": "bin/index.js",
-  "homepage": "https://github.com/frouriojs/frourio/tree/master/packages/frourio#readme",
+  "homepage": "https://github.com/frouriojs/frourio#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/frouriojs/frourio.git"
@@ -23,7 +23,7 @@
     "server"
   ],
   "dependencies": {
-    "aspida": "^0.21.2",
+    "aspida": "^0.21.3",
     "velona": "^0.5.1"
   }
 }

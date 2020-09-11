@@ -53,7 +53,7 @@ const api = <T>({ baseURL, fetch }: AspidaClient<T>) => {
       $put: (option?: { config?: T }) =>
         fetch<void>(prefix, PATH2, PUT, option).send().then(r => r.body),
       $path: (option?: { method?: 'get'; query: Methods3['get']['query'] }) =>
-        `${prefix}${PATH2}${option?.query ? `?${dataToURLString(option.query)}` : ''}`
+        `${prefix}${PATH2}${option && option.query ? `?${dataToURLString(option.query)}` : ''}`
     },
     users: {
       _userId: (val0: number) => {
@@ -86,7 +86,7 @@ const api = <T>({ baseURL, fetch }: AspidaClient<T>) => {
     $post: (option: { body: Methods0['post']['reqBody'], query: Methods0['post']['query'], config?: T }) =>
       fetch<Methods0['post']['resBody'], BasicHeaders, Methods0['post']['status']>(prefix, '', POST, option, 'FormData').json().then(r => r.body),
     $path: (option?: { method?: 'get'; query: Methods0['get']['query'] } | { method: 'post'; query: Methods0['post']['query'] }) =>
-      `${prefix}${''}${option?.query ? `?${dataToURLString(option.query)}` : ''}`
+      `${prefix}${''}${option && option.query ? `?${dataToURLString(option.query)}` : ''}`
   }
 }
 
