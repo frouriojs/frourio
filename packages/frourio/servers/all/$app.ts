@@ -7,25 +7,9 @@ import {
   HttpStatusOk,
   AspidaMethodParams
 } from 'aspida'
-import { Deps } from 'velona'
 import express, { Express, RequestHandler, Request } from 'express'
 import multer, { Options } from 'multer'
 import { validateOrReject } from 'class-validator'
-
-type Hooks = {
-  onRequest?: RequestHandler | RequestHandler[]
-  preParsing?: RequestHandler | RequestHandler[]
-  preValidation?: RequestHandler | RequestHandler[]
-  preHandler?: RequestHandler | RequestHandler[]
-  onSend?: RequestHandler | RequestHandler[]
-}
-
-export function defineHooks<T extends Hooks>(hooks: () => T): T
-export function defineHooks<T extends Hooks, U extends Record<string, any>>(deps: U, cb: (deps: Deps<U>) => T): T & { inject: (d: Deps<U>) => T }
-export function defineHooks<T extends Hooks, U extends Record<string, any>>(hooks: () => T | U, cb?: (deps: Deps<U>) => T) {
-  return typeof hooks === 'function' ? hooks() : { ...cb!(hooks), inject: (d: Deps<U>) => cb!(d) }
-}
-
 import * as Validators from './validators'
 import controller0, { hooks as ctrlHooks0 } from './api/controller'
 import controller1 from './api/500/controller'
