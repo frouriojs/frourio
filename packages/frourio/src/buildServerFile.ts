@@ -285,7 +285,7 @@ export default (app: Express, options: FrourioOptions = {}) => {
 ${
   hasMulter
     ? `  const uploader = multer(
-      options.multer ?? { dest: path.join(__dirname, '.upload'), limits: { fileSize: 1024 ** 3 } }
+    options.multer ?? { dest: path.join(__dirname, '.upload'), limits: { fileSize: 1024 ** 3 } }
   ).any()
 `
     : ''

@@ -19,7 +19,7 @@ const findRootFiles = (dir: string): string[] =>
 export default (appDir: string, project: string) => {
   const hooksList: string[] = []
   const controllers: [string, boolean][] = []
-  const configDir = project.replace(/\/[^/]+\.json$/, '')
+  const configDir = path.resolve(project.replace(/\/[^/]+\.json$/, ''))
   const configFileName = ts.findConfigFile(
     configDir,
     ts.sys.fileExists,

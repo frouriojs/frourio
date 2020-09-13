@@ -209,7 +209,7 @@ const formatMulterData = (arrayTypeKeys: [string, boolean][]): RequestHandler =>
 export default (app: Express, options: FrourioOptions = {}) => {
   const basePath = options.basePath ?? ''
   const uploader = multer(
-      options.multer ?? { dest: path.join(__dirname, '.upload'), limits: { fileSize: 1024 ** 3 } }
+    options.multer ?? { dest: path.join(__dirname, '.upload'), limits: { fileSize: 1024 ** 3 } }
   ).any()
 
   app.get(`${basePath}/`, [
