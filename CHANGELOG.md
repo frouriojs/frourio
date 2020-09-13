@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.12.1](https://github.com/frouriojs/frourio/compare/v0.12.0...v0.12.1) (2020-09-13)
+
+
+### Bug Fixes
+
+* optimize ts.createProgram ([c952735](https://github.com/frouriojs/frourio/commit/c952735e95a7a1cbb4061d29f327853b9c7e3035))
+* resolve project path ([6a04689](https://github.com/frouriojs/frourio/commit/6a046892f9dcd66bb8fd66c29df8a3547b0cded9))
+
+
+### Refactors
+
+* move defineHooks to $relay.ts ([863eb92](https://github.com/frouriojs/frourio/commit/863eb92d6eb5ce89a007f973f1a7b6672883d2e3))
+
 ## [0.12.0](https://github.com/frouriojs/frourio/compare/v0.11.0...v0.12.0) (2020-09-11)
 
 

@@ -18,27 +18,11 @@ import {
   HttpStatusOk,
   AspidaMethodParams
 } from 'aspida'
-import { Deps } from 'velona'
 import ${hasJSONBody ? 'express, ' : ''}{ Express, RequestHandler${
       hasValidator ? ', Request' : ''
     } } from 'express'${hasMulter ? "\nimport multer, { Options } from 'multer'" : ''}${
       hasValidator ? "\nimport { validateOrReject } from 'class-validator'" : ''
     }
-
-type Hooks = {
-  onRequest?: RequestHandler | RequestHandler[]
-  preParsing?: RequestHandler | RequestHandler[]
-  preValidation?: RequestHandler | RequestHandler[]
-  preHandler?: RequestHandler | RequestHandler[]
-  onSend?: RequestHandler | RequestHandler[]
-}
-
-export function defineHooks<T extends Hooks>(hooks: () => T): T
-export function defineHooks<T extends Hooks, U extends Record<string, any>>(deps: U, cb: (deps: Deps<U>) => T): T & { inject: (d: Deps<U>) => T }
-export function defineHooks<T extends Hooks, U extends Record<string, any>>(hooks: () => T | U, cb?: (deps: Deps<U>) => T) {
-  return typeof hooks === 'function' ? hooks() : { ...cb!(hooks), inject: (d: Deps<U>) => cb!(d) }
-}
-
 ${hasValidator ? `import * as Validators from './validators'${imports ? '\n' : ''}` : ''}${imports}
 
 export type FrourioOptions = {
@@ -285,7 +269,7 @@ export default (app: Express, options: FrourioOptions = {}) => {
 ${
   hasMulter
     ? `  const uploader = multer(
-      options.multer ?? { dest: path.join(__dirname, '.upload'), limits: { fileSize: 1024 ** 3 } }
+    options.multer ?? { dest: path.join(__dirname, '.upload'), limits: { fileSize: 1024 ** 3 } }
   ).any()
 `
     : ''

@@ -3,13 +3,23 @@ import fs from 'fs'
 import ts from 'typescript'
 import createDefaultFiles from './createDefaultFilesIfNotExists'
 
-const hooksEvents = ['onRequest', 'preParsing', 'preValidation', 'preHandler', 'onSend'] as const
-type HooksEvent = typeof hooksEvents[number]
+type HooksEvent = 'onRequest' | 'preParsing' | 'preValidation' | 'preHandler' | 'onSend'
+
+const findRootFiles = (dir: string): string[] =>
+  fs
+    .readdirSync(dir, { withFileTypes: true })
+    .flatMap(d =>
+      d.isDirectory()
+        ? findRootFiles(`${dir}/${d.name}`)
+        : d.name === 'hooks.ts' || d.name === 'controller.ts'
+        ? [`${dir}/${d.name}`]
+        : []
+    )
 
 export default (appDir: string, project: string) => {
   const hooksList: string[] = []
   const controllers: [string, boolean][] = []
-  const configDir = project.replace(/\/[^/]+\.json$/, '')
+  const configDir = path.resolve(project.replace(/\/[^/]+\.json$/, ''))
   const configFileName = ts.findConfigFile(
     configDir,
     ts.sys.fileExists,
@@ -23,6 +33,14 @@ export default (appDir: string, project: string) => {
         configDir
       )
     : undefined
+
+  const program = ts.createProgram(
+    findRootFiles(appDir),
+    compilerOptions?.options
+      ? { baseUrl: compilerOptions?.options.baseUrl, paths: compilerOptions?.options.paths }
+      : {}
+  )
+  const checker = program.getTypeChecker()
 
   const createText = (
     dirPath: string,
@@ -42,7 +60,7 @@ export default (appDir: string, project: string) => {
         : ''
 
     const relayPath = path.join(input, '$relay.ts')
-    const text = `/* eslint-disable */\nimport { Deps } from 'velona'\nimport { ServerMethods, defineHooks } from '${appText}'\n${
+    const text = `/* eslint-disable */\nimport { RequestHandler } from 'express'\nimport { Deps } from 'velona'\nimport { ServerMethods } from '${appText}'\n${
       userPath ? `import { User } from '${userPath}'\n` : ''
     }import { Methods } from './'\n\ntype ControllerMethods = ServerMethods<Methods, {${
       userPath ? '\n  user: User\n' : ''
@@ -52,7 +70,19 @@ export default (appDir: string, project: string) => {
         : ''
     }}>
 
-export { defineHooks }
+export type Hooks = {
+  onRequest?: RequestHandler | RequestHandler[]
+  preParsing?: RequestHandler | RequestHandler[]
+  preValidation?: RequestHandler | RequestHandler[]
+  preHandler?: RequestHandler | RequestHandler[]
+  onSend?: RequestHandler | RequestHandler[]
+}
+
+export function defineHooks<T extends Hooks>(hooks: () => T): T
+export function defineHooks<T extends Hooks, U extends Record<string, any>>(deps: U, cb: (deps: Deps<U>) => T): T & { inject: (d: Deps<U>) => T }
+export function defineHooks<T extends Hooks, U extends Record<string, any>>(hooks: () => T | U, cb?: (deps: Deps<U>) => T) {
+  return typeof hooks === 'function' ? hooks() : { ...cb!(hooks), inject: (d: Deps<U>) => cb!(d) }
+}
 
 export function defineController(methods: () => ControllerMethods): ControllerMethods
 export function defineController<T extends Record<string, any>>(deps: T, cb: (deps: Deps<T>) => ControllerMethods): ControllerMethods & { inject: (d: Deps<T>) => ControllerMethods }
@@ -70,17 +100,10 @@ export function defineController<T extends Record<string, any>>(methods: () => C
     const indexFile = path.join(input, 'index.ts')
     const hooksFile = path.join(input, 'hooks.ts')
     const controllerFile = path.join(input, 'controller.ts')
-    const program = ts.createProgram(
-      [indexFile, hooksFile, controllerFile],
-      compilerOptions?.options
-        ? { baseUrl: compilerOptions?.options.baseUrl, paths: compilerOptions?.options.paths }
-        : {}
-    )
     const source = program.getSourceFile(indexFile)
     const results: string[] = []
 
     if (source) {
-      const checker = program.getTypeChecker()
       const methods = ts.forEachChild(source, node =>
         (ts.isTypeAliasDeclaration(node) || ts.isInterfaceDeclaration(node)) &&
         node.name.escapedText === 'Methods' &&
