@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.12.2](https://github.com/frouriojs/frourio/compare/v0.12.1...v0.12.2) (2020-09-13)
+
+
+### Bug Fixes
+
+* create $relay.ts before init tsc ([05c76d7](https://github.com/frouriojs/frourio/commit/05c76d7c18d9de482f3a85085693ec5e0d975b8f))
+
 ### [0.12.1](https://github.com/frouriojs/frourio/compare/v0.12.0...v0.12.1) (2020-09-13)
 
 
