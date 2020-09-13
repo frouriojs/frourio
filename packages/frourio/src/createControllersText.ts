@@ -4,6 +4,7 @@ import ts from 'typescript'
 import createDefaultFiles from './createDefaultFilesIfNotExists'
 
 type HooksEvent = 'onRequest' | 'preParsing' | 'preValidation' | 'preHandler' | 'onSend'
+type Param = [string, string]
 
 const findRootFiles = (dir: string): string[] =>
   fs
@@ -16,9 +17,7 @@ const findRootFiles = (dir: string): string[] =>
         : []
     )
 
-export default (appDir: string, project: string) => {
-  const hooksList: string[] = []
-  const controllers: [string, boolean][] = []
+const initTSC = (appDir: string, project: string) => {
   const configDir = path.resolve(project.replace(/\/[^/]+\.json$/, ''))
   const configFileName = ts.findConfigFile(
     configDir,
@@ -40,35 +39,18 @@ export default (appDir: string, project: string) => {
       ? { baseUrl: compilerOptions?.options.baseUrl, paths: compilerOptions?.options.paths }
       : {}
   )
-  const checker = program.getTypeChecker()
 
-  const createText = (
-    dirPath: string,
-    hooks: { name: string; events: { type: HooksEvent; isArray: boolean }[] }[],
-    params: [string, string][],
-    appPath = '$app',
-    user = ''
-  ) => {
-    const input = path.posix.join(appDir, dirPath)
-    const appText = `../${appPath}`
-    const userPath =
-      fs.existsSync(path.join(input, 'hooks.ts')) &&
-      /(^|\n)export .+ User(,| )/.test(fs.readFileSync(path.join(input, 'hooks.ts'), 'utf8'))
-        ? './hooks'
-        : user
-        ? `./.${user}`
-        : ''
+  return { program, checker: program.getTypeChecker() }
+}
 
-    const relayPath = path.join(input, '$relay.ts')
-    const text = `/* eslint-disable */\nimport { RequestHandler } from 'express'\nimport { Deps } from 'velona'\nimport { ServerMethods } from '${appText}'\n${
-      userPath ? `import { User } from '${userPath}'\n` : ''
-    }import { Methods } from './'\n\ntype ControllerMethods = ServerMethods<Methods, {${
-      userPath ? '\n  user: User\n' : ''
-    }${!userPath && params.length ? '\n' : ''}${
-      params.length
-        ? `  params: {\n${params.map(v => `    ${v[0]}: ${v[1]}`).join('\n')}\n  }\n`
-        : ''
-    }}>
+const createRelayFile = (input: string, appText: string, userPath: string, params: Param[]) => {
+  const text = `/* eslint-disable */\nimport { RequestHandler } from 'express'\nimport { Deps } from 'velona'\nimport { ServerMethods } from '${appText}'\n${
+    userPath ? `import { User } from '${userPath}'\n` : ''
+  }import { Methods } from './'\n\ntype ControllerMethods = ServerMethods<Methods, {${
+    userPath ? '\n  user: User\n' : ''
+  }${!userPath && params.length ? '\n' : ''}${
+    params.length ? `  params: {\n${params.map(v => `    ${v[0]}: ${v[1]}`).join('\n')}\n  }\n` : ''
+  }}>
 
 export type Hooks = {
   onRequest?: RequestHandler | RequestHandler[]
@@ -91,16 +73,56 @@ export function defineController<T extends Record<string, any>>(methods: () => C
 }
 `
 
-    if (!fs.existsSync(relayPath) || fs.readFileSync(relayPath, 'utf8') !== text) {
-      fs.writeFileSync(relayPath, text, 'utf8')
-    }
+  fs.writeFileSync(path.join(input, '$relay.ts'), text, 'utf8')
+}
 
-    createDefaultFiles(input)
+const createFiles = (
+  appDir: string,
+  dirPath: string,
+  params: Param[],
+  appPath: string,
+  user: string
+) => {
+  const input = path.posix.join(appDir, dirPath)
+  const appText = `../${appPath}`
+  const userPath =
+    fs.existsSync(path.join(input, 'hooks.ts')) &&
+    /(^|\n)export .+ User(,| )/.test(fs.readFileSync(path.join(input, 'hooks.ts'), 'utf8'))
+      ? './hooks'
+      : user
+      ? `./.${user}`
+      : ''
 
-    const indexFile = path.join(input, 'index.ts')
-    const hooksFile = path.join(input, 'hooks.ts')
-    const controllerFile = path.join(input, 'controller.ts')
-    const source = program.getSourceFile(indexFile)
+  createRelayFile(input, appText, userPath, params)
+  createDefaultFiles(input)
+
+  fs.readdirSync(input, { withFileTypes: true }).forEach(
+    d =>
+      d.isDirectory() &&
+      createFiles(
+        appDir,
+        path.posix.join(dirPath, d.name),
+        d.name.startsWith('_')
+          ? [...params, [d.name.slice(1).split('@')[0], d.name.split('@')[1] ?? 'string']]
+          : params,
+        appText,
+        userPath
+      )
+  )
+}
+
+export default (appDir: string, project: string) => {
+  createFiles(appDir, '', [], '$app', '')
+
+  const { program, checker } = initTSC(appDir, project)
+  const hooksPaths: string[] = []
+  const controllers: [string, boolean][] = []
+  const createText = (
+    dirPath: string,
+    hooks: { name: string; events: { type: HooksEvent; isArray: boolean }[] }[]
+  ) => {
+    const input = path.posix.join(appDir, dirPath)
+    const source = program.getSourceFile(path.join(input, 'index.ts'))
     const results: string[] = []
 
     if (source) {
@@ -113,7 +135,7 @@ export function defineController<T extends Record<string, any>>(methods: () => C
       )
 
       if (methods?.length) {
-        const hooksSource = program.getSourceFile(hooksFile)
+        const hooksSource = program.getSourceFile(path.join(input, 'hooks.ts'))
 
         if (hooksSource) {
           const events = ts.forEachChild(hooksSource, node => {
@@ -139,12 +161,12 @@ export function defineController<T extends Record<string, any>>(methods: () => C
           })
 
           if (events) {
-            hooks.push({ name: `hooks${hooksList.length}`, events })
-            hooksList.push(`${input}/hooks`)
+            hooks.push({ name: `hooks${hooksPaths.length}`, events })
+            hooksPaths.push(`${input}/hooks`)
           }
         }
 
-        const controllerSource = program.getSourceFile(controllerFile)
+        const controllerSource = program.getSourceFile(path.join(input, 'controller.ts'))
         let ctrlHooksNode: ts.Node | undefined
 
         if (controllerSource) {
@@ -314,38 +336,26 @@ ${validateInfo
       }
     }
 
-    const childrenDirs = fs
-      .readdirSync(input, { withFileTypes: true })
-      .filter(d => d.isDirectory() && !d.name.startsWith('@'))
+    const childrenDirs = fs.readdirSync(input, { withFileTypes: true }).filter(d => d.isDirectory())
 
     if (childrenDirs.length) {
       results.push(
         ...childrenDirs
           .filter(d => !d.name.startsWith('_'))
-          .flatMap(d =>
-            createText(path.posix.join(dirPath, d.name), hooks, params, appText, userPath)
-          )
+          .flatMap(d => createText(path.posix.join(dirPath, d.name), hooks))
       )
 
       const value = childrenDirs.find(d => d.name.startsWith('_'))
 
       if (value) {
-        results.push(
-          ...createText(
-            path.posix.join(dirPath, value.name),
-            hooks,
-            [...params, [value.name.slice(1).split('@')[0], value.name.split('@')[1] ?? 'string']],
-            appText,
-            userPath
-          )
-        )
+        results.push(...createText(path.posix.join(dirPath, value.name), hooks))
       }
     }
 
     return results
   }
 
-  const text = createText('', [], []).join('\n')
+  const text = createText('', []).join('\n')
   const ctrlHooks = controllers.filter(c => c[1])
 
   return {
@@ -356,7 +366,7 @@ ${validateInfo
             ctrl[1] ? `, { hooks as ctrlHooks${ctrlHooks.indexOf(ctrl)} }` : ''
           } from '${ctrl[0].replace(/^api/, './api').replace(appDir, './api')}'`
       )
-      .join('\n')}${hooksList.length ? '\n' : ''}${hooksList
+      .join('\n')}${hooksPaths.length ? '\n' : ''}${hooksPaths
       .map(
         (m, i) => `import hooks${i} from '${m.replace(/^api/, './api').replace(appDir, './api')}'`
       )
