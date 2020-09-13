@@ -3,8 +3,18 @@ import fs from 'fs'
 import ts from 'typescript'
 import createDefaultFiles from './createDefaultFilesIfNotExists'
 
-const hooksEvents = ['onRequest', 'preParsing', 'preValidation', 'preHandler', 'onSend'] as const
-type HooksEvent = typeof hooksEvents[number]
+type HooksEvent = 'onRequest' | 'preParsing' | 'preValidation' | 'preHandler' | 'onSend'
+
+const findRootFiles = (dir: string): string[] =>
+  fs
+    .readdirSync(dir, { withFileTypes: true })
+    .flatMap(d =>
+      d.isDirectory()
+        ? findRootFiles(`${dir}/${d.name}`)
+        : d.name === 'hooks.ts' || d.name === 'controller.ts'
+        ? [`${dir}/${d.name}`]
+        : []
+    )
 
 export default (appDir: string, project: string) => {
   const hooksList: string[] = []
@@ -23,6 +33,14 @@ export default (appDir: string, project: string) => {
         configDir
       )
     : undefined
+
+  const program = ts.createProgram(
+    findRootFiles(appDir),
+    compilerOptions?.options
+      ? { baseUrl: compilerOptions?.options.baseUrl, paths: compilerOptions?.options.paths }
+      : {}
+  )
+  const checker = program.getTypeChecker()
 
   const createText = (
     dirPath: string,
@@ -70,17 +88,10 @@ export function defineController<T extends Record<string, any>>(methods: () => C
     const indexFile = path.join(input, 'index.ts')
     const hooksFile = path.join(input, 'hooks.ts')
     const controllerFile = path.join(input, 'controller.ts')
-    const program = ts.createProgram(
-      [indexFile, hooksFile, controllerFile],
-      compilerOptions?.options
-        ? { baseUrl: compilerOptions?.options.baseUrl, paths: compilerOptions?.options.paths }
-        : {}
-    )
     const source = program.getSourceFile(indexFile)
     const results: string[] = []
 
     if (source) {
-      const checker = program.getTypeChecker()
       const methods = ts.forEachChild(source, node =>
         (ts.isTypeAliasDeclaration(node) || ts.isInterfaceDeclaration(node)) &&
         node.name.escapedText === 'Methods' &&
