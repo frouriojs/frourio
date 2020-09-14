@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.13.0](https://github.com/frouriojs/frourio/compare/v0.12.2...v0.13.0) (2020-09-14)
+
+
+### Features
+
+* rename $app.ts to $server.ts ([432b837](https://github.com/frouriojs/frourio/commit/432b8377f04264299d4334cc6bdbaab390ed29f1))
+
 ### [0.12.2](https://github.com/frouriojs/frourio/compare/v0.12.1...v0.12.2) (2020-09-13)
 
 

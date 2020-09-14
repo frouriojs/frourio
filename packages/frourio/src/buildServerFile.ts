@@ -278,6 +278,6 @@ ${controllers}
   return app
 }
 `,
-    filePath: path.posix.join(input, '$app.ts')
+    filePath: path.posix.join(input, '$server.ts')
   }
 }

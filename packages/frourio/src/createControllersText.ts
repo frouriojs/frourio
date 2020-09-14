@@ -112,7 +112,7 @@ const createFiles = (
 }
 
 export default (appDir: string, project: string) => {
-  createFiles(appDir, '', [], '$app', '')
+  createFiles(appDir, '', [], '$server', '')
 
   const { program, checker } = initTSC(appDir, project)
   const hooksPaths: string[] = []

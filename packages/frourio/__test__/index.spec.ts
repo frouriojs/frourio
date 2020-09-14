@@ -6,7 +6,7 @@ import FormData from 'form-data'
 import axios from 'axios'
 import aspida from '@aspida/axios'
 import api from '../servers/all/api/$api'
-import frourio from '../servers/all/$app'
+import frourio from '../servers/all/$server'
 
 const port = 11111
 const baseURL = `http://localhost:${port}`
