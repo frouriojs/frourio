@@ -1,4 +1,4 @@
 import express from 'express'
-import frourio from './frourio/$app'
+import server from './frourio/$server'
 
-frourio(express()).listen(3000)
+server(express()).listen(3000)

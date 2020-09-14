@@ -1,7 +1,7 @@
 /* eslint-disable */
 import { RequestHandler } from 'express'
 import { Deps } from 'velona'
-import { ServerMethods } from '../../../$app'
+import { ServerMethods } from '../../../$server'
 import { User } from './../hooks'
 import { Methods } from './'
 
