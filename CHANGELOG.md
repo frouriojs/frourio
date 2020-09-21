@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.13.1](https://github.com/frouriojs/frourio/compare/v0.13.0...v0.13.1) (2020-09-21)
+
+
+### Bug Fixes
+
+* redefine ServerResponse ([ca11cc8](https://github.com/frouriojs/frourio/commit/ca11cc850b5af957cf04d2d048d4dc66022b8a69))
+
 ## [0.13.0](https://github.com/frouriojs/frourio/compare/v0.12.2...v0.13.0) (2020-09-14)
 
 

@@ -53,34 +53,16 @@ type BaseResponse<T, U, V> = {
 }
 
 type ServerResponse<K extends AspidaMethodParams> =
-  | (K['resBody'] extends {} | null
-      ? K['resHeaders'] extends {}
-        ? BaseResponse<K['resBody'], K['resHeaders'], K['status']>
-        : PartiallyPartial<
-            BaseResponse<
-              K['resBody'],
-              K['resHeaders'] extends {} | undefined ? K['resHeaders'] : undefined,
-              K['status']
-            >,
-            'headers'
-          >
-      : K['resHeaders'] extends {}
-      ? PartiallyPartial<
-          BaseResponse<
-            K['resBody'] extends {} | null | undefined ? K['resBody'] : undefined,
-            K['resHeaders'],
-            K['status']
-          >,
-          'body'
-        >
-      : PartiallyPartial<
-          BaseResponse<
-            K['resBody'] extends {} | null | undefined ? K['resBody'] : undefined,
-            K['resHeaders'] extends {} | undefined ? K['resHeaders'] : undefined,
-            K['status']
-          >,
-          'body' | 'headers'
-        >)
+  | (K extends { resBody: K['resBody']; resHeaders: K['resHeaders'] }
+  ? BaseResponse<K['resBody'], K['resHeaders'], K['status']>
+  : K extends { resBody: K['resBody'] }
+  ? PartiallyPartial<BaseResponse<K['resBody'], K['resHeaders'], K['status']>, 'headers'>
+  : K extends { resHeaders: K['resHeaders'] }
+  ? PartiallyPartial<BaseResponse<K['resBody'], K['resHeaders'], K['status']>, 'body'>
+  : PartiallyPartial<
+      BaseResponse<K['resBody'], K['resHeaders'], K['status']>,
+      'body' | 'headers'
+    >)
   | PartiallyPartial<BaseResponse<any, any, HttpStatusNoOk>, 'body' | 'headers'>
 
 type ServerValues = {
