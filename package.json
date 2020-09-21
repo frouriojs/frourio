@@ -88,7 +88,7 @@
     "multer": "^1.4.2",
     "prettier": "^2.1.2",
     "standard-version": "^9.0.0",
-    "ts-jest": "^26.3.0",
+    "ts-jest": "^26.4.0",
     "typescript": "^4.0.3"
   }
 }
