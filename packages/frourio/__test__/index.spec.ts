@@ -7,6 +7,7 @@ import axios from 'axios'
 import aspida from '@aspida/axios'
 import api from '../servers/all/api/$api'
 import frourio from '../servers/all/$server'
+import controller from '../servers/all/api/controller'
 
 const port = 11111
 const baseURL = `http://localhost:${port}`
@@ -115,4 +116,26 @@ test('POST: 400', async () => {
       headers: form.getHeaders()
     })
   ).rejects.toHaveProperty('response.status', 400)
+})
+
+test('controller dependency injection', async () => {
+  let val = 0
+  const id = '5'
+  const injectedController = controller.inject({
+    log: (n: number) => {
+      val = n
+      return Promise.resolve(n)
+    }
+  })
+
+  await expect(
+    injectedController.get({
+      path: '',
+      method: 'GET',
+      query: { id, requiredNum: 1, requiredNumArr: [0], disable: 'true' },
+      body: undefined,
+      headers: undefined
+    })
+  ).resolves.toHaveProperty('body', { id: +id })
+  expect(val).toBe(+id)
 })
