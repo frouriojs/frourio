@@ -268,7 +268,13 @@ export default (appDir: string, project: string) => {
                 ...genHookTexts('onRequest'),
                 ...(isFormData || (!reqFormat && reqBody) ? genHookTexts('preParsing') : []),
                 numberTypeQueryParams && numberTypeQueryParams.length
-                  ? `parseNumberTypeQueryParams([${numberTypeQueryParams.join(', ')}])`
+                  ? `parseNumberTypeQueryParams(${
+                      query?.declarations.some(
+                        d => d.getChildAt(1).kind === ts.SyntaxKind.QuestionToken
+                      )
+                        ? 'query => !Object.keys(query).length ? [] :'
+                        : '() =>'
+                    } [${numberTypeQueryParams.join(', ')}])`
                   : '',
                 ...(isFormData && reqBody
                   ? [

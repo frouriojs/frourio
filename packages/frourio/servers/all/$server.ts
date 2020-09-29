@@ -97,7 +97,9 @@ export type ServerMethods<T extends AspidaMethods, U extends ServerValues> = {
   ) => ServerResponse<T[K]> | Promise<ServerResponse<T[K]>>
 }
 
-const parseNumberTypeQueryParams = (numberTypeParams: [string, boolean, boolean][]): RequestHandler => ({ query }, res, next) => {
+const parseNumberTypeQueryParams = (numberTypeParamsFn: (query: Request['query']) => ([string, boolean, boolean][])): RequestHandler => ({ query }, res, next) => {
+  const numberTypeParams = numberTypeParamsFn(query)
+
   for (const [key, isOptional, isArray] of numberTypeParams) {
     const param = query[key]
 
@@ -224,7 +226,7 @@ export default (app: Express, options: FrourioOptions = {}) => {
   app.get(`${basePath}/`, [
     ...hooks0.onRequest,
     ctrlHooks0.onRequest,
-    parseNumberTypeQueryParams([['requiredNum', false, false], ['optionalNum', true, false], ['optionalNumArr', true, true], ['emptyNum', true, false], ['requiredNumArr', false, true]]),
+    parseNumberTypeQueryParams(query => !Object.keys(query).length ? [] : [['requiredNum', false, false], ['optionalNum', true, false], ['optionalNumArr', true, true], ['emptyNum', true, false], ['requiredNumArr', false, true]]),
     createValidateHandler(req => [
       Object.keys(req.query).length ? validateOrReject(Object.assign(new Validators.Query(), req.query)) : null
     ]),
@@ -235,7 +237,7 @@ export default (app: Express, options: FrourioOptions = {}) => {
     ...hooks0.onRequest,
     ctrlHooks0.onRequest,
     hooks0.preParsing,
-    parseNumberTypeQueryParams([['requiredNum', false, false], ['optionalNum', true, false], ['optionalNumArr', true, true], ['emptyNum', true, false], ['requiredNumArr', false, true]]),
+    parseNumberTypeQueryParams(() => [['requiredNum', false, false], ['optionalNum', true, false], ['optionalNumArr', true, true], ['emptyNum', true, false], ['requiredNumArr', false, true]]),
     uploader,
     formatMulterData([]),
     createValidateHandler(req => [
@@ -268,6 +270,7 @@ export default (app: Express, options: FrourioOptions = {}) => {
 
   app.get(`${basePath}/texts`, [
     ...hooks0.onRequest,
+    parseNumberTypeQueryParams(query => !Object.keys(query).length ? [] : [['limit', true, false]]),
     methodsToHandler(controller4.get)
   ])
 

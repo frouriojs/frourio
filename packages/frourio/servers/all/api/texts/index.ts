@@ -1,7 +1,8 @@
 export type Methods = {
   get: {
-    query: {
+    query?: {
       val: string
+      limit?: number
     }
     resBody: string
   }
