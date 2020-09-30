@@ -17,7 +17,6 @@ export type Hooks = {
   preParsing?: RequestHandler | RequestHandler[]
   preValidation?: RequestHandler | RequestHandler[]
   preHandler?: RequestHandler | RequestHandler[]
-  onSend?: RequestHandler | RequestHandler[]
 }
 
 export function defineHooks<T extends Hooks>(hooks: () => T): T

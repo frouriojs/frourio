@@ -53,9 +53,9 @@ const api = <T>({ baseURL, fetch }: AspidaClient<T>) => {
           fetch<Methods5['put']['resBody']>(prefix, PATH4, PUT, option).json().then(r => r.body),
         $path: () => `${prefix}${PATH4}`
       },
-      get: (option: { query: Methods4['get']['query'], config?: T }) =>
+      get: (option?: { query?: Methods4['get']['query'], config?: T }) =>
         fetch<Methods4['get']['resBody']>(prefix, PATH3, GET, option).text(),
-      $get: (option: { query: Methods4['get']['query'], config?: T }) =>
+      $get: (option?: { query?: Methods4['get']['query'], config?: T }) =>
         fetch<Methods4['get']['resBody']>(prefix, PATH3, GET, option).text().then(r => r.body),
       put: (option?: { config?: T }) =>
         fetch(prefix, PATH3, PUT, option).send(),

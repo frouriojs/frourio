@@ -110,7 +110,9 @@ export type ServerMethods<T extends AspidaMethods, U extends ServerValues> = {
 ${
   hasNumberTypeQuery
     ? `
-const parseNumberTypeQueryParams = (numberTypeParams: [string, boolean, boolean][]): RequestHandler => ({ query }, res, next) => {
+const parseNumberTypeQueryParams = (numberTypeParamsFn: (query: Request['query']) => ([string, boolean, boolean][])): RequestHandler => ({ query }, res, next) => {
+  const numberTypeParams = numberTypeParamsFn(query)
+
   for (const [key, isOptional, isArray] of numberTypeParams) {
     const param = query[key]
 

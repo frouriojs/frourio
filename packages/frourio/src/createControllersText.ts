@@ -3,7 +3,7 @@ import fs from 'fs'
 import ts from 'typescript'
 import createDefaultFiles from './createDefaultFilesIfNotExists'
 
-type HooksEvent = 'onRequest' | 'preParsing' | 'preValidation' | 'preHandler' | 'onSend'
+type HooksEvent = 'onRequest' | 'preParsing' | 'preValidation' | 'preHandler'
 type Param = [string, string]
 
 const findRootFiles = (dir: string): string[] =>
@@ -57,7 +57,6 @@ export type Hooks = {
   preParsing?: RequestHandler | RequestHandler[]
   preValidation?: RequestHandler | RequestHandler[]
   preHandler?: RequestHandler | RequestHandler[]
-  onSend?: RequestHandler | RequestHandler[]
 }
 
 export function defineHooks<T extends Hooks>(hooks: () => T): T
@@ -269,7 +268,13 @@ export default (appDir: string, project: string) => {
                 ...genHookTexts('onRequest'),
                 ...(isFormData || (!reqFormat && reqBody) ? genHookTexts('preParsing') : []),
                 numberTypeQueryParams && numberTypeQueryParams.length
-                  ? `parseNumberTypeQueryParams([${numberTypeQueryParams.join(', ')}])`
+                  ? `parseNumberTypeQueryParams(${
+                      query?.declarations.some(
+                        d => d.getChildAt(1).kind === ts.SyntaxKind.QuestionToken
+                      )
+                        ? 'query => !Object.keys(query).length ? [] :'
+                        : '() =>'
+                    } [${numberTypeQueryParams.join(', ')}])`
                   : '',
                 ...(isFormData && reqBody
                   ? [
@@ -319,8 +324,7 @@ ${validateInfo
                       .join("', '")}'])`
                   : '',
                 ...genHookTexts('preHandler'),
-                `methodsToHandler(controller${controllers.length}.${m.name})`,
-                ...genHookTexts('onSend')
+                `methodsToHandler(controller${controllers.length}.${m.name})`
               ].filter(Boolean)
 
               return `  app.${m.name}(\`\${basePath}${`/${dirPath}`

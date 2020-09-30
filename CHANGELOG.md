@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.14.0](https://github.com/frouriojs/frourio/compare/v0.13.1...v0.14.0) (2020-09-30)
+
+
+### ⚠ BREAKING CHANGES
+
+* remove onSend Hook
+
+### Bug Fixes
+
+* parse query when required ([0261cab](https://github.com/frouriojs/frourio/commit/0261cabb5bf3957bb7dac8ae72482608afe34e5b))
+* remove onSend Hook ([8be7422](https://github.com/frouriojs/frourio/commit/8be74222eb2e81af29fe549ee6181838de9ec478))
+
+
+### Documentation
+
+* update README ([8a7763e](https://github.com/frouriojs/frourio/commit/8a7763e99610c609e84d33f9e24592865220dd04))
+
 ### [0.13.1](https://github.com/frouriojs/frourio/compare/v0.13.0...v0.13.1) (2020-09-21)
 
 
