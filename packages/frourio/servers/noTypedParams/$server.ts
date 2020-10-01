@@ -108,7 +108,7 @@ const createValidateHandler = (validators: (req: Request) => (Promise<void> | nu
 
 const methodsToHandler = (
   methodCallback: ServerMethods<any, any>[LowerHttpMethod]
-): RequestHandler => async (req, res) => {
+): RequestHandler => async (req, res, next) => {
   try {
     const result = methodCallback({
       query: req.query,
@@ -128,7 +128,7 @@ const methodsToHandler = (
 
     res.status(status).send(body)
   } catch (e) {
-    res.sendStatus(500)
+    next(e)
   }
 }
 
