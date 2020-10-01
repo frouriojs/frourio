@@ -78,6 +78,9 @@ The front is checked by the type to see if it is making an API request as define
   - [URL query](#Validation-query)
   - [JSON body](#Validation-json)
   - [Custom validation](#Validation-custom)
+- [Error handling](#Error)
+  - [Controller error handler](#Error-controller)
+  - [The default error handler](#Error-default)
 - [FormData](#FormData)
   - [Multer options](#FormData-option)
 - [Database](#Database)
@@ -582,6 +585,56 @@ HTTP/1.1 400 Bad Request
 
 $ curl -X POST -H "Content-Type: application/json" -d '{"id":"incorrectId","pass":"incorrectPass"}' http://localhost:8080/api/token -i
 HTTP/1.1 401 Unauthorized
+```
+
+<a id="Error"></a>
+
+## Error handling
+
+<a id="Error-controller"></a>
+
+### Controller error handler
+
+`server/api/tasks/controller.ts`
+
+```ts
+import { defineController } from './$relay'
+import { createTask } from '$/service/tasks'
+
+export default defineController(() => ({
+  post: async ({ body }) => {
+    try {
+      const task = await createTask(body.label)
+
+      return { status: 201, body: task }
+    } catch (e) {
+      return { status: 500, body: 'Something broke!' }
+    }
+  }
+}))
+```
+
+<a id="Error-default"></a>
+
+### The default error handler
+
+http://expressjs.com/en/guide/error-handling.html#the-default-error-handler
+
+`server/index.ts`
+
+```ts
+import express from 'express'
+import server from './$server'
+
+const app = express()
+
+server(app, { basePath: '/api/v1' })
+
+app.use((err, req, res, next) => {
+  console.error(err.stack)
+  res.status(500).send('Something broke!')
+})
+app.listen(3000)
 ```
 
 ## FormData
