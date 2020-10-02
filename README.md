@@ -59,7 +59,7 @@ The front is checked by the type to see if it is making an API request as define
    <img src="https://frouriojs.github.io/frourio/assets/images/architecture.png" width="900" alt="Architecture of create-frourio-app" />
 </div>
 
-## Contents
+## Table of Contents
 
 - [Install](#Install)
 - [Environment](#Environment)
@@ -83,7 +83,9 @@ The front is checked by the type to see if it is making an API request as define
   - [The default error handler](#Error-default)
 - [FormData](#FormData)
   - [Multer options](#FormData-option)
-- [Database](#Database)
+- [O/R mapping tool](#ORM)
+  - [Prisma](#ORM-prisma)
+  - [TypeORM](#ORM-typeorm)
 - [CORS / Helmet](#CORS-Helmet)
 - [Dependency Injection](#DI)
 
@@ -690,10 +692,48 @@ server(app, { basePath: '/api/v1', multer: { /* dest, fileFilter, ... */} })
 app.listen(3000)
 ```
 
-## Database
+<a id="ORM"></a>
 
-Frourio can be used with any O/R mapper.
-If you use TypeORM, we recommend [frouriojs/TypeORMer](https://github.com/frouriojs/typeormer).
+## O/R mapping tool
+
+<a id="ORM-prisma"></a>
+
+### Prisma
+
+1. Selecting the DB when installing create-frourio-app
+1. Start the DB
+1. Call the development command
+    ```sh
+    npm run dev
+    ```
+1. Create schema file
+    `server/prisma/schema.prisma`
+
+    ```ts
+    datasource db {
+      provider = "mysql"
+      url      = env("DATABASE_URL")
+    }
+
+    generator client {
+      provider = "prisma-client-js"
+    }
+
+    model Task {
+      id    Int     @id @default(autoincrement())
+      label String
+      done  Boolean @default(false)
+    }
+    ```
+1. Call the migration command
+    ```sh
+    npm run migrate
+    ```
+1. Migration is done to the DB
+
+<a id="ORM-typeorm"></a>
+
+### TypeORM
 
 1. Selecting the DB when installing create-frourio-app
 1. Start the DB

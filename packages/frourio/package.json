@@ -1,6 +1,6 @@
 {
   "name": "frourio",
-  "version": "0.14.1",
+  "version": "0.14.2",
   "description": "Perfectly type-checkable REST framework for TypeScript",
   "author": "Solufa <solufa2020@gmail.com>",
   "license": "MIT",
@@ -20,7 +20,7 @@
   "keywords": [
     "typescript",
     "aspida",
-    "server"
+    "express"
   ],
   "dependencies": {
     "aspida": "^0.22.0",

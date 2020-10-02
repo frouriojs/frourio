@@ -226,6 +226,7 @@ export default (app: Express, options: FrourioOptions = {}) => {
   app.get(`${basePath}/`, [
     ...hooks0.onRequest,
     ctrlHooks0.onRequest,
+    hooks0.preParsing,
     parseNumberTypeQueryParams(query => !Object.keys(query).length ? [] : [['requiredNum', false, false], ['optionalNum', true, false], ['optionalNumArr', true, true], ['emptyNum', true, false], ['requiredNumArr', false, true]]),
     createValidateHandler(req => [
       Object.keys(req.query).length ? validateOrReject(Object.assign(new Validators.Query(), req.query)) : null
@@ -249,11 +250,13 @@ export default (app: Express, options: FrourioOptions = {}) => {
 
   app.get(`${basePath}/500`, [
     ...hooks0.onRequest,
+    hooks0.preParsing,
     methodsToHandler(controller1.get)
   ])
 
   app.get(`${basePath}/empty/noEmpty`, [
     ...hooks0.onRequest,
+    hooks0.preParsing,
     methodsToHandler(controller2.get)
   ])
 
@@ -270,12 +273,14 @@ export default (app: Express, options: FrourioOptions = {}) => {
 
   app.get(`${basePath}/texts`, [
     ...hooks0.onRequest,
+    hooks0.preParsing,
     parseNumberTypeQueryParams(query => !Object.keys(query).length ? [] : [['limit', true, false]]),
     methodsToHandler(controller4.get)
   ])
 
   app.put(`${basePath}/texts`, [
     ...hooks0.onRequest,
+    hooks0.preParsing,
     methodsToHandler(controller4.put)
   ])
 
@@ -289,6 +294,7 @@ export default (app: Express, options: FrourioOptions = {}) => {
   app.get(`${basePath}/users`, [
     ...hooks0.onRequest,
     hooks1.onRequest,
+    hooks0.preParsing,
     ...ctrlHooks1.preHandler,
     methodsToHandler(controller6.get)
   ])
@@ -308,6 +314,7 @@ export default (app: Express, options: FrourioOptions = {}) => {
   app.get(`${basePath}/users/:userId`, [
     ...hooks0.onRequest,
     hooks1.onRequest,
+    hooks0.preParsing,
     createTypedParamsHandler(['userId']),
     methodsToHandler(controller7.get)
   ])

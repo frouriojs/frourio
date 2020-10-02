@@ -4,8 +4,6 @@ import { run } from '../src/cli'
 import build from '../src/buildServerFile'
 import aspidaBuild from 'aspida/dist/buildTemplate'
 
-const basePath = 'packages/frourio'
-
 test('version command', () => {
   const spyLog = jest.spyOn(console, 'log')
   const args = ['--version']
@@ -17,7 +15,7 @@ test('version command', () => {
 })
 
 test('build', () => {
-  const inputDir = `${basePath}/servers`
+  const inputDir = 'packages/frourio/servers'
 
   fs.readdirSync(inputDir, { withFileTypes: true })
     .filter(d => d.isDirectory())

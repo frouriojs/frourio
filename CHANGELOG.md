@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.2](https://github.com/frouriojs/frourio/compare/v0.14.1...v0.14.2) (2020-10-02)
+
+
+### Bug Fixes
+
+* always enable hooks ([2d8a898](https://github.com/frouriojs/frourio/commit/2d8a898cabbba18375ae1774407b1de1d30753d7))
+
+
+### Documentation
+
+* update README ([d7b633c](https://github.com/frouriojs/frourio/commit/d7b633c1d75335fdb4980a7af8fd49b7e28d0b4e))
+
 ### [0.14.1](https://github.com/frouriojs/frourio/compare/v0.14.0...v0.14.1) (2020-10-01)
 
 
