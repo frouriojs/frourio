@@ -266,7 +266,7 @@ export default (appDir: string, project: string) => {
 
               const handlers = [
                 ...genHookTexts('onRequest'),
-                ...(isFormData || (!reqFormat && reqBody) ? genHookTexts('preParsing') : []),
+                ...genHookTexts('preParsing'),
                 numberTypeQueryParams && numberTypeQueryParams.length
                   ? `parseNumberTypeQueryParams(${
                       query?.declarations.some(
@@ -300,9 +300,7 @@ export default (appDir: string, project: string) => {
                     ]
                   : []),
                 !reqFormat && reqBody ? 'parseJSONBoby' : '',
-                ...(validateInfo.length || dirPath.includes('@number')
-                  ? genHookTexts('preValidation')
-                  : []),
+                ...genHookTexts('preValidation'),
                 validateInfo.length
                   ? `createValidateHandler(req => [
 ${validateInfo
