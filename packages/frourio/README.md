@@ -48,7 +48,7 @@ You can use `create-frourio-app` to make sure you don't fail in building your en
 You can choose between Next.js or Nuxt.js for the front framework.  
 Frourio is based on Express.js, so it's not difficult.
 
-TypeORM setup is also completed automatically, so there is no failure in connecting to the DB.
+ORM setup is also completed automatically, so there is no failure in connecting to the DB.
 
 Once the REST API endpoint interface is defined, the server controller implementation is examined by the type.  
 The front is checked by the type to see if it is making an API request as defined in the interface.
@@ -82,7 +82,7 @@ The front is checked by the type to see if it is making an API request as define
   - [Controller error handler](#Error-controller)
   - [The default error handler](#Error-default)
 - [FormData](#FormData)
-  - [Multer options](#FormData-option)
+  - [Options](#FormData-options)
 - [O/R mapping tool](#ORM)
   - [Prisma](#ORM-prisma)
   - [TypeORM](#ORM-typeorm)
@@ -674,9 +674,9 @@ export default defineController(() => ({
 }))
 ```
 
-<a id="FormData-option"></a>
+<a id="FormData-options"></a>
 
-### Multer options
+### Options
 
 https://github.com/expressjs/multer#multeropts
 
