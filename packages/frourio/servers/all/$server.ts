@@ -1,12 +1,6 @@
 /* eslint-disable */
 import path from 'path'
-import {
-  LowerHttpMethod,
-  AspidaMethods,
-  HttpMethod,
-  HttpStatusOk,
-  AspidaMethodParams
-} from 'aspida'
+import { LowerHttpMethod, AspidaMethods, HttpMethod, HttpStatusOk, AspidaMethodParams } from 'aspida'
 import express, { Express, RequestHandler, Request } from 'express'
 import multer, { Options } from 'multer'
 import { validateOrReject } from 'class-validator'
@@ -17,8 +11,10 @@ import controller2 from './api/empty/noEmpty/controller'
 import controller3 from './api/multiForm/controller'
 import controller4 from './api/texts/controller'
 import controller5 from './api/texts/sample/controller'
-import controller6, { hooks as ctrlHooks1 } from './api/users/controller'
-import controller7 from './api/users/_userId@number/controller'
+import controller6 from './api/texts/_label@string/controller'
+import controller7, { hooks as ctrlHooks1 } from './api/users/controller'
+import controller8 from './api/users/_userId@number/controller'
+import controller9 from './api/users/_userId@number/_name/controller'
 import hooks0 from './api/hooks'
 import hooks1 from './api/users/hooks'
 
@@ -29,23 +25,7 @@ export type FrourioOptions = {
 
 export type MulterFile = Express.Multer.File
 
-type HttpStatusNoOk =
-  | 301
-  | 302
-  | 400
-  | 401
-  | 402
-  | 403
-  | 404
-  | 405
-  | 406
-  | 409
-  | 500
-  | 501
-  | 502
-  | 503
-  | 504
-  | 505
+type HttpStatusNoOk = 301 | 302 | 400 | 401 | 402 | 403 | 404 | 405 | 406 | 409 | 500 | 501 | 502 | 503 | 504 | 505
 
 type PartiallyPartial<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>
 
@@ -107,27 +87,18 @@ const parseNumberTypeQueryParams = (numberTypeParamsFn: (query: Request['query']
       if (!isOptional && param === undefined) {
         query[key] = []
       } else if (!isOptional || param !== undefined) {
-        if (!Array.isArray(param)) {
-          res.sendStatus(400)
-          return
-        }
+        if (!Array.isArray(param)) return res.sendStatus(400)
 
         const vals = (param as string[]).map(Number)
 
-        if (vals.some(isNaN)) {
-          res.sendStatus(400)
-          return
-        }
+        if (vals.some(isNaN)) return res.sendStatus(400)
 
         query[key] = vals as any
       }
     } else if (!isOptional || param !== undefined) {
       const val = Number(param)
 
-      if (isNaN(val)) {
-        res.sendStatus(400)
-        return
-      }
+      if (isNaN(val)) return res.sendStatus(400)
 
       query[key] = val as any
     }
@@ -144,31 +115,24 @@ const parseJSONBoby: RequestHandler = (req, res, next) => {
   })
 }
 
-const createTypedParamsHandler = (numberTypeParams: string[]): RequestHandler => (
-  req,
-  res,
-  next
-) => {
-  const typedParams: Record<string, string | number> = { ...req.params }
+const createTypedParamsHandler = (numberTypeParams: string[]): RequestHandler => (req, res, next) => {
+  const params: Record<string, string | number> = req.params
 
   for (const key of numberTypeParams) {
-    const val = Number(typedParams[key])
-    if (isNaN(val)) {
-      res.sendStatus(400)
-      return
-    }
+    const val = Number(params[key])
 
-    typedParams[key] = val
+    if (isNaN(val)) return res.sendStatus(400)
+
+    params[key] = val
   }
 
-  ;(req as any).typedParams = typedParams
   next()
 }
 
 const createValidateHandler = (validators: (req: Request) => (Promise<void> | null)[]): RequestHandler =>
   (req, res, next) => Promise.all(validators(req)).then(() => next()).catch(() => res.sendStatus(400))
 
-const methodsToHandler = (
+const methodToHandler = (
   methodCallback: ServerMethods<any, any>[LowerHttpMethod]
 ): RequestHandler => async (req, res, next) => {
   try {
@@ -178,7 +142,7 @@ const methodsToHandler = (
       method: req.method as HttpMethod,
       body: req.body,
       headers: req.headers,
-      params: (req as any).typedParams,
+      params: req.params,
       user: (req as any).user
     })
 
@@ -220,7 +184,7 @@ const formatMulterData = (arrayTypeKeys: [string, boolean][]): RequestHandler =>
 export default (app: Express, options: FrourioOptions = {}) => {
   const basePath = options.basePath ?? ''
   const uploader = multer(
-    options.multer ?? { dest: path.join(__dirname, '.upload'), limits: { fileSize: 1024 ** 3 } }
+    { dest: path.join(__dirname, '.upload'), limits: { fileSize: 1024 ** 3 }, ...options.multer }
   ).any()
 
   app.get(`${basePath}/`, [
@@ -231,7 +195,7 @@ export default (app: Express, options: FrourioOptions = {}) => {
     createValidateHandler(req => [
       Object.keys(req.query).length ? validateOrReject(Object.assign(new Validators.Query(), req.query)) : null
     ]),
-    methodsToHandler(controller0.get)
+    methodToHandler(controller0.get)
   ])
 
   app.post(`${basePath}/`, [
@@ -245,19 +209,19 @@ export default (app: Express, options: FrourioOptions = {}) => {
       validateOrReject(Object.assign(new Validators.Query(), req.query)),
       validateOrReject(Object.assign(new Validators.Body(), req.body))
     ]),
-    methodsToHandler(controller0.post)
+    methodToHandler(controller0.post)
   ])
 
   app.get(`${basePath}/500`, [
     ...hooks0.onRequest,
     hooks0.preParsing,
-    methodsToHandler(controller1.get)
+    methodToHandler(controller1.get)
   ])
 
   app.get(`${basePath}/empty/noEmpty`, [
     ...hooks0.onRequest,
     hooks0.preParsing,
-    methodsToHandler(controller2.get)
+    methodToHandler(controller2.get)
   ])
 
   app.post(`${basePath}/multiForm`, [
@@ -268,27 +232,33 @@ export default (app: Express, options: FrourioOptions = {}) => {
     createValidateHandler(req => [
       validateOrReject(Object.assign(new Validators.MultiForm(), req.body))
     ]),
-    methodsToHandler(controller3.post)
+    methodToHandler(controller3.post)
   ])
 
   app.get(`${basePath}/texts`, [
     ...hooks0.onRequest,
     hooks0.preParsing,
     parseNumberTypeQueryParams(query => !Object.keys(query).length ? [] : [['limit', true, false]]),
-    methodsToHandler(controller4.get)
+    methodToHandler(controller4.get)
   ])
 
   app.put(`${basePath}/texts`, [
     ...hooks0.onRequest,
     hooks0.preParsing,
-    methodsToHandler(controller4.put)
+    methodToHandler(controller4.put)
   ])
 
   app.put(`${basePath}/texts/sample`, [
     ...hooks0.onRequest,
     hooks0.preParsing,
     parseJSONBoby,
-    methodsToHandler(controller5.put)
+    methodToHandler(controller5.put)
+  ])
+
+  app.get(`${basePath}/texts/:label`, [
+    ...hooks0.onRequest,
+    hooks0.preParsing,
+    methodToHandler(controller6.get)
   ])
 
   app.get(`${basePath}/users`, [
@@ -296,7 +266,7 @@ export default (app: Express, options: FrourioOptions = {}) => {
     hooks1.onRequest,
     hooks0.preParsing,
     ...ctrlHooks1.preHandler,
-    methodsToHandler(controller6.get)
+    methodToHandler(controller7.get)
   ])
 
   app.post(`${basePath}/users`, [
@@ -308,7 +278,7 @@ export default (app: Express, options: FrourioOptions = {}) => {
       validateOrReject(Object.assign(new Validators.UserInfo(), req.body))
     ]),
     ...ctrlHooks1.preHandler,
-    methodsToHandler(controller6.post)
+    methodToHandler(controller7.post)
   ])
 
   app.get(`${basePath}/users/:userId`, [
@@ -316,7 +286,15 @@ export default (app: Express, options: FrourioOptions = {}) => {
     hooks1.onRequest,
     hooks0.preParsing,
     createTypedParamsHandler(['userId']),
-    methodsToHandler(controller7.get)
+    methodToHandler(controller8.get)
+  ])
+
+  app.get(`${basePath}/users/:userId/:name`, [
+    ...hooks0.onRequest,
+    hooks1.onRequest,
+    hooks0.preParsing,
+    createTypedParamsHandler(['userId']),
+    methodToHandler(controller9.get)
   ])
 
   return app

@@ -5,9 +5,11 @@ import { Methods as Methods1 } from './500'
 import { Methods as Methods2 } from './empty/noEmpty'
 import { Methods as Methods3 } from './multiForm'
 import { Methods as Methods4 } from './texts'
-import { Methods as Methods5 } from './texts/sample'
-import { Methods as Methods6 } from './users'
-import { Methods as Methods7 } from './users/_userId@number'
+import { Methods as Methods5 } from './texts/_label@string'
+import { Methods as Methods6 } from './texts/sample'
+import { Methods as Methods7 } from './users'
+import { Methods as Methods8 } from './users/_userId@number'
+import { Methods as Methods9 } from './users/_userId@number/_name'
 
 const api = <T>({ baseURL, fetch }: AspidaClient<T>) => {
   const prefix = (baseURL === undefined ? '' : baseURL).replace(/\/$/, '')
@@ -46,11 +48,22 @@ const api = <T>({ baseURL, fetch }: AspidaClient<T>) => {
       $path: () => `${prefix}${PATH2}`
     },
     texts: {
+      _label: (val0: string) => {
+        const prefix0 = `${PATH3}/${val0}`
+
+        return {
+          get: (option?: { config?: T }) =>
+            fetch<Methods5['get']['resBody']>(prefix, prefix0, GET, option).text(),
+          $get: (option?: { config?: T }) =>
+            fetch<Methods5['get']['resBody']>(prefix, prefix0, GET, option).text().then(r => r.body),
+          $path: () => `${prefix}${prefix0}`
+        }
+      },
       sample: {
-        put: (option: { body: Methods5['put']['reqBody'], config?: T }) =>
-          fetch<Methods5['put']['resBody']>(prefix, PATH4, PUT, option).json(),
-        $put: (option: { body: Methods5['put']['reqBody'], config?: T }) =>
-          fetch<Methods5['put']['resBody']>(prefix, PATH4, PUT, option).json().then(r => r.body),
+        put: (option: { body: Methods6['put']['reqBody'], config?: T }) =>
+          fetch<Methods6['put']['resBody']>(prefix, PATH4, PUT, option).json(),
+        $put: (option: { body: Methods6['put']['reqBody'], config?: T }) =>
+          fetch<Methods6['put']['resBody']>(prefix, PATH4, PUT, option).json().then(r => r.body),
         $path: () => `${prefix}${PATH4}`
       },
       get: (option?: { query?: Methods4['get']['query'], config?: T }) =>
@@ -65,24 +78,35 @@ const api = <T>({ baseURL, fetch }: AspidaClient<T>) => {
         `${prefix}${PATH3}${option && option.query ? `?${dataToURLString(option.query)}` : ''}`
     },
     users: {
-      _userId: (val0: number) => {
-        const prefix0 = `${PATH5}/${val0}`
+      _userId: (val1: number) => {
+        const prefix1 = `${PATH5}/${val1}`
 
         return {
+          _name: (val2: number | string) => {
+            const prefix2 = `${prefix1}/${val2}`
+
+            return {
+              get: (option?: { config?: T }) =>
+                fetch<Methods9['get']['resBody']>(prefix, prefix2, GET, option).text(),
+              $get: (option?: { config?: T }) =>
+                fetch<Methods9['get']['resBody']>(prefix, prefix2, GET, option).text().then(r => r.body),
+              $path: () => `${prefix}${prefix2}`
+            }
+          },
           get: (option?: { config?: T }) =>
-            fetch<Methods7['get']['resBody']>(prefix, prefix0, GET, option).json(),
+            fetch<Methods8['get']['resBody']>(prefix, prefix1, GET, option).json(),
           $get: (option?: { config?: T }) =>
-            fetch<Methods7['get']['resBody']>(prefix, prefix0, GET, option).json().then(r => r.body),
-          $path: () => `${prefix}${prefix0}`
+            fetch<Methods8['get']['resBody']>(prefix, prefix1, GET, option).json().then(r => r.body),
+          $path: () => `${prefix}${prefix1}`
         }
       },
       get: (option?: { config?: T }) =>
-        fetch<Methods6['get']['resBody']>(prefix, PATH5, GET, option).json(),
+        fetch<Methods7['get']['resBody']>(prefix, PATH5, GET, option).json(),
       $get: (option?: { config?: T }) =>
-        fetch<Methods6['get']['resBody']>(prefix, PATH5, GET, option).json().then(r => r.body),
-      post: (option: { body: Methods6['post']['reqBody'], config?: T }) =>
+        fetch<Methods7['get']['resBody']>(prefix, PATH5, GET, option).json().then(r => r.body),
+      post: (option: { body: Methods7['post']['reqBody'], config?: T }) =>
         fetch(prefix, PATH5, POST, option).send(),
-      $post: (option: { body: Methods6['post']['reqBody'], config?: T }) =>
+      $post: (option: { body: Methods7['post']['reqBody'], config?: T }) =>
         fetch(prefix, PATH5, POST, option).send().then(r => r.body),
       $path: () => `${prefix}${PATH5}`
     },

@@ -1,12 +1,6 @@
 /* eslint-disable */
 import path from 'path'
-import {
-  LowerHttpMethod,
-  AspidaMethods,
-  HttpMethod,
-  HttpStatusOk,
-  AspidaMethodParams
-} from 'aspida'
+import { LowerHttpMethod, AspidaMethods, HttpMethod, HttpStatusOk, AspidaMethodParams } from 'aspida'
 import express, { Express, RequestHandler } from 'express'
 import multer, { Options } from 'multer'
 import controller0, { hooks as ctrlHooks0 } from './api/controller'
@@ -26,23 +20,7 @@ export type FrourioOptions = {
 
 export type MulterFile = Express.Multer.File
 
-type HttpStatusNoOk =
-  | 301
-  | 302
-  | 400
-  | 401
-  | 402
-  | 403
-  | 404
-  | 405
-  | 406
-  | 409
-  | 500
-  | 501
-  | 502
-  | 503
-  | 504
-  | 505
+type HttpStatusNoOk = 301 | 302 | 400 | 401 | 402 | 403 | 404 | 405 | 406 | 409 | 500 | 501 | 502 | 503 | 504 | 505
 
 type PartiallyPartial<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>
 
@@ -102,28 +80,21 @@ const parseJSONBoby: RequestHandler = (req, res, next) => {
   })
 }
 
-const createTypedParamsHandler = (numberTypeParams: string[]): RequestHandler => (
-  req,
-  res,
-  next
-) => {
-  const typedParams: Record<string, string | number> = { ...req.params }
+const createTypedParamsHandler = (numberTypeParams: string[]): RequestHandler => (req, res, next) => {
+  const params: Record<string, string | number> = req.params
 
   for (const key of numberTypeParams) {
-    const val = Number(typedParams[key])
-    if (isNaN(val)) {
-      res.sendStatus(400)
-      return
-    }
+    const val = Number(params[key])
 
-    typedParams[key] = val
+    if (isNaN(val)) return res.sendStatus(400)
+
+    params[key] = val
   }
 
-  ;(req as any).typedParams = typedParams
   next()
 }
 
-const methodsToHandler = (
+const methodToHandler = (
   methodCallback: ServerMethods<any, any>[LowerHttpMethod]
 ): RequestHandler => async (req, res, next) => {
   try {
@@ -133,7 +104,7 @@ const methodsToHandler = (
       method: req.method as HttpMethod,
       body: req.body,
       headers: req.headers,
-      params: (req as any).typedParams,
+      params: req.params,
       user: (req as any).user
     })
 
@@ -175,13 +146,13 @@ const formatMulterData = (arrayTypeKeys: [string, boolean][]): RequestHandler =>
 export default (app: Express, options: FrourioOptions = {}) => {
   const basePath = options.basePath ?? ''
   const uploader = multer(
-    options.multer ?? { dest: path.join(__dirname, '.upload'), limits: { fileSize: 1024 ** 3 } }
+    { dest: path.join(__dirname, '.upload'), limits: { fileSize: 1024 ** 3 }, ...options.multer }
   ).any()
 
   app.get(`${basePath}/`, [
     hooks0.onRequest,
     ctrlHooks0.onRequest,
-    methodsToHandler(controller0.get)
+    methodToHandler(controller0.get)
   ])
 
   app.post(`${basePath}/`, [
@@ -189,42 +160,42 @@ export default (app: Express, options: FrourioOptions = {}) => {
     ctrlHooks0.onRequest,
     uploader,
     formatMulterData([]),
-    methodsToHandler(controller0.post)
+    methodToHandler(controller0.post)
   ])
 
   app.get(`${basePath}/empty/noEmpty`, [
     hooks0.onRequest,
-    methodsToHandler(controller1.get)
+    methodToHandler(controller1.get)
   ])
 
   app.post(`${basePath}/multiForm`, [
     hooks0.onRequest,
     uploader,
     formatMulterData([['empty', false], ['vals', false], ['files', false]]),
-    methodsToHandler(controller2.post)
+    methodToHandler(controller2.post)
   ])
 
   app.get(`${basePath}/texts`, [
     hooks0.onRequest,
-    methodsToHandler(controller3.get)
+    methodToHandler(controller3.get)
   ])
 
   app.put(`${basePath}/texts`, [
     hooks0.onRequest,
-    methodsToHandler(controller3.put)
+    methodToHandler(controller3.put)
   ])
 
   app.put(`${basePath}/texts/sample`, [
     hooks0.onRequest,
     parseJSONBoby,
-    methodsToHandler(controller4.put)
+    methodToHandler(controller4.put)
   ])
 
   app.get(`${basePath}/users`, [
     hooks0.onRequest,
     hooks1.onRequest,
     ...ctrlHooks1.preHandler,
-    methodsToHandler(controller5.get)
+    methodToHandler(controller5.get)
   ])
 
   app.post(`${basePath}/users`, [
@@ -232,14 +203,14 @@ export default (app: Express, options: FrourioOptions = {}) => {
     hooks1.onRequest,
     parseJSONBoby,
     ...ctrlHooks1.preHandler,
-    methodsToHandler(controller5.post)
+    methodToHandler(controller5.post)
   ])
 
   app.get(`${basePath}/users/:userId`, [
     hooks0.onRequest,
     hooks1.onRequest,
     createTypedParamsHandler(['userId']),
-    methodsToHandler(controller6.get)
+    methodToHandler(controller6.get)
   ])
 
   return app

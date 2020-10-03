@@ -322,12 +322,12 @@ ${validateInfo
                       .join("', '")}'])`
                   : '',
                 ...genHookTexts('preHandler'),
-                `methodsToHandler(controller${controllers.length}.${m.name})`
+                `methodToHandler(controller${controllers.length}.${m.name})`
               ].filter(Boolean)
 
               return `  app.${m.name}(\`\${basePath}${`/${dirPath}`
                 .replace(/\/_/g, '/:')
-                .replace(/@.+?($|\/)/g, '')}\`, ${
+                .replace(/@.+?($|\/)/g, '$1')}\`, ${
                 handlers.length === 1 ? handlers[0] : `[\n    ${handlers.join(',\n    ')}\n  ]`
               })\n`
             })

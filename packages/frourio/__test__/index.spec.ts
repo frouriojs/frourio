@@ -18,9 +18,9 @@ beforeEach(cb => {
   server = frourio(express()).listen(port, cb)
 })
 
-afterEach(fn => {
+afterEach(cb => {
   fs.rmdirSync('packages/frourio/servers/all/.upload', { recursive: true })
-  server.close(fn)
+  server.close(cb)
 })
 
 test('GET: 200', async () => {
