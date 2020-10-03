@@ -11,13 +11,7 @@ export default (input: string, project?: string) => {
 
   return {
     text: `/* eslint-disable */${hasMulter ? "\nimport path from 'path'" : ''}
-import {
-  LowerHttpMethod,
-  AspidaMethods,
-  HttpMethod,
-  HttpStatusOk,
-  AspidaMethodParams
-} from 'aspida'
+import { LowerHttpMethod, AspidaMethods, HttpMethod, HttpStatusOk, AspidaMethodParams } from 'aspida'
 import ${hasJSONBody ? 'express, ' : ''}{ Express, RequestHandler${
       hasValidator ? ', Request' : ''
     } } from 'express'${hasMulter ? "\nimport multer, { Options } from 'multer'" : ''}${
@@ -36,23 +30,7 @@ export type MulterFile = Express.Multer.File`
     : '}'
 }
 
-type HttpStatusNoOk =
-  | 301
-  | 302
-  | 400
-  | 401
-  | 402
-  | 403
-  | 404
-  | 405
-  | 406
-  | 409
-  | 500
-  | 501
-  | 502
-  | 503
-  | 504
-  | 505
+type HttpStatusNoOk = 301 | 302 | 400 | 401 | 402 | 403 | 404 | 405 | 406 | 409 | 500 | 501 | 502 | 503 | 504 | 505
 
 type PartiallyPartial<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>
 
@@ -120,27 +98,18 @@ const parseNumberTypeQueryParams = (numberTypeParamsFn: (query: Request['query']
       if (!isOptional && param === undefined) {
         query[key] = []
       } else if (!isOptional || param !== undefined) {
-        if (!Array.isArray(param)) {
-          res.sendStatus(400)
-          return
-        }
+        if (!Array.isArray(param)) return res.sendStatus(400)
 
         const vals = (param as string[]).map(Number)
 
-        if (vals.some(isNaN)) {
-          res.sendStatus(400)
-          return
-        }
+        if (vals.some(isNaN)) return res.sendStatus(400)
 
         query[key] = vals as any
       }
     } else if (!isOptional || param !== undefined) {
       const val = Number(param)
 
-      if (isNaN(val)) {
-        res.sendStatus(400)
-        return
-      }
+      if (isNaN(val)) return res.sendStatus(400)
 
       query[key] = val as any
     }
@@ -165,24 +134,17 @@ const parseJSONBoby: RequestHandler = (req, res, next) => {
     }${
       hasTypedParams
         ? `
-const createTypedParamsHandler = (numberTypeParams: string[]): RequestHandler => (
-  req,
-  res,
-  next
-) => {
-  const typedParams: Record<string, string | number> = { ...req.params }
+const createTypedParamsHandler = (numberTypeParams: string[]): RequestHandler => (req, res, next) => {
+  const params: Record<string, string | number> = req.params
 
   for (const key of numberTypeParams) {
-    const val = Number(typedParams[key])
-    if (isNaN(val)) {
-      res.sendStatus(400)
-      return
-    }
+    const val = Number(params[key])
 
-    typedParams[key] = val
+    if (isNaN(val)) return res.sendStatus(400)
+
+    params[key] = val
   }
 
-  ;(req as any).typedParams = typedParams
   next()
 }
 `
@@ -195,7 +157,7 @@ const createValidateHandler = (validators: (req: Request) => (Promise<void> | nu
 `
         : ''
     }
-const methodsToHandler = (
+const methodToHandler = (
   methodCallback: ServerMethods<any, any>[LowerHttpMethod]
 ): RequestHandler => async (req, res, next) => {
   try {
@@ -205,7 +167,7 @@ const methodsToHandler = (
       method: req.method as HttpMethod,
       body: req.body,
       headers: req.headers,
-      params: (req as any).typedParams,
+      params: req.params,
       user: (req as any).user
     })
 
@@ -253,7 +215,7 @@ export default (app: Express, options: FrourioOptions = {}) => {
 ${
   hasMulter
     ? `  const uploader = multer(
-    options.multer ?? { dest: path.join(__dirname, '.upload'), limits: { fileSize: 1024 ** 3 } }
+    { dest: path.join(__dirname, '.upload'), limits: { fileSize: 1024 ** 3 }, ...options.multer }
   ).any()
 `
     : ''

@@ -1,11 +1,5 @@
 /* eslint-disable */
-import {
-  LowerHttpMethod,
-  AspidaMethods,
-  HttpMethod,
-  HttpStatusOk,
-  AspidaMethodParams
-} from 'aspida'
+import { LowerHttpMethod, AspidaMethods, HttpMethod, HttpStatusOk, AspidaMethodParams } from 'aspida'
 import { Express, RequestHandler } from 'express'
 import controller0 from './api/controller'
 
@@ -13,23 +7,7 @@ export type FrourioOptions = {
   basePath?: string
 }
 
-type HttpStatusNoOk =
-  | 301
-  | 302
-  | 400
-  | 401
-  | 402
-  | 403
-  | 404
-  | 405
-  | 406
-  | 409
-  | 500
-  | 501
-  | 502
-  | 503
-  | 504
-  | 505
+type HttpStatusNoOk = 301 | 302 | 400 | 401 | 402 | 403 | 404 | 405 | 406 | 409 | 500 | 501 | 502 | 503 | 504 | 505
 
 type PartiallyPartial<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>
 
@@ -71,7 +49,7 @@ export type ServerMethods<T extends AspidaMethods, U extends ServerValues> = {
   ) => ServerResponse<T[K]> | Promise<ServerResponse<T[K]>>
 }
 
-const methodsToHandler = (
+const methodToHandler = (
   methodCallback: ServerMethods<any, any>[LowerHttpMethod]
 ): RequestHandler => async (req, res, next) => {
   try {
@@ -81,7 +59,7 @@ const methodsToHandler = (
       method: req.method as HttpMethod,
       body: req.body,
       headers: req.headers,
-      params: (req as any).typedParams,
+      params: req.params,
       user: (req as any).user
     })
 
@@ -100,7 +78,7 @@ const methodsToHandler = (
 export default (app: Express, options: FrourioOptions = {}) => {
   const basePath = options.basePath ?? ''
 
-  app.get(`${basePath}/`, methodsToHandler(controller0.get))
+  app.get(`${basePath}/`, methodToHandler(controller0.get))
 
   return app
 }

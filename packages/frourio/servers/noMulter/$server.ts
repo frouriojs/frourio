@@ -1,11 +1,5 @@
 /* eslint-disable */
-import {
-  LowerHttpMethod,
-  AspidaMethods,
-  HttpMethod,
-  HttpStatusOk,
-  AspidaMethodParams
-} from 'aspida'
+import { LowerHttpMethod, AspidaMethods, HttpMethod, HttpStatusOk, AspidaMethodParams } from 'aspida'
 import express, { Express, RequestHandler, Request } from 'express'
 import { validateOrReject } from 'class-validator'
 import * as Validators from './validators'
@@ -22,23 +16,7 @@ export type FrourioOptions = {
   basePath?: string
 }
 
-type HttpStatusNoOk =
-  | 301
-  | 302
-  | 400
-  | 401
-  | 402
-  | 403
-  | 404
-  | 405
-  | 406
-  | 409
-  | 500
-  | 501
-  | 502
-  | 503
-  | 504
-  | 505
+type HttpStatusNoOk = 301 | 302 | 400 | 401 | 402 | 403 | 404 | 405 | 406 | 409 | 500 | 501 | 502 | 503 | 504 | 505
 
 type PartiallyPartial<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>
 
@@ -88,31 +66,24 @@ const parseJSONBoby: RequestHandler = (req, res, next) => {
   })
 }
 
-const createTypedParamsHandler = (numberTypeParams: string[]): RequestHandler => (
-  req,
-  res,
-  next
-) => {
-  const typedParams: Record<string, string | number> = { ...req.params }
+const createTypedParamsHandler = (numberTypeParams: string[]): RequestHandler => (req, res, next) => {
+  const params: Record<string, string | number> = req.params
 
   for (const key of numberTypeParams) {
-    const val = Number(typedParams[key])
-    if (isNaN(val)) {
-      res.sendStatus(400)
-      return
-    }
+    const val = Number(params[key])
 
-    typedParams[key] = val
+    if (isNaN(val)) return res.sendStatus(400)
+
+    params[key] = val
   }
 
-  ;(req as any).typedParams = typedParams
   next()
 }
 
 const createValidateHandler = (validators: (req: Request) => (Promise<void> | null)[]): RequestHandler =>
   (req, res, next) => Promise.all(validators(req)).then(() => next()).catch(() => res.sendStatus(400))
 
-const methodsToHandler = (
+const methodToHandler = (
   methodCallback: ServerMethods<any, any>[LowerHttpMethod]
 ): RequestHandler => async (req, res, next) => {
   try {
@@ -122,7 +93,7 @@ const methodsToHandler = (
       method: req.method as HttpMethod,
       body: req.body,
       headers: req.headers,
-      params: (req as any).typedParams,
+      params: req.params,
       user: (req as any).user
     })
 
@@ -147,7 +118,7 @@ export default (app: Express, options: FrourioOptions = {}) => {
     createValidateHandler(req => [
       Object.keys(req.query).length ? validateOrReject(Object.assign(new Validators.Query(), req.query)) : null
     ]),
-    methodsToHandler(controller0.get)
+    methodToHandler(controller0.get)
   ])
 
   app.post(`${basePath}/`, [
@@ -158,35 +129,35 @@ export default (app: Express, options: FrourioOptions = {}) => {
       validateOrReject(Object.assign(new Validators.Query(), req.query)),
       validateOrReject(Object.assign(new Validators.Body(), req.body))
     ]),
-    methodsToHandler(controller0.post)
+    methodToHandler(controller0.post)
   ])
 
   app.get(`${basePath}/empty/noEmpty`, [
     hooks0.onRequest,
-    methodsToHandler(controller1.get)
+    methodToHandler(controller1.get)
   ])
 
   app.get(`${basePath}/texts`, [
     hooks0.onRequest,
-    methodsToHandler(controller2.get)
+    methodToHandler(controller2.get)
   ])
 
   app.put(`${basePath}/texts`, [
     hooks0.onRequest,
-    methodsToHandler(controller2.put)
+    methodToHandler(controller2.put)
   ])
 
   app.put(`${basePath}/texts/sample`, [
     hooks0.onRequest,
     parseJSONBoby,
-    methodsToHandler(controller3.put)
+    methodToHandler(controller3.put)
   ])
 
   app.get(`${basePath}/users`, [
     hooks0.onRequest,
     hooks1.onRequest,
     ...ctrlHooks1.preHandler,
-    methodsToHandler(controller4.get)
+    methodToHandler(controller4.get)
   ])
 
   app.post(`${basePath}/users`, [
@@ -197,14 +168,14 @@ export default (app: Express, options: FrourioOptions = {}) => {
       validateOrReject(Object.assign(new Validators.UserInfo(), req.body))
     ]),
     ...ctrlHooks1.preHandler,
-    methodsToHandler(controller4.post)
+    methodToHandler(controller4.post)
   ])
 
   app.get(`${basePath}/users/:userId`, [
     hooks0.onRequest,
     hooks1.onRequest,
     createTypedParamsHandler(['userId']),
-    methodsToHandler(controller5.get)
+    methodToHandler(controller5.get)
   ])
 
   return app
