@@ -126,7 +126,7 @@ test('controller dependency injection', async () => {
       val = n
       return Promise.resolve(n)
     }
-  })
+  })()
 
   await expect(
     injectedController.get({

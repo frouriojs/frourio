@@ -2,7 +2,7 @@ import path from 'path'
 import createControllersText from './createControllersText'
 
 export default (input: string, project?: string) => {
-  const { imports, controllers } = createControllersText(`${input}/api`, project ?? input)
+  const { imports, consts, controllers } = createControllersText(`${input}/api`, project ?? input)
   const hasNumberTypeQuery = controllers.includes('  parseNumberTypeQueryParams(')
   const hasJSONBody = controllers.includes('  parseJSONBoby,')
   const hasTypedParams = controllers.includes('  createTypedParamsHandler(')
@@ -17,8 +17,7 @@ import ${hasJSONBody ? 'express, ' : ''}{ Express, RequestHandler${
     } } from 'express'${hasMulter ? "\nimport multer, { Options } from 'multer'" : ''}${
       hasValidator ? "\nimport { validateOrReject } from 'class-validator'" : ''
     }
-${hasValidator ? `import * as Validators from './validators'${imports ? '\n' : ''}` : ''}${imports}
-
+${hasValidator ? `import * as Validators from './validators'\n` : ''}${imports}
 export type FrourioOptions = {
   basePath?: string
 ${
@@ -212,14 +211,11 @@ const formatMulterData = (arrayTypeKeys: [string, boolean][]): RequestHandler =>
 }
 export default (app: Express, options: FrourioOptions = {}) => {
   const basePath = options.basePath ?? ''
-${
-  hasMulter
-    ? `  const uploader = multer(
-    { dest: path.join(__dirname, '.upload'), limits: { fileSize: 1024 ** 3 }, ...options.multer }
-  ).any()
-`
-    : ''
-}
+${consts}${
+      hasMulter
+        ? "  const uploader = multer({ dest: path.join(__dirname, '.upload'), limits: { fileSize: 1024 ** 3 }, ...options.multer }).any()\n"
+        : ''
+    }
 ${controllers}
   return app
 }

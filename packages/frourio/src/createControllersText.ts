@@ -44,7 +44,7 @@ const initTSC = (appDir: string, project: string) => {
 }
 
 const createRelayFile = (input: string, appText: string, userPath: string, params: Param[]) => {
-  const text = `/* eslint-disable */\nimport { RequestHandler } from 'express'\nimport { Deps } from 'velona'\nimport { ServerMethods } from '${appText}'\n${
+  const text = `/* eslint-disable */\nimport { Express, RequestHandler } from 'express'\nimport { Deps, depend } from 'velona'\nimport { ServerMethods } from '${appText}'\n${
     userPath ? `import { User } from '${userPath}'\n` : ''
   }import { Methods } from './'\n\ntype ControllerMethods = ServerMethods<Methods, {${
     userPath ? '\n  user: User\n' : ''
@@ -59,16 +59,16 @@ export type Hooks = {
   preHandler?: RequestHandler | RequestHandler[]
 }
 
-export function defineHooks<T extends Hooks>(hooks: () => T): T
-export function defineHooks<T extends Hooks, U extends Record<string, any>>(deps: U, cb: (deps: Deps<U>) => T): T & { inject: (d: Deps<U>) => T }
-export function defineHooks<T extends Hooks, U extends Record<string, any>>(hooks: () => T | U, cb?: (deps: Deps<U>) => T) {
-  return typeof hooks === 'function' ? hooks() : { ...cb!(hooks), inject: (d: Deps<U>) => cb!(d) }
+export function defineHooks<T extends Hooks>(hooks: (app: Express) => T): (app: Express) => T
+export function defineHooks<T extends Record<string, any>, U extends Hooks>(deps: T, cb: (d: Deps<T>, app: Express) => U): { (app: Express): U; inject(d: Deps<T>): (app: Express) => U }
+export function defineHooks<T extends Record<string, any>>(hooks: (app: Express) => Hooks | T, cb?: (deps: Deps<T>, app: Express) => Hooks) {
+  return cb && typeof hooks !== 'function' ? depend(hooks, cb) : hooks
 }
 
-export function defineController(methods: () => ControllerMethods): ControllerMethods
-export function defineController<T extends Record<string, any>>(deps: T, cb: (deps: Deps<T>) => ControllerMethods): ControllerMethods & { inject: (d: Deps<T>) => ControllerMethods }
+export function defineController(methods: () => ControllerMethods): () => ControllerMethods
+export function defineController<T extends Record<string, any>>(deps: T, cb: (d: Deps<T>) => ControllerMethods): { (): ControllerMethods; inject(d: Deps<T>): () => ControllerMethods }
 export function defineController<T extends Record<string, any>>(methods: () => ControllerMethods | T, cb?: (deps: Deps<T>) => ControllerMethods) {
-  return typeof methods === 'function' ? methods() : { ...cb!(methods), inject: (d: Deps<T>) => cb!(d) }
+  return cb && typeof methods !== 'function' ? depend(methods, cb) : methods
 }
 `
 
@@ -139,23 +139,38 @@ export default (appDir: string, project: string) => {
         if (hooksSource) {
           const events = ts.forEachChild(hooksSource, node => {
             if (ts.isExportAssignment(node)) {
-              return checker
-                .getTypeAtLocation(node.expression)
-                .getProperties()
-                .map(p => {
-                  const typeNode = checker.typeToTypeNode(
-                    checker.getTypeOfSymbolAtLocation(p, p.valueDeclaration),
-                    undefined,
-                    undefined
-                  )
+              return node.forEachChild(
+                node =>
+                  ts.isCallExpression(node) &&
+                  node.forEachChild(node => {
+                    if (
+                      ts.isMethodDeclaration(node) ||
+                      ts.isArrowFunction(node) ||
+                      ts.isFunctionDeclaration(node)
+                    ) {
+                      return (
+                        node.body &&
+                        checker
+                          .getTypeAtLocation(node.body)
+                          .getProperties()
+                          .map(p => {
+                            const typeNode = checker.typeToTypeNode(
+                              checker.getTypeOfSymbolAtLocation(p, p.valueDeclaration),
+                              undefined,
+                              undefined
+                            )
 
-                  return {
-                    type: p.name as HooksEvent,
-                    isArray: typeNode
-                      ? ts.isArrayTypeNode(typeNode) || ts.isTupleTypeNode(typeNode)
-                      : false
-                  }
-                })
+                            return {
+                              type: p.name as HooksEvent,
+                              isArray: typeNode
+                                ? ts.isArrayTypeNode(typeNode) || ts.isTupleTypeNode(typeNode)
+                                : false
+                            }
+                          })
+                      )
+                    }
+                  })
+              )
             }
           })
 
@@ -166,10 +181,10 @@ export default (appDir: string, project: string) => {
         }
 
         const controllerSource = program.getSourceFile(path.join(input, 'controller.ts'))
-        let ctrlHooksNode: ts.Node | undefined
+        let ctrlHooksSignature: ts.Signature | undefined
 
         if (controllerSource) {
-          ctrlHooksNode = ts.forEachChild(controllerSource, node => {
+          const ctrlHooksNode = ts.forEachChild(controllerSource, node => {
             if (
               ts.isVariableStatement(node) &&
               node.modifiers?.some(m => m.kind === ts.SyntaxKind.ExportKeyword)
@@ -182,27 +197,32 @@ export default (appDir: string, project: string) => {
               }
             }
           })
+
+          if (ctrlHooksNode) {
+            ctrlHooksSignature = checker.getSignaturesOfType(
+              checker.getTypeAtLocation(ctrlHooksNode),
+              ts.SignatureKind.Call
+            )[0]
+          }
         }
 
-        const ctrlHooksEvents =
-          ctrlHooksNode &&
-          checker
-            .getTypeAtLocation(ctrlHooksNode)
-            .getProperties()
-            .map(p => {
-              const typeNode = checker.typeToTypeNode(
-                checker.getTypeOfSymbolAtLocation(p, p.valueDeclaration),
-                undefined,
-                undefined
-              )
+        const ctrlHooksEvents = ctrlHooksSignature
+          ?.getReturnType()
+          .getProperties()
+          .map(p => {
+            const typeNode = checker.typeToTypeNode(
+              checker.getTypeOfSymbolAtLocation(p, p.valueDeclaration),
+              undefined,
+              undefined
+            )
 
-              return {
-                type: p.name as HooksEvent,
-                isArray: typeNode
-                  ? ts.isArrayTypeNode(typeNode) || ts.isTupleTypeNode(typeNode)
-                  : false
-              }
-            })
+            return {
+              type: p.name as HooksEvent,
+              isArray: typeNode
+                ? ts.isArrayTypeNode(typeNode) || ts.isTupleTypeNode(typeNode)
+                : false
+            }
+          })
 
         const genHookTexts = (event: HooksEvent) => [
           ...hooks.flatMap(h => {
@@ -361,18 +381,26 @@ ${validateInfo
   const ctrlHooks = controllers.filter(c => c[1])
 
   return {
-    imports: `${controllers
+    imports: `${hooksPaths
+      .map(
+        (m, i) =>
+          `import hooksFn${i} from '${m.replace(/^api/, './api').replace(appDir, './api')}'\n`
+      )
+      .join('')}${controllers
       .map(
         (ctrl, i) =>
-          `import controller${i}${
-            ctrl[1] ? `, { hooks as ctrlHooks${ctrlHooks.indexOf(ctrl)} }` : ''
-          } from '${ctrl[0].replace(/^api/, './api').replace(appDir, './api')}'`
+          `import controllerFn${i}${
+            ctrl[1] ? `, { hooks as ctrlHooksFn${ctrlHooks.indexOf(ctrl)} }` : ''
+          } from '${ctrl[0].replace(/^api/, './api').replace(appDir, './api')}'\n`
       )
-      .join('\n')}${hooksPaths.length ? '\n' : ''}${hooksPaths
-      .map(
-        (m, i) => `import hooks${i} from '${m.replace(/^api/, './api').replace(appDir, './api')}'`
-      )
-      .join('\n')}`,
+      .join('')}`,
+    consts: `${hooksPaths
+      .map((_, i) => `  const hooks${i} = hooksFn${i}(app)\n`)
+      .join('')}${ctrlHooks
+      .map((_, i) => `  const ctrlHooks${i} = ctrlHooksFn${i}(app)\n`)
+      .join('')}${controllers
+      .map((_, i) => `  const controller${i} = controllerFn${i}()\n`)
+      .join('')}`,
     controllers: text
   }
 }

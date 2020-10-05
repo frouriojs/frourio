@@ -5,18 +5,18 @@ import express, { Express, RequestHandler, Request } from 'express'
 import multer, { Options } from 'multer'
 import { validateOrReject } from 'class-validator'
 import * as Validators from './validators'
-import controller0, { hooks as ctrlHooks0 } from './api/controller'
-import controller1 from './api/500/controller'
-import controller2 from './api/empty/noEmpty/controller'
-import controller3 from './api/multiForm/controller'
-import controller4 from './api/texts/controller'
-import controller5 from './api/texts/sample/controller'
-import controller6 from './api/texts/_label@string/controller'
-import controller7, { hooks as ctrlHooks1 } from './api/users/controller'
-import controller8 from './api/users/_userId@number/controller'
-import controller9 from './api/users/_userId@number/_name/controller'
-import hooks0 from './api/hooks'
-import hooks1 from './api/users/hooks'
+import hooksFn0 from './api/hooks'
+import hooksFn1 from './api/users/hooks'
+import controllerFn0, { hooks as ctrlHooksFn0 } from './api/controller'
+import controllerFn1 from './api/500/controller'
+import controllerFn2 from './api/empty/noEmpty/controller'
+import controllerFn3 from './api/multiForm/controller'
+import controllerFn4 from './api/texts/controller'
+import controllerFn5 from './api/texts/sample/controller'
+import controllerFn6 from './api/texts/_label@string/controller'
+import controllerFn7, { hooks as ctrlHooksFn1 } from './api/users/controller'
+import controllerFn8 from './api/users/_userId@number/controller'
+import controllerFn9 from './api/users/_userId@number/_name/controller'
 
 export type FrourioOptions = {
   basePath?: string
@@ -183,9 +183,21 @@ const formatMulterData = (arrayTypeKeys: [string, boolean][]): RequestHandler =>
 
 export default (app: Express, options: FrourioOptions = {}) => {
   const basePath = options.basePath ?? ''
-  const uploader = multer(
-    { dest: path.join(__dirname, '.upload'), limits: { fileSize: 1024 ** 3 }, ...options.multer }
-  ).any()
+  const hooks0 = hooksFn0(app)
+  const hooks1 = hooksFn1(app)
+  const ctrlHooks0 = ctrlHooksFn0(app)
+  const ctrlHooks1 = ctrlHooksFn1(app)
+  const controller0 = controllerFn0()
+  const controller1 = controllerFn1()
+  const controller2 = controllerFn2()
+  const controller3 = controllerFn3()
+  const controller4 = controllerFn4()
+  const controller5 = controllerFn5()
+  const controller6 = controllerFn6()
+  const controller7 = controllerFn7()
+  const controller8 = controllerFn8()
+  const controller9 = controllerFn9()
+  const uploader = multer({ dest: path.join(__dirname, '.upload'), limits: { fileSize: 1024 ** 3 }, ...options.multer }).any()
 
   app.get(`${basePath}/`, [
     ...hooks0.onRequest,
