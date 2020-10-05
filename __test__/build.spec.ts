@@ -15,7 +15,7 @@ test('version command', () => {
 })
 
 test('build', () => {
-  const inputDir = 'packages/frourio/servers'
+  const inputDir = 'servers'
 
   fs.readdirSync(inputDir, { withFileTypes: true })
     .filter(d => d.isDirectory())

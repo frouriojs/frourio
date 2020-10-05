@@ -1,11 +1,30 @@
 {
-  "private": true,
-  "workspaces": [
-    "packages/*"
+  "name": "frourio",
+  "version": "0.15.0",
+  "description": "Perfectly type-checkable REST framework for TypeScript",
+  "author": "Solufa <solufa2020@gmail.com>",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "bin": "bin/index.js",
+  "homepage": "https://github.com/frouriojs/frourio#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/frouriojs/frourio.git"
+  },
+  "bugs": {
+    "url": "https://github.com/frouriojs/frourio/issues"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "typescript",
+    "aspida",
+    "express"
   ],
   "scripts": {
-    "dev": "npm run build && cd packages/frourio/servers && aspida && node build.js",
-    "build": "npm run rimraf -- packages/frourio/dist && tsc -p packages/frourio",
+    "dev": "npm run build && cd servers && aspida && node build.js",
+    "build": "npm run rimraf -- dist && tsc -p tsconfig.build.json",
     "rimraf": "node -e \"require('fs').rmdirSync(process.argv[1], { recursive: true })\"",
     "release": "standard-version --skip.tag",
     "release:major": "npm run release -- --release-as major",
@@ -62,6 +81,10 @@
         }
       }
     ]
+  },
+  "dependencies": {
+    "aspida": "^0.22.0",
+    "velona": "^0.5.1"
   },
   "devDependencies": {
     "@aspida/axios": "^0.12.0",

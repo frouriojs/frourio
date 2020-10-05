@@ -14,14 +14,4 @@ updates:
     commit-message:
       prefix: "fix"
       prefix-development: "chore"
-
-  - package-ecosystem: "npm"
-    directory: "/packages/frourio"
-    schedule:
-      interval: "weekly"
-    target-branch: "develop"
-    versioning-strategy: "increase"
-    commit-message:
-      prefix: "fix"
-      prefix-development: "chore"
  

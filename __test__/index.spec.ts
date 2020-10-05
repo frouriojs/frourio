@@ -19,7 +19,7 @@ beforeEach(cb => {
 })
 
 afterEach(cb => {
-  fs.rmdirSync('packages/frourio/servers/all/.upload', { recursive: true })
+  fs.rmdirSync('servers/all/.upload', { recursive: true })
   server.close(cb)
 })
 
