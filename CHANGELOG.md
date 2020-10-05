@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.15.0](https://github.com/frouriojs/frourio/compare/v0.14.3...v0.15.0) (2020-10-05)
+
+
+### ⚠ BREAKING CHANGES
+
+* change controller to be called at any time
+
+### Features
+
+* change controller to be called at any time ([81e2865](https://github.com/frouriojs/frourio/commit/81e2865bad05c6c2a0ea582fe567f442b001f0ff))
+
 ### [0.14.3](https://github.com/frouriojs/frourio/compare/v0.14.2...v0.14.3) (2020-10-03)
 
 
