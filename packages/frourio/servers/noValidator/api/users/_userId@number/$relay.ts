@@ -1,6 +1,6 @@
 /* eslint-disable */
-import { RequestHandler } from 'express'
-import { Deps } from 'velona'
+import { Express, RequestHandler } from 'express'
+import { Deps, depend } from 'velona'
 import { ServerMethods } from '../../../$server'
 import { User } from './../hooks'
 import { Methods } from './'
@@ -19,14 +19,14 @@ export type Hooks = {
   preHandler?: RequestHandler | RequestHandler[]
 }
 
-export function defineHooks<T extends Hooks>(hooks: () => T): T
-export function defineHooks<T extends Hooks, U extends Record<string, any>>(deps: U, cb: (deps: Deps<U>) => T): T & { inject: (d: Deps<U>) => T }
-export function defineHooks<T extends Hooks, U extends Record<string, any>>(hooks: () => T | U, cb?: (deps: Deps<U>) => T) {
-  return typeof hooks === 'function' ? hooks() : { ...cb!(hooks), inject: (d: Deps<U>) => cb!(d) }
+export function defineHooks<T extends Hooks>(hooks: (app: Express) => T): (app: Express) => T
+export function defineHooks<T extends Record<string, any>, U extends Hooks>(deps: T, cb: (d: Deps<T>, app: Express) => U): { (app: Express): U; inject(d: Deps<T>): (app: Express) => U }
+export function defineHooks<T extends Record<string, any>>(hooks: (app: Express) => Hooks | T, cb?: (deps: Deps<T>, app: Express) => Hooks) {
+  return cb && typeof hooks !== 'function' ? depend(hooks, cb) : hooks
 }
 
-export function defineController(methods: () => ControllerMethods): ControllerMethods
-export function defineController<T extends Record<string, any>>(deps: T, cb: (deps: Deps<T>) => ControllerMethods): ControllerMethods & { inject: (d: Deps<T>) => ControllerMethods }
+export function defineController(methods: () => ControllerMethods): () => ControllerMethods
+export function defineController<T extends Record<string, any>>(deps: T, cb: (d: Deps<T>) => ControllerMethods): { (): ControllerMethods; inject(d: Deps<T>): () => ControllerMethods }
 export function defineController<T extends Record<string, any>>(methods: () => ControllerMethods | T, cb?: (deps: Deps<T>) => ControllerMethods) {
-  return typeof methods === 'function' ? methods() : { ...cb!(methods), inject: (d: Deps<T>) => cb!(d) }
+  return cb && typeof methods !== 'function' ? depend(methods, cb) : methods
 }

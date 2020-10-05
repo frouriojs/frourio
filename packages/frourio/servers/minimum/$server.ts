@@ -1,7 +1,7 @@
 /* eslint-disable */
 import { LowerHttpMethod, AspidaMethods, HttpMethod, HttpStatusOk, AspidaMethodParams } from 'aspida'
 import { Express, RequestHandler } from 'express'
-import controller0 from './api/controller'
+import controllerFn0 from './api/controller'
 
 export type FrourioOptions = {
   basePath?: string
@@ -77,6 +77,7 @@ const methodToHandler = (
 
 export default (app: Express, options: FrourioOptions = {}) => {
   const basePath = options.basePath ?? ''
+  const controller0 = controllerFn0()
 
   app.get(`${basePath}/`, methodToHandler(controller0.get))
 
