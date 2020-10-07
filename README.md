@@ -7,6 +7,9 @@
   <a href="https://www.npmjs.com/package/frourio">
     <img src="https://img.shields.io/npm/v/frourio" alt="npm version" />
   </a>
+  <a href="https://www.npmjs.com/package/frourio">
+    <img src="https://img.shields.io/npm/dm/frourio" alt="npm download" />
+  </a>
   <a href="https://github.com/frouriojs/frourio/actions?query=workflow%3A%22Node.js+CI%22">
     <img src="https://github.com/frouriojs/frourio/workflows/Node.js%20CI/badge.svg?branch=master" alt="Node.js CI" />
   </a>
@@ -15,9 +18,6 @@
   </a>
   <a href="https://lgtm.com/projects/g/frouriojs/frourio/context:javascript">
     <img src="https://img.shields.io/lgtm/grade/javascript/g/frouriojs/frourio.svg" alt="Language grade: JavaScript" />
-  </a>
-  <a href="https://github.com/frouriojs/frourio/blob/master/packages/frourio/LICENSE">
-    <img src="https://img.shields.io/npm/l/frourio" alt="License" />
   </a>
 </div>
 
@@ -33,35 +33,23 @@ Even if you write both the front and server in TypeScript, you can't statically 
 We are always forced to write "Two TypeScript".  
 We waste a lot of time on dynamic testing using the browser and Docker.
 
+<div align="center">
+   <img src="https://frouriojs.github.io/frourio/assets/images/problem.png" width="1200" alt="Why frourio ?" />
+</div>
+<br />
+
 Frourio is a framework for developing web apps quickly and safely in "One TypeScript".
 
 <div align="center">
-   <img src="https://frouriojs.github.io/frourio/assets/images/problem.png" width="900" alt="Why frourio ?" />
+   <img src="https://frouriojs.github.io/frourio/assets/images/architecture.png" width="1200" alt="Architecture of create-frourio-app" />
 </div>
-
-
-## Architecture
-
-In order to develop in "One TypeScript", `frourio` and `aspida` need to cooperate with each other.  
-You can use `create-frourio-app` to make sure you don't fail in building your environment.
-
-You can choose between Next.js or Nuxt.js for the front framework.  
-Frourio is based on fastify.js, so it's not difficult.
-
-ORM setup is also completed automatically, so there is no failure in connecting to the DB.
-
-Once the REST API endpoint interface is defined, the server controller implementation is examined by the type.  
-The front is checked by the type to see if it is making an API request as defined in the interface.
-
-[aspida: TypeScript friendly HTTP client wrapper for the browser and node.js.](https://github.com/aspidajs/aspida)
-
-<div align="center">
-   <img src="https://frouriojs.github.io/frourio/assets/images/architecture.png" width="900" alt="Architecture of create-frourio-app" />
-</div>
+<br />
+<br />
 
 ## Table of Contents
 
 - [Install](#Install)
+- [Express.js mode](#Expressjs)
 - [Environment](#Environment)
 - [Entrypoint](#Entrypoint)
 - [Controller](#Controller)
@@ -108,6 +96,16 @@ Or with [yarn](https://yarnpkg.com/en/):
 ```sh
 $ yarn create frourio-app <my-project>
 ```
+
+<a id="Expressjs"></a>
+
+## Express.js mode
+
+Frourio uses fastify.js as its HTTP server.  
+If you choose express.js in create-frourio-app, please refer to the following repositories.  
+[GitHub: frourio-express](https://github.com/frouriojs/frourio-express)
+
+Note: frourio is 5x faster than frourio-express
 
 ## Environment
 
@@ -800,8 +798,8 @@ import cors from 'fastify-cors'
 import server from './$server'
 
 const fastify = Fastify()
-fastify.use(helmet)
-fastify.use(cors)
+fastify.register(helmet)
+fastify.register(cors)
 
 server(fastify, { basePath: '/api/v1' })
 fastify.listen(3000)
