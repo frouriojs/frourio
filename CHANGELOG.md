@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.16.0](https://github.com/frouriojs/frourio/compare/v0.15.0...v0.16.0) (2020-10-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* change the engine from express to fastify
+
+### Features
+
+* change the engine from express to fastify ([a3334de](https://github.com/frouriojs/frourio/commit/a3334de2b928b9e2f77c762cc1d88ed4c9ee055d))
+
 ## [0.15.0](https://github.com/frouriojs/frourio/compare/v0.14.3...v0.15.0) (2020-10-05)
 
 
