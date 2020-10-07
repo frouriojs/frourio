@@ -1,11 +1,30 @@
 {
-  "private": true,
-  "workspaces": [
-    "packages/*"
+  "name": "frourio",
+  "version": "0.16.0",
+  "description": "Perfectly type-checkable REST framework for TypeScript",
+  "author": "Solufa <solufa2020@gmail.com>",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "bin": "bin/index.js",
+  "homepage": "https://github.com/frouriojs/frourio#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/frouriojs/frourio.git"
+  },
+  "bugs": {
+    "url": "https://github.com/frouriojs/frourio/issues"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "typescript",
+    "aspida",
+    "fastify"
   ],
   "scripts": {
-    "dev": "npm run build && cd packages/frourio/servers && aspida && node build.js",
-    "build": "npm run rimraf -- packages/frourio/dist && tsc -p packages/frourio",
+    "dev": "npm run build && cd servers && aspida && node build.js",
+    "build": "npm run rimraf -- dist && tsc -p tsconfig.build.json",
     "rimraf": "node -e \"require('fs').rmdirSync(process.argv[1], { recursive: true })\"",
     "release": "standard-version --skip.tag",
     "release:major": "npm run release -- --release-as major",
@@ -63,11 +82,14 @@
       }
     ]
   },
+  "dependencies": {
+    "aspida": "^0.22.0",
+    "velona": "^0.5.1"
+  },
   "devDependencies": {
     "@aspida/axios": "^0.12.0",
-    "@types/express": "^4.17.7",
+    "@types/busboy": "^0.2.3",
     "@types/jest": "^26.0.14",
-    "@types/multer": "^1.4.4",
     "@typescript-eslint/eslint-plugin": "^4.3.0",
     "@typescript-eslint/parser": "^4.3.0",
     "axios": "^0.20.0",
@@ -81,10 +103,10 @@
     "eslint-plugin-prettier": "^3.1.4",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
-    "express": "^4.17.1",
+    "fastify": "^3.5.1",
+    "fastify-multipart": "^3.2.0",
     "form-data": "^3.0.0",
     "jest": "^26.4.2",
-    "multer": "^1.4.2",
     "prettier": "^2.1.2",
     "standard-version": "^9.0.0",
     "ts-jest": "^26.4.1",
