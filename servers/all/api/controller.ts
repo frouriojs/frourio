@@ -2,9 +2,9 @@ import { defineController, defineHooks } from '~/$relay'
 import { depend } from 'velona'
 
 const hooks = defineHooks({ print: (...args: string[]) => console.log(...args) }, ({ print }) => ({
-  onRequest: depend({}, (deps, req, res, next) => {
-    print('Controller level onRequest hook:', req.path)
-    next()
+  onRequest: depend({}, (_deps, req, _reply, done) => {
+    print('Controller level onRequest hook:', req.url)
+    done()
   })
 }))
 
@@ -22,7 +22,7 @@ export default defineController(
     post: v => ({
       // @ts-expect-error
       status: 200,
-      body: { id: +v.query.id, port: v.body.port, fileName: v.body.file.originalname }
+      body: { id: +v.query.id, port: v.body.port, fileName: v.body.file.filename }
     })
   })
 )

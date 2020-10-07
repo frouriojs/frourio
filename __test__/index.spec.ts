@@ -1,7 +1,6 @@
 /* eslint-disable jest/no-done-callback */
-import { Server } from 'http'
 import fs from 'fs'
-import express from 'express'
+import fastify, { FastifyInstance } from 'fastify'
 import FormData from 'form-data'
 import axios from 'axios'
 import aspida from '@aspida/axios'
@@ -12,14 +11,15 @@ import controller from '../servers/all/api/controller'
 const port = 11111
 const baseURL = `http://localhost:${port}`
 const client = api(aspida(undefined, { baseURL }))
-let server: Server
+let server: FastifyInstance
 
 beforeEach(cb => {
-  server = frourio(express()).listen(port, cb)
+  server = fastify()
+  return frourio(server).listen(port, cb)
 })
 
 afterEach(cb => {
-  fs.rmdirSync('servers/all/.upload', { recursive: true })
+  fs.rmdirSync('packages/frourio/servers/all/.upload', { recursive: true })
   server.close(cb)
 })
 

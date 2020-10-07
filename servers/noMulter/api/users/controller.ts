@@ -2,9 +2,9 @@ import { defineController, defineHooks } from './$relay'
 
 const hooks = defineHooks(() => ({
   preHandler: [
-    (req, res, next) => {
-      console.log('Controller level preHandler hook:', req.path)
-      next()
+    (req, _, done) => {
+      console.log('Controller level preHandler hook:', req.url)
+      done()
     }
   ]
 }))

@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { Express, RequestHandler } from 'express'
+import { FastifyInstance, onRequestHookHandler, preParsingHookHandler, preValidationHookHandler, preHandlerHookHandler } from 'fastify'
 import { Deps, depend } from 'velona'
 import { ServerMethods } from '../../../../$server'
 import { User } from './../../hooks'
@@ -14,15 +14,15 @@ type ControllerMethods = ServerMethods<Methods, {
 }>
 
 export type Hooks = {
-  onRequest?: RequestHandler | RequestHandler[]
-  preParsing?: RequestHandler | RequestHandler[]
-  preValidation?: RequestHandler | RequestHandler[]
-  preHandler?: RequestHandler | RequestHandler[]
+  onRequest?: onRequestHookHandler | onRequestHookHandler[]
+  preParsing?: preParsingHookHandler | preParsingHookHandler[]
+  preValidation?: preValidationHookHandler | preValidationHookHandler[]
+  preHandler?: preHandlerHookHandler | preHandlerHookHandler[]
 }
 
-export function defineHooks<T extends Hooks>(hooks: (app: Express) => T): (app: Express) => T
-export function defineHooks<T extends Record<string, any>, U extends Hooks>(deps: T, cb: (d: Deps<T>, app: Express) => U): { (app: Express): U; inject(d: Deps<T>): (app: Express) => U }
-export function defineHooks<T extends Record<string, any>>(hooks: (app: Express) => Hooks | T, cb?: (deps: Deps<T>, app: Express) => Hooks) {
+export function defineHooks<T extends Hooks>(hooks: (fastify: FastifyInstance) => T): (fastify: FastifyInstance) => T
+export function defineHooks<T extends Record<string, any>, U extends Hooks>(deps: T, cb: (d: Deps<T>, fastify: FastifyInstance) => U): { (fastify: FastifyInstance): U; inject(d: Deps<T>): (fastify: FastifyInstance) => U }
+export function defineHooks<T extends Record<string, any>>(hooks: (fastify: FastifyInstance) => Hooks | T, cb?: (deps: Deps<T>, fastify: FastifyInstance) => Hooks) {
   return cb && typeof hooks !== 'function' ? depend(hooks, cb) : hooks
 }
 

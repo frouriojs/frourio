@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { LowerHttpMethod, AspidaMethods, HttpMethod, HttpStatusOk, AspidaMethodParams } from 'aspida'
-import express, { Express, RequestHandler, Request } from 'express'
+import { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, FastifyRequest } from 'fastify'
 import { validateOrReject } from 'class-validator'
 import * as Validators from './validators'
 import hooksFn0 from './api/hooks'
@@ -58,63 +58,50 @@ export type ServerMethods<T extends AspidaMethods, U extends ServerValues> = {
   ) => ServerResponse<T[K]> | Promise<ServerResponse<T[K]>>
 }
 
-const parseJSONBoby: RequestHandler = (req, res, next) => {
-  express.json()(req, res, err => {
-    if (err) return res.sendStatus(400)
-
-    next()
-  })
-}
-
-const createTypedParamsHandler = (numberTypeParams: string[]): RequestHandler => (req, res, next) => {
-  const params: Record<string, string | number> = req.params
+const createTypedParamsHandler = (numberTypeParams: string[]): preValidationHookHandler => (req, reply, done) => {
+  const params = req.params as Record<string, string | number>
 
   for (const key of numberTypeParams) {
     const val = Number(params[key])
 
-    if (isNaN(val)) return res.sendStatus(400)
+    if (isNaN(val)) {
+      reply.code(400).send()
+      return
+    }
 
     params[key] = val
   }
 
-  next()
+  done()
 }
 
-const createValidateHandler = (validators: (req: Request) => (Promise<void> | null)[]): RequestHandler =>
-  (req, res, next) => Promise.all(validators(req)).then(() => next()).catch(() => res.sendStatus(400))
+const createValidateHandler = (validators: (req: FastifyRequest) => (Promise<void> | null)[]): preValidationHookHandler =>
+  (req, reply) => Promise.all(validators(req)).catch(() => reply.code(400).send())
 
 const methodToHandler = (
   methodCallback: ServerMethods<any, any>[LowerHttpMethod]
-): RequestHandler => async (req, res, next) => {
-  try {
-    const result = methodCallback({
-      query: req.query,
-      path: req.path,
-      method: req.method as HttpMethod,
-      body: req.body,
-      headers: req.headers,
-      params: req.params,
-      user: (req as any).user
-    })
+): RouteHandlerMethod => async (req, reply) => {
+  const result = methodCallback({
+    query: req.query,
+    path: req.url,
+    method: req.method as HttpMethod,
+    body: req.body,
+    headers: req.headers,
+    params: req.params,
+    user: (req as any).user
+  })
 
-    const { status, body, headers } = result instanceof Promise ? await result : result
+  const { status, body, headers } = result instanceof Promise ? await result : result
 
-    for (const key in headers) {
-      res.setHeader(key, headers[key])
-    }
-
-    res.status(status).send(body)
-  } catch (e) {
-    next(e)
-  }
+  reply.code(status).headers(headers ?? {}).send(body)
 }
 
-export default (app: Express, options: FrourioOptions = {}) => {
+export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   const basePath = options.basePath ?? ''
-  const hooks0 = hooksFn0(app)
-  const hooks1 = hooksFn1(app)
-  const ctrlHooks0 = ctrlHooksFn0(app)
-  const ctrlHooks1 = ctrlHooksFn1(app)
+  const hooks0 = hooksFn0(fastify)
+  const hooks1 = hooksFn1(fastify)
+  const ctrlHooks0 = ctrlHooksFn0(fastify)
+  const ctrlHooks1 = ctrlHooksFn1(fastify)
   const controller0 = controllerFn0()
   const controller1 = controllerFn1()
   const controller2 = controllerFn2()
@@ -122,71 +109,90 @@ export default (app: Express, options: FrourioOptions = {}) => {
   const controller4 = controllerFn4()
   const controller5 = controllerFn5()
 
-  app.get(`${basePath}/`, [
-    hooks0.onRequest,
-    ctrlHooks0.onRequest,
-    createValidateHandler(req => [
-      Object.keys(req.query).length ? validateOrReject(Object.assign(new Validators.Query(), req.query)) : null
-    ]),
+  fastify.get(
+    `${basePath}/`,
+    {
+      onRequest: [hooks0.onRequest, ctrlHooks0.onRequest],
+      preValidation: createValidateHandler(req => [
+          Object.keys(req.query as any).length ? validateOrReject(Object.assign(new Validators.Query(), req.query as any)) : null
+        ])
+    },
     methodToHandler(controller0.get)
-  ])
+  )
 
-  app.post(`${basePath}/`, [
-    hooks0.onRequest,
-    ctrlHooks0.onRequest,
-    parseJSONBoby,
-    createValidateHandler(req => [
-      validateOrReject(Object.assign(new Validators.Query(), req.query)),
-      validateOrReject(Object.assign(new Validators.Body(), req.body))
-    ]),
+  fastify.post(
+    `${basePath}/`,
+    {
+      onRequest: [hooks0.onRequest, ctrlHooks0.onRequest],
+      preValidation: createValidateHandler(req => [
+          validateOrReject(Object.assign(new Validators.Query(), req.query as any)),
+          validateOrReject(Object.assign(new Validators.Body(), req.body as any))
+        ])
+    },
     methodToHandler(controller0.post)
-  ])
+  )
 
-  app.get(`${basePath}/empty/noEmpty`, [
-    hooks0.onRequest,
+  fastify.get(
+    `${basePath}/empty/noEmpty`,
+    {
+      onRequest: hooks0.onRequest
+    },
     methodToHandler(controller1.get)
-  ])
+  )
 
-  app.get(`${basePath}/texts`, [
-    hooks0.onRequest,
+  fastify.get(
+    `${basePath}/texts`,
+    {
+      onRequest: hooks0.onRequest
+    },
     methodToHandler(controller2.get)
-  ])
+  )
 
-  app.put(`${basePath}/texts`, [
-    hooks0.onRequest,
+  fastify.put(
+    `${basePath}/texts`,
+    {
+      onRequest: hooks0.onRequest
+    },
     methodToHandler(controller2.put)
-  ])
+  )
 
-  app.put(`${basePath}/texts/sample`, [
-    hooks0.onRequest,
-    parseJSONBoby,
+  fastify.put(
+    `${basePath}/texts/sample`,
+    {
+      onRequest: hooks0.onRequest
+    },
     methodToHandler(controller3.put)
-  ])
+  )
 
-  app.get(`${basePath}/users`, [
-    hooks0.onRequest,
-    hooks1.onRequest,
-    ...ctrlHooks1.preHandler,
+  fastify.get(
+    `${basePath}/users`,
+    {
+      onRequest: [hooks0.onRequest, hooks1.onRequest],
+      preHandler: ctrlHooks1.preHandler
+    },
     methodToHandler(controller4.get)
-  ])
+  )
 
-  app.post(`${basePath}/users`, [
-    hooks0.onRequest,
-    hooks1.onRequest,
-    parseJSONBoby,
-    createValidateHandler(req => [
-      validateOrReject(Object.assign(new Validators.UserInfo(), req.body))
-    ]),
-    ...ctrlHooks1.preHandler,
+  fastify.post(
+    `${basePath}/users`,
+    {
+      onRequest: [hooks0.onRequest, hooks1.onRequest],
+      preValidation: createValidateHandler(req => [
+          validateOrReject(Object.assign(new Validators.UserInfo(), req.body as any))
+        ]),
+      preHandler: ctrlHooks1.preHandler
+    },
     methodToHandler(controller4.post)
-  ])
+  )
 
-  app.get(`${basePath}/users/:userId`, [
-    hooks0.onRequest,
-    hooks1.onRequest,
-    createTypedParamsHandler(['userId']),
+  fastify.get(
+    `${basePath}/users/:userId`,
+    {
+      onRequest: [hooks0.onRequest, hooks1.onRequest],
+      preValidation: createTypedParamsHandler(['userId'])
+    },
     methodToHandler(controller5.get)
-  ])
+  )
 
-  return app
+  return fastify
 }

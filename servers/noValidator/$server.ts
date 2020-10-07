@@ -1,8 +1,7 @@
 /* eslint-disable */
-import path from 'path'
 import { LowerHttpMethod, AspidaMethods, HttpMethod, HttpStatusOk, AspidaMethodParams } from 'aspida'
-import express, { Express, RequestHandler } from 'express'
-import multer, { Options } from 'multer'
+import { FastifyInstance, RouteHandlerMethod, preValidationHookHandler } from 'fastify'
+import multipart, { FastifyMultipartOptions, Multipart } from 'fastify-multipart'
 import hooksFn0 from './api/hooks'
 import hooksFn1 from './api/users/hooks'
 import controllerFn0, { hooks as ctrlHooksFn0 } from './api/controller'
@@ -15,10 +14,8 @@ import controllerFn6 from './api/users/_userId@number/controller'
 
 export type FrourioOptions = {
   basePath?: string
-  multer?: Options
+  multipart?: FastifyMultipartOptions
 }
-
-export type MulterFile = Express.Multer.File
 
 type HttpStatusNoOk = 301 | 302 | 400 | 401 | 402 | 403 | 404 | 405 | 406 | 409 | 500 | 501 | 502 | 503 | 504 | 505
 
@@ -51,9 +48,9 @@ type ServerValues = {
 type BlobToFile<T extends AspidaMethodParams> = T['reqFormat'] extends FormData
   ? {
       [P in keyof T['reqBody']]: Required<T['reqBody']>[P] extends Blob
-        ? MulterFile
+        ? Multipart
         : Required<T['reqBody']>[P] extends Blob[]
-        ? MulterFile[]
+        ? Multipart[]
         : T['reqBody'][P]
     }
   : T['reqBody']
@@ -72,55 +69,44 @@ export type ServerMethods<T extends AspidaMethods, U extends ServerValues> = {
   ) => ServerResponse<T[K]> | Promise<ServerResponse<T[K]>>
 }
 
-const parseJSONBoby: RequestHandler = (req, res, next) => {
-  express.json()(req, res, err => {
-    if (err) return res.sendStatus(400)
-
-    next()
-  })
-}
-
-const createTypedParamsHandler = (numberTypeParams: string[]): RequestHandler => (req, res, next) => {
-  const params: Record<string, string | number> = req.params
+const createTypedParamsHandler = (numberTypeParams: string[]): preValidationHookHandler => (req, reply, done) => {
+  const params = req.params as Record<string, string | number>
 
   for (const key of numberTypeParams) {
     const val = Number(params[key])
 
-    if (isNaN(val)) return res.sendStatus(400)
+    if (isNaN(val)) {
+      reply.code(400).send()
+      return
+    }
 
     params[key] = val
   }
 
-  next()
+  done()
 }
 
 const methodToHandler = (
   methodCallback: ServerMethods<any, any>[LowerHttpMethod]
-): RequestHandler => async (req, res, next) => {
-  try {
-    const result = methodCallback({
-      query: req.query,
-      path: req.path,
-      method: req.method as HttpMethod,
-      body: req.body,
-      headers: req.headers,
-      params: req.params,
-      user: (req as any).user
-    })
+): RouteHandlerMethod => async (req, reply) => {
+  const result = methodCallback({
+    query: req.query,
+    path: req.url,
+    method: req.method as HttpMethod,
+    body: req.body,
+    headers: req.headers,
+    params: req.params,
+    user: (req as any).user
+  })
 
-    const { status, body, headers } = result instanceof Promise ? await result : result
+  const { status, body, headers } = result instanceof Promise ? await result : result
 
-    for (const key in headers) {
-      res.setHeader(key, headers[key])
-    }
-
-    res.status(status).send(body)
-  } catch (e) {
-    next(e)
-  }
+  reply.code(status).headers(headers ?? {}).send(body)
 }
 
-const formatMulterData = (arrayTypeKeys: [string, boolean][]): RequestHandler => ({ body, files }, _res, next) => {
+const formatMultipartData = (arrayTypeKeys: [string, boolean][]): preValidationHookHandler => (req, _, done) => {
+  const body: any = req.body
+
   for (const [key] of arrayTypeKeys) {
     if (body[key] === undefined) body[key] = []
     else if (!Array.isArray(body[key])) {
@@ -128,27 +114,27 @@ const formatMulterData = (arrayTypeKeys: [string, boolean][]): RequestHandler =>
     }
   }
 
-  for (const file of files as MulterFile[]) {
-    if (Array.isArray(body[file.fieldname])) {
-      body[file.fieldname].push(file)
+  Object.entries(body).forEach(([key, val]) => {
+    if (Array.isArray(val)) {
+      body[key] = (val as Multipart[]).map(v => v.file ? v : (v as any).value)
     } else {
-      body[file.fieldname] = file
+      body[key] = (val as Multipart).file ? val : (val as any).value
     }
-  }
+  })
 
   for (const [key, isOptional] of arrayTypeKeys) {
     if (!body[key].length && isOptional) delete body[key]
   }
 
-  next()
+  done()
 }
 
-export default (app: Express, options: FrourioOptions = {}) => {
+export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   const basePath = options.basePath ?? ''
-  const hooks0 = hooksFn0(app)
-  const hooks1 = hooksFn1(app)
-  const ctrlHooks0 = ctrlHooksFn0(app)
-  const ctrlHooks1 = ctrlHooksFn1(app)
+  const hooks0 = hooksFn0(fastify)
+  const hooks1 = hooksFn1(fastify)
+  const ctrlHooks0 = ctrlHooksFn0(fastify)
+  const ctrlHooks1 = ctrlHooksFn1(fastify)
   const controller0 = controllerFn0()
   const controller1 = controllerFn1()
   const controller2 = controllerFn2()
@@ -156,71 +142,93 @@ export default (app: Express, options: FrourioOptions = {}) => {
   const controller4 = controllerFn4()
   const controller5 = controllerFn5()
   const controller6 = controllerFn6()
-  const uploader = multer({ dest: path.join(__dirname, '.upload'), limits: { fileSize: 1024 ** 3 }, ...options.multer }).any()
 
-  app.get(`${basePath}/`, [
-    hooks0.onRequest,
-    ctrlHooks0.onRequest,
+  fastify.register(multipart, { attachFieldsToBody: true, limits: { fileSize: 1024 ** 3 }, ...options.multipart })
+
+  fastify.get(
+    `${basePath}/`,
+    {
+      onRequest: [hooks0.onRequest, ctrlHooks0.onRequest]
+    },
     methodToHandler(controller0.get)
-  ])
+  )
 
-  app.post(`${basePath}/`, [
-    hooks0.onRequest,
-    ctrlHooks0.onRequest,
-    uploader,
-    formatMulterData([]),
+  fastify.post(
+    `${basePath}/`,
+    {
+      onRequest: [hooks0.onRequest, ctrlHooks0.onRequest],
+      preValidation: formatMultipartData([])
+    },
     methodToHandler(controller0.post)
-  ])
+  )
 
-  app.get(`${basePath}/empty/noEmpty`, [
-    hooks0.onRequest,
+  fastify.get(
+    `${basePath}/empty/noEmpty`,
+    {
+      onRequest: hooks0.onRequest
+    },
     methodToHandler(controller1.get)
-  ])
+  )
 
-  app.post(`${basePath}/multiForm`, [
-    hooks0.onRequest,
-    uploader,
-    formatMulterData([['empty', false], ['vals', false], ['files', false]]),
+  fastify.post(
+    `${basePath}/multiForm`,
+    {
+      onRequest: hooks0.onRequest,
+      preValidation: formatMultipartData([['empty', false], ['vals', false], ['files', false]])
+    },
     methodToHandler(controller2.post)
-  ])
+  )
 
-  app.get(`${basePath}/texts`, [
-    hooks0.onRequest,
+  fastify.get(
+    `${basePath}/texts`,
+    {
+      onRequest: hooks0.onRequest
+    },
     methodToHandler(controller3.get)
-  ])
+  )
 
-  app.put(`${basePath}/texts`, [
-    hooks0.onRequest,
+  fastify.put(
+    `${basePath}/texts`,
+    {
+      onRequest: hooks0.onRequest
+    },
     methodToHandler(controller3.put)
-  ])
+  )
 
-  app.put(`${basePath}/texts/sample`, [
-    hooks0.onRequest,
-    parseJSONBoby,
+  fastify.put(
+    `${basePath}/texts/sample`,
+    {
+      onRequest: hooks0.onRequest
+    },
     methodToHandler(controller4.put)
-  ])
+  )
 
-  app.get(`${basePath}/users`, [
-    hooks0.onRequest,
-    hooks1.onRequest,
-    ...ctrlHooks1.preHandler,
+  fastify.get(
+    `${basePath}/users`,
+    {
+      onRequest: [hooks0.onRequest, hooks1.onRequest],
+      preHandler: ctrlHooks1.preHandler
+    },
     methodToHandler(controller5.get)
-  ])
+  )
 
-  app.post(`${basePath}/users`, [
-    hooks0.onRequest,
-    hooks1.onRequest,
-    parseJSONBoby,
-    ...ctrlHooks1.preHandler,
+  fastify.post(
+    `${basePath}/users`,
+    {
+      onRequest: [hooks0.onRequest, hooks1.onRequest],
+      preHandler: ctrlHooks1.preHandler
+    },
     methodToHandler(controller5.post)
-  ])
+  )
 
-  app.get(`${basePath}/users/:userId`, [
-    hooks0.onRequest,
-    hooks1.onRequest,
-    createTypedParamsHandler(['userId']),
+  fastify.get(
+    `${basePath}/users/:userId`,
+    {
+      onRequest: [hooks0.onRequest, hooks1.onRequest],
+      preValidation: createTypedParamsHandler(['userId'])
+    },
     methodToHandler(controller6.get)
-  ])
+  )
 
-  return app
+  return fastify
 }

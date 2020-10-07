@@ -7,9 +7,9 @@ export type User = {
 }
 
 export default defineHooks(() => ({
-  onRequest: (req, res, next) => {
+  onRequest: (req, _, done) => {
     console.log('Added user')
     ;(req as any).user = { id: 1, name: 'user name', role: 'admin' }
-    next()
+    done()
   }
 }))

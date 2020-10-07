@@ -3,31 +3,27 @@ import createControllersText from './createControllersText'
 
 export default (input: string, project?: string) => {
   const { imports, consts, controllers } = createControllersText(`${input}/api`, project ?? input)
-  const hasNumberTypeQuery = controllers.includes('  parseNumberTypeQueryParams(')
-  const hasJSONBody = controllers.includes('  parseJSONBoby,')
-  const hasTypedParams = controllers.includes('  createTypedParamsHandler(')
-  const hasValidator = controllers.includes('  validateOrReject(')
-  const hasMulter = controllers.includes('  uploader,')
+  const hasNumberTypeQuery = controllers.includes(' parseNumberTypeQueryParams(')
+  const hasTypedParams = controllers.includes(' createTypedParamsHandler(')
+  const hasValidator = controllers.includes(' validateOrReject(')
+  const hasMultipart = controllers.includes(' formatMultipartData(')
 
   return {
-    text: `/* eslint-disable */${hasMulter ? "\nimport path from 'path'" : ''}
+    text: `/* eslint-disable */
 import { LowerHttpMethod, AspidaMethods, HttpMethod, HttpStatusOk, AspidaMethodParams } from 'aspida'
-import ${hasJSONBody ? 'express, ' : ''}{ Express, RequestHandler${
-      hasValidator ? ', Request' : ''
-    } } from 'express'${hasMulter ? "\nimport multer, { Options } from 'multer'" : ''}${
-      hasValidator ? "\nimport { validateOrReject } from 'class-validator'" : ''
-    }
+import { FastifyInstance, RouteHandlerMethod${
+      hasNumberTypeQuery || hasTypedParams || hasValidator || hasMultipart
+        ? ', preValidationHookHandler'
+        : ''
+    }${hasValidator ? ', FastifyRequest' : ''} } from 'fastify'${
+      hasMultipart
+        ? "\nimport multipart, { FastifyMultipartOptions, Multipart } from 'fastify-multipart'"
+        : ''
+    }${hasValidator ? "\nimport { validateOrReject } from 'class-validator'" : ''}
 ${hasValidator ? `import * as Validators from './validators'\n` : ''}${imports}
 export type FrourioOptions = {
   basePath?: string
-${
-  hasMulter
-    ? `  multer?: Options
-}
-
-export type MulterFile = Express.Multer.File`
-    : '}'
-}
+${hasMultipart ? '  multipart?: FastifyMultipartOptions\n' : ''}}
 
 type HttpStatusNoOk = 301 | 302 | 400 | 401 | 402 | 403 | 404 | 405 | 406 | 409 | 500 | 501 | 502 | 503 | 504 | 505
 
@@ -57,14 +53,14 @@ type ServerValues = {
   user?: any
 }
 ${
-  hasMulter
+  hasMultipart
     ? `
 type BlobToFile<T extends AspidaMethodParams> = T['reqFormat'] extends FormData
   ? {
       [P in keyof T['reqBody']]: Required<T['reqBody']>[P] extends Blob
-        ? MulterFile
+        ? Multipart
         : Required<T['reqBody']>[P] extends Blob[]
-        ? MulterFile[]
+        ? Multipart[]
         : T['reqBody'][P]
     }
   : T['reqBody']
@@ -75,7 +71,7 @@ type RequestParams<T extends AspidaMethodParams> = {
   path: string
   method: HttpMethod
   query: T['query']
-  body: ${hasMulter ? 'BlobToFile<T>' : "T['reqBody']"}
+  body: ${hasMultipart ? 'BlobToFile<T>' : "T['reqBody']"}
   headers: T['reqHeaders']
 }
 
@@ -87,7 +83,8 @@ export type ServerMethods<T extends AspidaMethods, U extends ServerValues> = {
 ${
   hasNumberTypeQuery
     ? `
-const parseNumberTypeQueryParams = (numberTypeParamsFn: (query: Request['query']) => ([string, boolean, boolean][])): RequestHandler => ({ query }, res, next) => {
+const parseNumberTypeQueryParams = (numberTypeParamsFn: (query: any) => ([string, boolean, boolean][])): preValidationHookHandler => (req, reply, done) => {
+  const query: any = req.query
   const numberTypeParams = numberTypeParamsFn(query)
 
   for (const [key, isOptional, isArray] of numberTypeParams) {
@@ -97,94 +94,88 @@ const parseNumberTypeQueryParams = (numberTypeParamsFn: (query: Request['query']
       if (!isOptional && param === undefined) {
         query[key] = []
       } else if (!isOptional || param !== undefined) {
-        if (!Array.isArray(param)) return res.sendStatus(400)
+        if (!Array.isArray(param)) {
+          reply.code(400).send()
+          return
+        }
 
         const vals = (param as string[]).map(Number)
 
-        if (vals.some(isNaN)) return res.sendStatus(400)
+        if (vals.some(isNaN)) {
+          reply.code(400).send()
+          return
+        }
 
         query[key] = vals as any
       }
     } else if (!isOptional || param !== undefined) {
       const val = Number(param)
 
-      if (isNaN(val)) return res.sendStatus(400)
+      if (isNaN(val)) {
+        reply.code(400).send()
+        return
+      }
 
       query[key] = val as any
     }
   }
 
-  next()
+  done()
 }
 `
     : ''
 }${
-      hasJSONBody
-        ? `
-const parseJSONBoby: RequestHandler = (req, res, next) => {
-  express.json()(req, res, err => {
-    if (err) return res.sendStatus(400)
-
-    next()
-  })
-}
-`
-        : ''
-    }${
       hasTypedParams
         ? `
-const createTypedParamsHandler = (numberTypeParams: string[]): RequestHandler => (req, res, next) => {
-  const params: Record<string, string | number> = req.params
+const createTypedParamsHandler = (numberTypeParams: string[]): preValidationHookHandler => (req, reply, done) => {
+  const params = req.params as Record<string, string | number>
 
   for (const key of numberTypeParams) {
     const val = Number(params[key])
 
-    if (isNaN(val)) return res.sendStatus(400)
+    if (isNaN(val)) {
+      reply.code(400).send()
+      return
+    }
 
     params[key] = val
   }
 
-  next()
+  done()
 }
 `
         : ''
     }${
       hasValidator
         ? `
-const createValidateHandler = (validators: (req: Request) => (Promise<void> | null)[]): RequestHandler =>
-  (req, res, next) => Promise.all(validators(req)).then(() => next()).catch(() => res.sendStatus(400))
+const createValidateHandler = (validators: (req: FastifyRequest) => (Promise<void> | null)[]): preValidationHookHandler =>
+  (req, reply) => Promise.all(validators(req)).catch(() => reply.code(400).send())
 `
         : ''
     }
 const methodToHandler = (
   methodCallback: ServerMethods<any, any>[LowerHttpMethod]
-): RequestHandler => async (req, res, next) => {
-  try {
-    const result = methodCallback({
-      query: req.query,
-      path: req.path,
-      method: req.method as HttpMethod,
-      body: req.body,
-      headers: req.headers,
-      params: req.params,
-      user: (req as any).user
-    })
+): RouteHandlerMethod => async (req, reply) => {
+  const result = methodCallback({
+    query: req.query,
+    path: req.url,
+    method: req.method as HttpMethod,
+    body: req.body,
+    headers: req.headers,
+    params: req.params,
+    user: (req as any).user
+  })
 
-    const { status, body, headers } = result instanceof Promise ? await result : result
+  const { status, body, headers } = result instanceof Promise ? await result : result
 
-    for (const key in headers) {
-      res.setHeader(key, headers[key])
-    }
-
-    res.status(status).send(body)
-  } catch (e) {
-    next(e)
-  }
+  reply.code(status).headers(headers ?? {}).send(body)
 }
 ${
-  hasMulter
+  hasMultipart
     ? `
-const formatMulterData = (arrayTypeKeys: [string, boolean][]): RequestHandler => ({ body, files }, _res, next) => {
+const formatMultipartData = (arrayTypeKeys: [string, boolean][]): preValidationHookHandler => (req, _, done) => {
+  const body: any = req.body
+
   for (const [key] of arrayTypeKeys) {
     if (body[key] === undefined) body[key] = []
     else if (!Array.isArray(body[key])) {
@@ -192,32 +183,32 @@ const formatMulterData = (arrayTypeKeys: [string, boolean][]): RequestHandler =>
     }
   }
 
-  for (const file of files as MulterFile[]) {
-    if (Array.isArray(body[file.fieldname])) {
-      body[file.fieldname].push(file)
+  Object.entries(body).forEach(([key, val]) => {
+    if (Array.isArray(val)) {
+      body[key] = (val as Multipart[]).map(v => v.file ? v : (v as any).value)
     } else {
-      body[file.fieldname] = file
+      body[key] = (val as Multipart).file ? val : (val as any).value
     }
-  }
+  })
 
   for (const [key, isOptional] of arrayTypeKeys) {
     if (!body[key].length && isOptional) delete body[key]
   }
 
-  next()
+  done()
 }
 `
     : ''
 }
-export default (app: Express, options: FrourioOptions = {}) => {
+export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   const basePath = options.basePath ?? ''
-${consts}${
-      hasMulter
-        ? "  const uploader = multer({ dest: path.join(__dirname, '.upload'), limits: { fileSize: 1024 ** 3 }, ...options.multer }).any()\n"
-        : ''
-    }
-${controllers}
-  return app
+${consts}
+${
+  hasMultipart
+    ? '  fastify.register(multipart, { attachFieldsToBody: true, limits: { fileSize: 1024 ** 3 }, ...options.multipart })\n\n'
+    : ''
+}${controllers}
+  return fastify
 }
 `,
     filePath: path.posix.join(input, '$server.ts')

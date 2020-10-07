@@ -20,7 +20,7 @@
   "keywords": [
     "typescript",
     "aspida",
-    "express"
+    "fastify"
   ],
   "scripts": {
     "dev": "npm run build && cd servers && aspida && node build.js",
@@ -88,9 +88,8 @@
   },
   "devDependencies": {
     "@aspida/axios": "^0.12.0",
-    "@types/express": "^4.17.7",
+    "@types/busboy": "^0.2.3",
     "@types/jest": "^26.0.14",
-    "@types/multer": "^1.4.4",
     "@typescript-eslint/eslint-plugin": "^4.3.0",
     "@typescript-eslint/parser": "^4.3.0",
     "axios": "^0.20.0",
@@ -104,10 +103,10 @@
     "eslint-plugin-prettier": "^3.1.4",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
-    "express": "^4.17.1",
+    "fastify": "^3.5.1",
+    "fastify-multipart": "^3.2.0",
     "form-data": "^3.0.0",
     "jest": "^26.4.2",
-    "multer": "^1.4.2",
     "prettier": "^2.1.2",
     "standard-version": "^9.0.0",
     "ts-jest": "^26.4.1",

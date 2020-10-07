@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { LowerHttpMethod, AspidaMethods, HttpMethod, HttpStatusOk, AspidaMethodParams } from 'aspida'
-import { Express, RequestHandler } from 'express'
+import { FastifyInstance, RouteHandlerMethod } from 'fastify'
 import controllerFn0 from './api/controller'
 
 export type FrourioOptions = {
@@ -51,35 +51,27 @@ export type ServerMethods<T extends AspidaMethods, U extends ServerValues> = {
 
 const methodToHandler = (
   methodCallback: ServerMethods<any, any>[LowerHttpMethod]
-): RequestHandler => async (req, res, next) => {
-  try {
-    const result = methodCallback({
-      query: req.query,
-      path: req.path,
-      method: req.method as HttpMethod,
-      body: req.body,
-      headers: req.headers,
-      params: req.params,
-      user: (req as any).user
-    })
+): RouteHandlerMethod => async (req, reply) => {
+  const result = methodCallback({
+    query: req.query,
+    path: req.url,
+    method: req.method as HttpMethod,
+    body: req.body,
+    headers: req.headers,
+    params: req.params,
+    user: (req as any).user
+  })
 
-    const { status, body, headers } = result instanceof Promise ? await result : result
+  const { status, body, headers } = result instanceof Promise ? await result : result
 
-    for (const key in headers) {
-      res.setHeader(key, headers[key])
-    }
-
-    res.status(status).send(body)
-  } catch (e) {
-    next(e)
-  }
+  reply.code(status).headers(headers ?? {}).send(body)
 }
 
-export default (app: Express, options: FrourioOptions = {}) => {
+export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   const basePath = options.basePath ?? ''
   const controller0 = controllerFn0()
 
-  app.get(`${basePath}/`, methodToHandler(controller0.get))
+  fastify.get(`${basePath}/`, methodToHandler(controller0.get))
 
-  return app
+  return fastify
 }

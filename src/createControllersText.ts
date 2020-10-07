@@ -44,7 +44,7 @@ const initTSC = (appDir: string, project: string) => {
 }
 
 const createRelayFile = (input: string, appText: string, userPath: string, params: Param[]) => {
-  const text = `/* eslint-disable */\nimport { Express, RequestHandler } from 'express'\nimport { Deps, depend } from 'velona'\nimport { ServerMethods } from '${appText}'\n${
+  const text = `/* eslint-disable */\nimport { FastifyInstance, onRequestHookHandler, preParsingHookHandler, preValidationHookHandler, preHandlerHookHandler } from 'fastify'\nimport { Deps, depend } from 'velona'\nimport { ServerMethods } from '${appText}'\n${
     userPath ? `import { User } from '${userPath}'\n` : ''
   }import { Methods } from './'\n\ntype ControllerMethods = ServerMethods<Methods, {${
     userPath ? '\n  user: User\n' : ''
@@ -53,15 +53,15 @@ const createRelayFile = (input: string, appText: string, userPath: string, param
   }}>
 
 export type Hooks = {
-  onRequest?: RequestHandler | RequestHandler[]
-  preParsing?: RequestHandler | RequestHandler[]
-  preValidation?: RequestHandler | RequestHandler[]
-  preHandler?: RequestHandler | RequestHandler[]
+  onRequest?: onRequestHookHandler | onRequestHookHandler[]
+  preParsing?: preParsingHookHandler | preParsingHookHandler[]
+  preValidation?: preValidationHookHandler | preValidationHookHandler[]
+  preHandler?: preHandlerHookHandler | preHandlerHookHandler[]
 }
 
-export function defineHooks<T extends Hooks>(hooks: (app: Express) => T): (app: Express) => T
-export function defineHooks<T extends Record<string, any>, U extends Hooks>(deps: T, cb: (d: Deps<T>, app: Express) => U): { (app: Express): U; inject(d: Deps<T>): (app: Express) => U }
-export function defineHooks<T extends Record<string, any>>(hooks: (app: Express) => Hooks | T, cb?: (deps: Deps<T>, app: Express) => Hooks) {
+export function defineHooks<T extends Hooks>(hooks: (fastify: FastifyInstance) => T): (fastify: FastifyInstance) => T
+export function defineHooks<T extends Record<string, any>, U extends Hooks>(deps: T, cb: (d: Deps<T>, fastify: FastifyInstance) => U): { (fastify: FastifyInstance): U; inject(d: Deps<T>): (fastify: FastifyInstance) => U }
+export function defineHooks<T extends Record<string, any>>(hooks: (fastify: FastifyInstance) => Hooks | T, cb?: (deps: Deps<T>, fastify: FastifyInstance) => Hooks) {
   return cb && typeof hooks !== 'function' ? depend(hooks, cb) : hooks
 }
 
@@ -283,72 +283,97 @@ export default (appDir: string, project: string) => {
                     checker.getTypeOfSymbolAtLocation(reqFormat, reqFormat.valueDeclaration)
                   )) === 'FormData'
               const reqBody = props.find(p => p.name === 'reqBody')
+              const hooksTexts = ([
+                'onRequest',
+                'preParsing',
+                'preValidation',
+                'preHandler'
+              ] as const)
+                .map(key => {
+                  if (key === 'preValidation') {
+                    const texts = [
+                      numberTypeQueryParams && numberTypeQueryParams.length
+                        ? `parseNumberTypeQueryParams(${
+                            query?.declarations.some(
+                              d => d.getChildAt(1).kind === ts.SyntaxKind.QuestionToken
+                            )
+                              ? 'query => !Object.keys(query).length ? [] :'
+                              : '() =>'
+                          } [${numberTypeQueryParams.join(', ')}])`
+                        : '',
+                      isFormData && reqBody
+                        ? `formatMultipartData([${checker
+                            .getTypeOfSymbolAtLocation(reqBody, reqBody.valueDeclaration)
+                            .getProperties()
+                            .map(p => {
+                              const node = checker.typeToTypeNode(
+                                checker.getTypeOfSymbolAtLocation(p, p.valueDeclaration),
+                                undefined,
+                                undefined
+                              )
 
-              const handlers = [
-                ...genHookTexts('onRequest'),
-                ...genHookTexts('preParsing'),
-                numberTypeQueryParams && numberTypeQueryParams.length
-                  ? `parseNumberTypeQueryParams(${
-                      query?.declarations.some(
-                        d => d.getChildAt(1).kind === ts.SyntaxKind.QuestionToken
-                      )
-                        ? 'query => !Object.keys(query).length ? [] :'
-                        : '() =>'
-                    } [${numberTypeQueryParams.join(', ')}])`
-                  : '',
-                ...(isFormData && reqBody
-                  ? [
-                      'uploader',
-                      `formatMulterData([${checker
-                        .getTypeOfSymbolAtLocation(reqBody, reqBody.valueDeclaration)
-                        .getProperties()
-                        .map(p => {
-                          const node = checker.typeToTypeNode(
-                            checker.getTypeOfSymbolAtLocation(p, p.valueDeclaration),
-                            undefined,
-                            undefined
-                          )
-
-                          return node && (ts.isArrayTypeNode(node) || ts.isTupleTypeNode(node))
-                            ? `['${p.name}', ${p.declarations.some(d =>
-                                d.getChildren().some(c => c.kind === ts.SyntaxKind.QuestionToken)
-                              )}]`
-                            : undefined
-                        })
-                        .filter(Boolean)
-                        .join(', ')}])`
-                    ]
-                  : []),
-                !reqFormat && reqBody ? 'parseJSONBoby' : '',
-                ...genHookTexts('preValidation'),
-                validateInfo.length
-                  ? `createValidateHandler(req => [
+                              return node && (ts.isArrayTypeNode(node) || ts.isTupleTypeNode(node))
+                                ? `['${p.name}', ${p.declarations.some(d =>
+                                    d
+                                      .getChildren()
+                                      .some(c => c.kind === ts.SyntaxKind.QuestionToken)
+                                  )}]`
+                                : undefined
+                            })
+                            .filter(Boolean)
+                            .join(', ')}])`
+                        : '',
+                      ...genHookTexts('preValidation'),
+                      validateInfo.length
+                        ? `createValidateHandler(req => [
 ${validateInfo
   .map(
     v =>
-      `      ${
-        v.hasQuestion ? `Object.keys(req.${v.name}).length ? ` : ''
+      `          ${
+        v.hasQuestion ? `Object.keys(req.${v.name} as any).length ? ` : ''
       }validateOrReject(Object.assign(new Validators.${checker.typeToString(v.type)}(), req.${
         v.name
-      }))${v.hasQuestion ? ' : null' : ''}`
+      } as any))${v.hasQuestion ? ' : null' : ''}`
   )
-  .join(',\n')}\n    ])`
-                  : '',
-                dirPath.includes('@number')
-                  ? `createTypedParamsHandler(['${dirPath
-                      .split('/')
-                      .filter(p => p.includes('@number'))
-                      .map(p => p.split('@')[0].slice(1))
-                      .join("', '")}'])`
-                  : '',
-                ...genHookTexts('preHandler'),
-                `methodToHandler(controller${controllers.length}.${m.name})`
-              ].filter(Boolean)
+  .join(',\n')}\n        ])`
+                        : '',
+                      dirPath.includes('@number')
+                        ? `createTypedParamsHandler(['${dirPath
+                            .split('/')
+                            .filter(p => p.includes('@number'))
+                            .map(p => p.split('@')[0].slice(1))
+                            .join("', '")}'])`
+                        : ''
+                    ].filter(Boolean)
 
-              return `  app.${m.name}(\`\${basePath}${`/${dirPath}`
+                    return texts.length
+                      ? `${key}: ${
+                          texts.length === 1
+                            ? texts[0].replace('...', '')
+                            : `[\n        ${texts.join(',\n        ')}\n      ]`
+                        }`
+                      : ''
+                  }
+
+                  const texts = genHookTexts(key).filter(Boolean)
+                  return texts.length
+                    ? `${key}: ${
+                        texts.length === 1 ? texts[0].replace('...', '') : `[${texts.join(', ')}]`
+                      }`
+                    : ''
+                })
+                .filter(Boolean)
+
+              return `  fastify.${m.name}(${
+                hooksTexts.length ? '\n    ' : ''
+              }\`\${basePath}${`/${dirPath}`
                 .replace(/\/_/g, '/:')
-                .replace(/@.+?($|\/)/g, '$1')}\`, ${
-                handlers.length === 1 ? handlers[0] : `[\n    ${handlers.join(',\n    ')}\n  ]`
+                .replace(/@.+?($|\/)/g, '$1')}\`,${
+                hooksTexts.length
+                  ? `\n    {\n      ${hooksTexts.join(',\n      ')}\n    },\n    `
+                  : ' '
+              }methodToHandler(controller${controllers.length}.${m.name})${
+                hooksTexts.length ? '\n  ' : ''
               })\n`
             })
             .join('\n')
@@ -395,9 +420,9 @@ ${validateInfo
       )
       .join('')}`,
     consts: `${hooksPaths
-      .map((_, i) => `  const hooks${i} = hooksFn${i}(app)\n`)
+      .map((_, i) => `  const hooks${i} = hooksFn${i}(fastify)\n`)
       .join('')}${ctrlHooks
-      .map((_, i) => `  const ctrlHooks${i} = ctrlHooksFn${i}(app)\n`)
+      .map((_, i) => `  const ctrlHooks${i} = ctrlHooksFn${i}(fastify)\n`)
       .join('')}${controllers
       .map((_, i) => `  const controller${i} = controllerFn${i}()\n`)
       .join('')}`,
