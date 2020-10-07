@@ -106,7 +106,7 @@
     "fastify": "^3.5.1",
     "fastify-multipart": "^3.2.0",
     "form-data": "^3.0.0",
-    "jest": "^26.4.2",
+    "jest": "^26.5.2",
     "prettier": "^2.1.2",
     "standard-version": "^9.0.0",
     "ts-jest": "^26.4.1",
