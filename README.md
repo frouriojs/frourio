@@ -37,6 +37,7 @@ We waste a lot of time on dynamic testing using the browser and Docker.
    <img src="https://frouriojs.github.io/frourio/assets/images/problem.png" width="1200" alt="Why frourio ?" />
 </div>
 <br />
+<br />
 
 Frourio is a framework for developing web apps quickly and safely in "One TypeScript".
 
@@ -45,6 +46,25 @@ Frourio is a framework for developing web apps quickly and safely in "One TypeSc
 </div>
 <br />
 <br />
+
+## Benchmarks
+
+__Machine:__ Linux fv-az40 5.4.0-1025-azure #25~18.04.1-Ubuntu SMP Sat Sep 5 15:28:57 UTC 2020 x86_64 x86_64 x86_64 GNU/Linux | 2 vCPUs | 7GB.  
+__Method:__ `autocannon -c 100 -d 40 -p 10 localhost:3000` (two rounds; one to warm-up, one to measure).
+
+| Framework          | Version          |  Requests/sec |  Latency |
+| :----------------- | :--------------- | ------------: | -------: |
+| fastify            | 3.5.1	          | 57,197	      | 1.65     |
+| **frourio**        | **0.16.0**       | **55,240**    | **1.71** |
+| nest-fastify       | 7.4.4            | 50,156        | 1.90     |
+| micro              | 9.3.4	          | 49,824        | 1.91     |
+| express            | 4.17.1	          | 10,361        | 9.52     |
+| nest               | 7.4.4            | 9,268         | 10.67    |
+| frourio-express    | 0.16.0	          | 9,160         | 10.77    |
+
+Benchmarks taken using https://github.com/frouriojs/benchmarks. This is a
+synthetic, "hello world" benchmark that aims to evaluate the framework
+overhead.
 
 ## Table of Contents
 
