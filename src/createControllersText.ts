@@ -181,9 +181,40 @@ export default (appDir: string, project: string) => {
         }
 
         const controllerSource = program.getSourceFile(path.join(input, 'controller.ts'))
+        let isPromiseMethods: string[] = []
         let ctrlHooksSignature: ts.Signature | undefined
 
         if (controllerSource) {
+          isPromiseMethods =
+            ts.forEachChild(
+              controllerSource,
+              node =>
+                ts.isExportAssignment(node) &&
+                node.forEachChild(
+                  nod =>
+                    ts.isCallExpression(nod) &&
+                    checker
+                      .getSignaturesOfType(
+                        checker.getTypeAtLocation(nod.arguments[nod.arguments.length - 1]),
+                        ts.SignatureKind.Call
+                      )[0]
+                      .getReturnType()
+                      .getProperties()
+                      .map(
+                        t =>
+                          checker
+                            .getSignaturesOfType(
+                              checker.getTypeOfSymbolAtLocation(t, t.valueDeclaration),
+                              ts.SignatureKind.Call
+                            )[0]
+                            .getReturnType()
+                            .getProperties()
+                            .some(p => p.name === 'then') && t.name
+                      )
+                      .filter((n): n is string => !!n)
+                )
+            ) || []
+
           const ctrlHooksNode = ts.forEachChild(controllerSource, node => {
             if (
               ts.isVariableStatement(node) &&
@@ -372,9 +403,9 @@ ${validateInfo
                 hooksTexts.length
                   ? `\n    {\n      ${hooksTexts.join(',\n      ')}\n    },\n    `
                   : ' '
-              }methodToHandler(controller${controllers.length}.${m.name})${
-                hooksTexts.length ? '\n  ' : ''
-              })\n`
+              }${
+                isPromiseMethods.includes(m.name) ? 'asyncMethodToHandler' : 'methodToHandler'
+              }(controller${controllers.length}.${m.name})${hooksTexts.length ? '\n  ' : ''})\n`
             })
             .join('\n')
         )

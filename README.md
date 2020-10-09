@@ -939,8 +939,6 @@ test('dependency injection into controller', async () => {
   const limit = 3
   const message = 'test message'
   const res = await injectedController.get({
-    path: '',
-    method: 'GET',
     query: { limit, message },
     body: undefined,
     headers: undefined

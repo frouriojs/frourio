@@ -130,8 +130,6 @@ test('controller dependency injection', async () => {
 
   await expect(
     injectedController.get({
-      path: '',
-      method: 'GET',
       query: { id, requiredNum: 1, requiredNumArr: [0], disable: 'true' },
       body: undefined,
       headers: undefined

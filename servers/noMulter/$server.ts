@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { LowerHttpMethod, AspidaMethods, HttpMethod, HttpStatusOk, AspidaMethodParams } from 'aspida'
+import { LowerHttpMethod, AspidaMethods, HttpStatusOk, AspidaMethodParams } from 'aspida'
 import { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, FastifyRequest } from 'fastify'
 import { validateOrReject } from 'class-validator'
 import * as Validators from './validators'
@@ -45,8 +45,6 @@ type ServerValues = {
 }
 
 type RequestParams<T extends AspidaMethodParams> = {
-  path: string
-  method: HttpMethod
   query: T['query']
   body: T['reqBody']
   headers: T['reqHeaders']
@@ -80,20 +78,18 @@ const createValidateHandler = (validators: (req: FastifyRequest) => (Promise<voi
 
 const methodToHandler = (
   methodCallback: ServerMethods<any, any>[LowerHttpMethod]
+): RouteHandlerMethod => (req, reply) => {
+  const data = methodCallback(req as any) as any
+
+  reply.code(data.status).headers(data.headers ?? {}).send(data.body)
+}
+
+const asyncMethodToHandler = (
+  methodCallback: ServerMethods<any, any>[LowerHttpMethod]
 ): RouteHandlerMethod => async (req, reply) => {
-  const result = methodCallback({
-    query: req.query,
-    path: req.url,
-    method: req.method as HttpMethod,
-    body: req.body,
-    headers: req.headers,
-    params: req.params,
-    user: (req as any).user
-  })
+  const data = await methodCallback(req as any)
 
-  const { status, body, headers } = result instanceof Promise ? await result : result
-
-  reply.code(status).headers(headers ?? {}).send(body)
+  reply.code(data.status).headers(data.headers ?? {}).send(data.body)
 }
 
 export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
@@ -117,7 +113,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
           Object.keys(req.query as any).length ? validateOrReject(Object.assign(new Validators.Query(), req.query as any)) : null
         ])
     },
-    methodToHandler(controller0.get)
+    asyncMethodToHandler(controller0.get)
   )
 
   fastify.post(
@@ -170,7 +166,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
       onRequest: [hooks0.onRequest, hooks1.onRequest],
       preHandler: ctrlHooks1.preHandler
     },
-    methodToHandler(controller4.get)
+    asyncMethodToHandler(controller4.get)
   )
 
   fastify.post(

@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { LowerHttpMethod, AspidaMethods, HttpMethod, HttpStatusOk, AspidaMethodParams } from 'aspida'
+import { LowerHttpMethod, AspidaMethods, HttpStatusOk, AspidaMethodParams } from 'aspida'
 import { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, FastifyRequest } from 'fastify'
 import multipart, { FastifyMultipartOptions, Multipart } from 'fastify-multipart'
 import { validateOrReject } from 'class-validator'
@@ -61,8 +61,6 @@ type BlobToFile<T extends AspidaMethodParams> = T['reqFormat'] extends FormData
   : T['reqBody']
 
 type RequestParams<T extends AspidaMethodParams> = {
-  path: string
-  method: HttpMethod
   query: T['query']
   body: BlobToFile<T>
   headers: T['reqHeaders']
@@ -134,24 +132,6 @@ const createTypedParamsHandler = (numberTypeParams: string[]): preValidationHook
 const createValidateHandler = (validators: (req: FastifyRequest) => (Promise<void> | null)[]): preValidationHookHandler =>
   (req, reply) => Promise.all(validators(req)).catch(() => reply.code(400).send())
 
-const methodToHandler = (
-  methodCallback: ServerMethods<any, any>[LowerHttpMethod]
-): RouteHandlerMethod => async (req, reply) => {
-  const result = methodCallback({
-    query: req.query,
-    path: req.url,
-    method: req.method as HttpMethod,
-    body: req.body,
-    headers: req.headers,
-    params: req.params,
-    user: (req as any).user
-  })
-
-  const { status, body, headers } = result instanceof Promise ? await result : result
-
-  reply.code(status).headers(headers ?? {}).send(body)
-}
-
 const formatMultipartData = (arrayTypeKeys: [string, boolean][]): preValidationHookHandler => (req, _, done) => {
   const body: any = req.body
 
@@ -175,6 +155,22 @@ const formatMultipartData = (arrayTypeKeys: [string, boolean][]): preValidationH
   }
 
   done()
+}
+
+const methodToHandler = (
+  methodCallback: ServerMethods<any, any>[LowerHttpMethod]
+): RouteHandlerMethod => (req, reply) => {
+  const data = methodCallback(req as any) as any
+
+  reply.code(data.status).headers(data.headers ?? {}).send(data.body)
+}
+
+const asyncMethodToHandler = (
+  methodCallback: ServerMethods<any, any>[LowerHttpMethod]
+): RouteHandlerMethod => async (req, reply) => {
+  const data = await methodCallback(req as any)
+
+  reply.code(data.status).headers(data.headers ?? {}).send(data.body)
 }
 
 export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
@@ -208,7 +204,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
         ])
       ]
     },
-    methodToHandler(controller0.get)
+    asyncMethodToHandler(controller0.get)
   )
 
   fastify.post(
@@ -305,7 +301,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
       preParsing: hooks0.preParsing,
       preHandler: ctrlHooks1.preHandler
     },
-    methodToHandler(controller7.get)
+    asyncMethodToHandler(controller7.get)
   )
 
   fastify.post(
