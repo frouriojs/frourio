@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { LowerHttpMethod, AspidaMethods, HttpMethod, HttpStatusOk, AspidaMethodParams } from 'aspida'
+import { LowerHttpMethod, AspidaMethods, HttpStatusOk, AspidaMethodParams } from 'aspida'
 import { FastifyInstance, RouteHandlerMethod } from 'fastify'
 import controllerFn0 from './api/controller'
 
@@ -36,8 +36,6 @@ type ServerValues = {
 }
 
 type RequestParams<T extends AspidaMethodParams> = {
-  path: string
-  method: HttpMethod
   query: T['query']
   body: T['reqBody']
   headers: T['reqHeaders']
@@ -51,20 +49,10 @@ export type ServerMethods<T extends AspidaMethods, U extends ServerValues> = {
 
 const methodToHandler = (
   methodCallback: ServerMethods<any, any>[LowerHttpMethod]
-): RouteHandlerMethod => async (req, reply) => {
-  const result = methodCallback({
-    query: req.query,
-    path: req.url,
-    method: req.method as HttpMethod,
-    body: req.body,
-    headers: req.headers,
-    params: req.params,
-    user: (req as any).user
-  })
+): RouteHandlerMethod => (req, reply) => {
+  const data = methodCallback(req as any) as any
 
-  const { status, body, headers } = result instanceof Promise ? await result : result
-
-  reply.code(status).headers(headers ?? {}).send(body)
+  reply.code(data.status).headers(data.headers ?? {}).send(data.body)
 }
 
 export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {

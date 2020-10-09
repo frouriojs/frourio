@@ -7,10 +7,12 @@ export default (input: string, project?: string) => {
   const hasTypedParams = controllers.includes(' createTypedParamsHandler(')
   const hasValidator = controllers.includes(' validateOrReject(')
   const hasMultipart = controllers.includes(' formatMultipartData(')
+  const hasMethodToHandler = controllers.includes(' methodToHandler(')
+  const hasAsyncMethodToHandler = controllers.includes(' asyncMethodToHandler(')
 
   return {
     text: `/* eslint-disable */
-import { LowerHttpMethod, AspidaMethods, HttpMethod, HttpStatusOk, AspidaMethodParams } from 'aspida'
+import { LowerHttpMethod, AspidaMethods, HttpStatusOk, AspidaMethodParams } from 'aspida'
 import { FastifyInstance, RouteHandlerMethod${
       hasNumberTypeQuery || hasTypedParams || hasValidator || hasMultipart
         ? ', preValidationHookHandler'
@@ -68,8 +70,6 @@ type BlobToFile<T extends AspidaMethodParams> = T['reqFormat'] extends FormData
     : ''
 }
 type RequestParams<T extends AspidaMethodParams> = {
-  path: string
-  method: HttpMethod
   query: T['query']
   body: ${hasMultipart ? 'BlobToFile<T>' : "T['reqBody']"}
   headers: T['reqHeaders']
@@ -152,27 +152,9 @@ const createValidateHandler = (validators: (req: FastifyRequest) => (Promise<voi
   (req, reply) => Promise.all(validators(req)).catch(() => reply.code(400).send())
 `
         : ''
-    }
-const methodToHandler = (
-  methodCallback: ServerMethods<any, any>[LowerHttpMethod]
-): RouteHandlerMethod => async (req, reply) => {
-  const result = methodCallback({
-    query: req.query,
-    path: req.url,
-    method: req.method as HttpMethod,
-    body: req.body,
-    headers: req.headers,
-    params: req.params,
-    user: (req as any).user
-  })
-
-  const { status, body, headers } = result instanceof Promise ? await result : result
-
-  reply.code(status).headers(headers ?? {}).send(body)
-}
-${
-  hasMultipart
-    ? `
+    }${
+      hasMultipart
+        ? `
 const formatMultipartData = (arrayTypeKeys: [string, boolean][]): preValidationHookHandler => (req, _, done) => {
   const body: any = req.body
 
@@ -198,8 +180,32 @@ const formatMultipartData = (arrayTypeKeys: [string, boolean][]): preValidationH
   done()
 }
 `
-    : ''
+        : ''
+    }${
+      hasMethodToHandler
+        ? `
+const methodToHandler = (
+  methodCallback: ServerMethods<any, any>[LowerHttpMethod]
+): RouteHandlerMethod => (req, reply) => {
+  const data = methodCallback(req as any) as any
+
+  reply.code(data.status).headers(data.headers ?? {}).send(data.body)
 }
+`
+        : ''
+    }${
+      hasAsyncMethodToHandler
+        ? `
+const asyncMethodToHandler = (
+  methodCallback: ServerMethods<any, any>[LowerHttpMethod]
+): RouteHandlerMethod => async (req, reply) => {
+  const data = await methodCallback(req as any)
+
+  reply.code(data.status).headers(data.headers ?? {}).send(data.body)
+}
+`
+        : ''
+    }
 export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   const basePath = options.basePath ?? ''
 ${consts}
