@@ -28,10 +28,10 @@
 
 ## Why frourio ?
 
-Even if you write both the front and server in TypeScript, you can't statically type-check the API's sparsity.
+Even if you write both the frontend and backend in TypeScript, you can't statically type-check the API's sparsity.
 
 We are always forced to write "Two TypeScript".  
-We waste a lot of time on dynamic testing using the browser and Docker.
+We waste a lot of time on dynamic testing using the browser and server.
 
 <div align="center">
    <img src="https://frouriojs.github.io/frourio/assets/images/problem.png" width="1200" alt="Why frourio ?" />
@@ -39,7 +39,7 @@ We waste a lot of time on dynamic testing using the browser and Docker.
 <br />
 <br />
 
-Frourio is a framework for developing web apps quickly and safely in "One TypeScript".
+Frourio is a framework for developing web apps quickly and safely in **"One TypeScript"**.
 
 <div align="center">
    <img src="https://frouriojs.github.io/frourio/assets/images/architecture.png" width="1200" alt="Architecture of create-frourio-app" />
@@ -829,7 +829,7 @@ fastify.listen(3000)
 
 ## Dependency Injection
 
-Frourio use [frouriojs/Velona](https://github.com/frouriojs/velona) for dependency injection.
+Frourio use [frouriojs/velona](https://github.com/frouriojs/velona) for dependency injection.
 
 `server/api/tasks/index.ts`
 
@@ -916,9 +916,7 @@ test('dependency injection into controller', async () => {
   const limit = 3
   const message = 'test message'
   const res = await injectedController.get({
-    query: { limit, message },
-    body: undefined,
-    headers: undefined
+    query: { limit, message }
   })
 
   expect(res.body).toHaveLength(limit)

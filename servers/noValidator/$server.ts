@@ -55,11 +55,15 @@ type BlobToFile<T extends AspidaMethodParams> = T['reqFormat'] extends FormData
     }
   : T['reqBody']
 
-type RequestParams<T extends AspidaMethodParams> = {
+type RequestParams<T extends AspidaMethodParams> = Pick<{
   query: T['query']
   body: BlobToFile<T>
   headers: T['reqHeaders']
-}
+}, {
+  query: Required<T>['query'] extends {} | null ? 'query' : never
+  body: Required<T>['reqBody'] extends {} | null ? 'body' : never
+  headers: Required<T>['reqHeaders'] extends {} | null ? 'headers' : never
+}['query' | 'body' | 'headers']>
 
 export type ServerMethods<T extends AspidaMethods, U extends ServerValues> = {
   [K in keyof T]: (

@@ -130,9 +130,7 @@ test('controller dependency injection', async () => {
 
   await expect(
     injectedController.get({
-      query: { id, requiredNum: 1, requiredNumArr: [0], disable: 'true' },
-      body: undefined,
-      headers: undefined
+      query: { id, requiredNum: 1, requiredNumArr: [0], disable: 'true' }
     })
   ).resolves.toHaveProperty('body', { id: +id })
   expect(val).toBe(+id)
