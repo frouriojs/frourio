@@ -103,7 +103,7 @@
     "eslint-plugin-prettier": "^3.1.4",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
-    "fastify": "^3.5.1",
+    "fastify": "^3.6.0",
     "fastify-multipart": "^3.2.0",
     "form-data": "^3.0.0",
     "jest": "^26.5.2",
