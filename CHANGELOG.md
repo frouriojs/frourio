@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.17.2](https://github.com/frouriojs/frourio/compare/v0.17.1...v0.17.2) (2020-10-13)
+
+
+### Features
+
+* optimize methodToHandler ([b8d4625](https://github.com/frouriojs/frourio/commit/b8d4625f86a8622ed428d570ce548a8db76a8d4a))
+
+
+### Documentation
+
+* add ja README ([a2c3107](https://github.com/frouriojs/frourio/commit/a2c3107f30fb1310c046684f4f6059ba426e8626))
+
 ### [0.17.1](https://github.com/frouriojs/frourio/compare/v0.17.0...v0.17.1) (2020-10-11)
 
 
