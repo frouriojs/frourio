@@ -844,8 +844,8 @@ fastify.listen(3000)
 
 ## Deployment
 
-Frourio is complete in one directory, but not monolithic.
-Frontend and server are just statically connected by a type and are separate projects.
+Frourio is complete in one directory, but not monolithic.  
+Frontend and server are just statically connected by a type and are separate projects.  
 So they can be deployed in different environments.
 
 <a id="Deployment-frontend"></a>

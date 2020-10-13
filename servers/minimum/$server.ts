@@ -55,8 +55,10 @@ const methodToHandler = (
   methodCallback: ServerMethods<any, any>[LowerHttpMethod]
 ): RouteHandlerMethod => (req, reply) => {
   const data = methodCallback(req as any) as any
-
-  reply.code(data.status).headers(data.headers ?? {}).send(data.body)
+  
+  if (data.headers) reply.headers(data.headers)
+  
+  reply.code(data.status).send(data.body)
 }
 
 export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
