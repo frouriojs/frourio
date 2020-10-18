@@ -1,5 +1,9 @@
 import { defineController, defineHooks } from './$relay'
 
+type AdditionalRequest = {
+  tmp: string
+}
+
 const hooks = defineHooks(() => ({
   preHandler: [
     (req, _, done) => {
@@ -9,7 +13,7 @@ const hooks = defineHooks(() => ({
   ]
 }))
 
-export { hooks }
+export { hooks, AdditionalRequest }
 
 export default defineController(() => ({
   get: async () => ({ status: 200, body: [{ id: 1, name: 'aa' }] }),

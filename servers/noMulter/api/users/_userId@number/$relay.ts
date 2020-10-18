@@ -2,22 +2,21 @@
 import { FastifyInstance, onRequestHookHandler, preParsingHookHandler, preValidationHookHandler, preHandlerHookHandler } from 'fastify'
 import { Deps, depend } from 'velona'
 import { ServerMethods } from '../../../$server'
-import { User } from './../hooks'
+import { AdditionalRequest } from './../hooks'
 import { Methods } from './'
 
-type ControllerMethods = ServerMethods<Methods, {
-  user: User
+type AddedHandler<T> = T extends (req: infer U, ...args: infer V) => infer W ? (req: U & Partial<AdditionalRequest>, ...args: V) => W : never
+type Hooks = {
+  onRequest?: AddedHandler<onRequestHookHandler> | AddedHandler<onRequestHookHandler>[]
+  preParsing?: AddedHandler<preParsingHookHandler> | AddedHandler<preParsingHookHandler>[]
+  preValidation?: AddedHandler<preValidationHookHandler> | AddedHandler<preValidationHookHandler>[]
+  preHandler?: AddedHandler<preHandlerHookHandler> | AddedHandler<preHandlerHookHandler>[]
+}
+type ControllerMethods = ServerMethods<Methods, AdditionalRequest & {
   params: {
     userId: number
   }
 }>
-
-export type Hooks = {
-  onRequest?: onRequestHookHandler | onRequestHookHandler[]
-  preParsing?: preParsingHookHandler | preParsingHookHandler[]
-  preValidation?: preValidationHookHandler | preValidationHookHandler[]
-  preHandler?: preHandlerHookHandler | preHandlerHookHandler[]
-}
 
 export function defineHooks<T extends Hooks>(hooks: (fastify: FastifyInstance) => T): (fastify: FastifyInstance) => T
 export function defineHooks<T extends Record<string, any>, U extends Hooks>(deps: T, cb: (d: Deps<T>, fastify: FastifyInstance) => U): { (fastify: FastifyInstance): U; inject(d: Deps<T>): (fastify: FastifyInstance) => U }
