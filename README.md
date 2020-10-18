@@ -21,7 +21,7 @@
   </a>
 </div>
 
-<p align="center">Frourio is a perfectly type-checkable REST framework for TypeScript.</p>
+<p align="center">Fast and type safe full stack REST framework, for TypeScript</p>
 <div align="center">
   <a href="https://github.com/frouriojs/frourio#readme">🇺🇸English</a> |
   <a href="https://github.com/frouriojs/frourio/tree/master/docs/ja#readme">🇯🇵日本語</a>
