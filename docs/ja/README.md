@@ -97,13 +97,27 @@ export default defineHooks((fastify) => ({
         getUserIdByToken(req.headers.token)
 
       if (user) {
-        req.user = user // req.user was added by AdditionalRequest
+        // eslint-disable-next-line
+        // @ts-expect-error
+        req.user = user
         done()
       } else {
         done(new Error('Unauthorized'))
       }
     }
   ])
+}))
+```
+
+`server/api/user/controller.ts`
+
+```ts
+import { defineController } from './$relay'
+import { getUserNameById } from '$/service/user'
+
+export default defineController(() => ({
+  // user was added by AdditionalRequest of ./hooks.ts
+  get: async ({ user }) => ({ status: 200, body: await getUserNameById(user.id) })
 }))
 ```
 
@@ -463,7 +477,9 @@ export default defineHooks((fastify) => ({
         getUserIdByToken(req.headers.token)
 
       if (user) {
-        req.user = user // req.user was added by AdditionalRequest
+        // eslint-disable-next-line
+        // @ts-expect-error
+        req.user = user
         done()
       } else {
         done(new Error('Unauthorized'))
