@@ -2,12 +2,12 @@
 # yarn lockfile v1
 
 
-"@aspida/axios@^0.12.0":
-  version "0.12.0"
-  resolved "https://registry.yarnpkg.com/@aspida/axios/-/axios-0.12.0.tgz#c1993cea13b201dd181ee6785fb6a76aac92b86a"
-  integrity sha512-lj3DO9LDJJLQtAOQNlHQZCaL+K9NwcDH7JLcEZHgdWUBIrUb6/qNeyeOcEJCcrfzyssrdTxcK6PgEGbp3nij6w==
+"@aspida/axios@^0.12.1":
+  version "0.12.1"
+  resolved "https://registry.yarnpkg.com/@aspida/axios/-/axios-0.12.1.tgz#b85e77a1c8020b578e8a6a294f284625f9a4b58e"
+  integrity sha512-v7emPOd8eDaaMTfYaAU8rO+gxOdcfu2OJ10k9HJJOJI/3F64AX4ebeEsJ0R/uRBe70RHrfKyyL4QRtLtQA28zg==
   dependencies:
-    aspida "^0.22.0"
+    aspida "^0.22.1"
 
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.10.4":
   version "7.10.4"
@@ -978,13 +978,13 @@ asn1@~0.2.3:
   dependencies:
     safer-buffer "~2.1.0"
 
-aspida@^0.22.0:
-  version "0.22.0"
-  resolved "https://registry.yarnpkg.com/aspida/-/aspida-0.22.0.tgz#0806c6088fa54cd3b2765dbcaec4533fe12d5376"
-  integrity sha512-ILDFkbKSPWw1PhPZ4ghOXa3aa/ZC3+ah2A0fDjI73G7CAFT/u2lqU7shp+I7UTEuojMtEvQCXlSxs2q7yY05iQ==
+aspida@^0.22.1:
+  version "0.22.1"
+  resolved "https://registry.yarnpkg.com/aspida/-/aspida-0.22.1.tgz#91a0da36d5db60ede5edb519065e026367c1a0b6"
+  integrity sha512-VkiSxAWVxaAiKKw21zmIObB3pMRGVqEWQ7+RXMIo3ENcQmI7SCrmOuseXaOGDy0LrRPtwqc17e4eAc8KELsuiA==
   dependencies:
     "@types/minimist" "^1.2.0"
-    chokidar "^3.4.2"
+    chokidar "^3.4.3"
     minimist "^1.2.5"
 
 assert-plus@1.0.0, assert-plus@^1.0.0:
@@ -1304,10 +1304,10 @@ char-regex@^1.0.2:
   resolved "https://registry.yarnpkg.com/char-regex/-/char-regex-1.0.2.tgz#d744358226217f981ed58f479b1d6bcc29545dcf"
   integrity sha512-kWWXztvZ5SBQV+eRgKFeh8q5sLuZY2+8WUIzlxWVTg+oGwY14qylx1KbKzHd8P6ZYkAg0xyIDU9JMHhyJMZ1jw==
 
-chokidar@^3.4.2:
-  version "3.4.2"
-  resolved "https://registry.yarnpkg.com/chokidar/-/chokidar-3.4.2.tgz#38dc8e658dec3809741eb3ef7bb0a47fe424232d"
-  integrity sha512-IZHaDeBeI+sZJRX7lGcXsdzgvZqKv6sECqsbErJA4mHWfpRrD8B97kSFN4cQz6nGBGiuFia1MKR4d6c1o8Cv7A==
+chokidar@^3.4.3:
+  version "3.4.3"
+  resolved "https://registry.yarnpkg.com/chokidar/-/chokidar-3.4.3.tgz#c1df38231448e45ca4ac588e6c79573ba6a57d5b"
+  integrity sha512-DtM3g7juCXQxFVSNPNByEC2+NImtBuxQQvWlHunpJIS5Ocr0lG306cC7FCi7cEA0fzmybPUIl4txBIobk1gGOQ==
   dependencies:
     anymatch "~3.1.1"
     braces "~3.0.2"
@@ -1315,7 +1315,7 @@ chokidar@^3.4.2:
     is-binary-path "~2.1.0"
     is-glob "~4.0.1"
     normalize-path "~3.0.0"
-    readdirp "~3.4.0"
+    readdirp "~3.5.0"
   optionalDependencies:
     fsevents "~2.1.2"
 
@@ -1957,10 +1957,10 @@ escodegen@^1.14.1:
   optionalDependencies:
     source-map "~0.6.1"
 
-eslint-config-prettier@^6.12.0:
-  version "6.12.0"
-  resolved "https://registry.yarnpkg.com/eslint-config-prettier/-/eslint-config-prettier-6.12.0.tgz#9eb2bccff727db1c52104f0b49e87ea46605a0d2"
-  integrity sha512-9jWPlFlgNwRUYVoujvWTQ1aMO8o6648r+K7qU7K5Jmkbyqav1fuEZC0COYpGBxyiAJb65Ra9hrmFx19xRGwXWw==
+eslint-config-prettier@^6.13.0:
+  version "6.13.0"
+  resolved "https://registry.yarnpkg.com/eslint-config-prettier/-/eslint-config-prettier-6.13.0.tgz#207d88796b5624e5bb815bbbdfc5891ceb9ebffa"
+  integrity sha512-LcT0i0LSmnzqK2t764pyIt7kKH2AuuqKRTtJTdddWxOiUja9HdG5GXBVF2gmCTvVYWVsTu8J2MhJLVGRh+pj8w==
   dependencies:
     get-stdin "^6.0.0"
 
@@ -2327,10 +2327,10 @@ fastify-error@^0.2.0:
   resolved "https://registry.yarnpkg.com/fastify-error/-/fastify-error-0.2.0.tgz#9a1c28d4f42b6259e7a549671c8e5e2d85660634"
   integrity sha512-zabxsBatj59ROG0fhP36zNdc5Q1/eYeH9oSF9uvfrurZf8/JKfrJbMcIGrLpLWcf89rS6L91RHWm20A/X85hcA==
 
-fastify-multipart@^3.2.0:
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/fastify-multipart/-/fastify-multipart-3.2.0.tgz#6b3076802296d331a19f102626912dd79d536211"
-  integrity sha512-jv+FNiFJF+F8XnlWPHq1VUQhVYbOJ1xWsqqD1cdToJg4MXxRN2D/owj1qwInhloyI6KTWpS1DTZ4tPXg4al+FA==
+fastify-multipart@^3.2.1:
+  version "3.2.1"
+  resolved "https://registry.yarnpkg.com/fastify-multipart/-/fastify-multipart-3.2.1.tgz#589246e8c5503e9b8ddcc92671c23d171574c1cf"
+  integrity sha512-aaaadNRF0/NSyf6OzP5xhYMo8h6+ORYQiAQ3PkwHIn8yyTuZQSp2gZtmbh9RVbknx+EzJFpxYUXu/aGrwRUU7g==
   dependencies:
     busboy "^0.3.1"
     deepmerge "^4.2.2"
@@ -4762,10 +4762,10 @@ readable-stream@~2.3.6:
     string_decoder "~1.1.1"
     util-deprecate "~1.0.1"
 
-readdirp@~3.4.0:
-  version "3.4.0"
-  resolved "https://registry.yarnpkg.com/readdirp/-/readdirp-3.4.0.tgz#9fdccdf9e9155805449221ac645e8303ab5b9ada"
-  integrity sha512-0xe001vZBnJEK+uKcj8qOhyAKPzIT+gStxWr3LCB0DwcXR5NZJ3IaC+yGnHCYzB/S7ov3m3EEbZI2zeNvX+hGQ==
+readdirp@~3.5.0:
+  version "3.5.0"
+  resolved "https://registry.yarnpkg.com/readdirp/-/readdirp-3.5.0.tgz#9ba74c019b15d365278d2e91bb8c48d7b4d42c9e"
+  integrity sha512-cMhu7c/8rdhkHXWsY+osBhfSy0JikwpHK/5+imo+LpeasTF8ouErHrlYkwT0++njiyuDvc7OFY5T3ukvZ8qmFQ==
   dependencies:
     picomatch "^2.2.1"
 
