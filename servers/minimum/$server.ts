@@ -30,11 +30,6 @@ type ServerResponse<K extends AspidaMethodParams> =
     >)
   | PartiallyPartial<BaseResponse<any, any, HttpStatusNoOk>, 'body' | 'headers'>
 
-type ServerValues = {
-  params?: Record<string, any>
-  user?: any
-}
-
 type RequestParams<T extends AspidaMethodParams> = Pick<{
   query: T['query']
   body: T['reqBody']
@@ -45,7 +40,7 @@ type RequestParams<T extends AspidaMethodParams> = Pick<{
   headers: Required<T>['reqHeaders'] extends {} | null ? 'headers' : never
 }['query' | 'body' | 'headers']>
 
-export type ServerMethods<T extends AspidaMethods, U extends ServerValues> = {
+export type ServerMethods<T extends AspidaMethods, U extends Record<string, any> = {}> = {
   [K in keyof T]: (
     req: RequestParams<T[K]> & U
   ) => ServerResponse<T[K]> | Promise<ServerResponse<T[K]>>

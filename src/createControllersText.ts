@@ -43,21 +43,56 @@ const initTSC = (appDir: string, project: string) => {
   return { program, checker: program.getTypeChecker() }
 }
 
-const createRelayFile = (input: string, appText: string, userPath: string, params: Param[]) => {
+const createRelayFile = (
+  input: string,
+  appText: string,
+  additionalReqs: string[],
+  params: Param[]
+) => {
+  const hasAdditionals = !!additionalReqs.length
+  const hasMultiAdditionals = additionalReqs.length > 1
   const text = `/* eslint-disable */\nimport { FastifyInstance, onRequestHookHandler, preParsingHookHandler, preValidationHookHandler, preHandlerHookHandler } from 'fastify'\nimport { Deps, depend } from 'velona'\nimport { ServerMethods } from '${appText}'\n${
-    userPath ? `import { User } from '${userPath}'\n` : ''
-  }import { Methods } from './'\n\ntype ControllerMethods = ServerMethods<Methods, {${
-    userPath ? '\n  user: User\n' : ''
-  }${!userPath && params.length ? '\n' : ''}${
-    params.length ? `  params: {\n${params.map(v => `    ${v[0]}: ${v[1]}`).join('\n')}\n  }\n` : ''
+    hasMultiAdditionals
+      ? additionalReqs
+          .map(
+            (req, i) =>
+              `import { AdditionalRequest as AdditionalRequest${i} } from '${req.replace(
+                /^\.\/\./,
+                '.'
+              )}'\n`
+          )
+          .join('')
+      : hasAdditionals
+      ? `import { AdditionalRequest } from '${additionalReqs[0]}'\n`
+      : ''
+  }import { Methods } from './'\n\n${
+    hasMultiAdditionals
+      ? `type AdditionalRequest = ${additionalReqs
+          .map((_, i) => `AdditionalRequest${i}`)
+          .join(' & ')}\n`
+      : ''
+  }${
+    hasAdditionals
+      ? 'type AddedHandler<T> = T extends (req: infer U, ...args: infer V) => infer W ? (req: U & Partial<AdditionalRequest>, ...args: V) => W : never\n'
+      : ''
+  }type Hooks = {
+${[
+  ['onRequest', 'onRequestHookHandler'],
+  ['preParsing', 'preParsingHookHandler'],
+  ['preValidation', 'preValidationHookHandler'],
+  ['preHandler', 'preHandlerHookHandler']
+]
+  .map(([key, val]) =>
+    hasAdditionals
+      ? `  ${key}?: AddedHandler<${val}> | AddedHandler<${val}>[]\n`
+      : `  ${key}?: ${val} | ${val}[]\n`
+  )
+  .join('')}}
+type ControllerMethods = ServerMethods<Methods, ${hasAdditionals ? 'AdditionalRequest & ' : ''}{${
+    params.length
+      ? `\n  params: {\n${params.map(v => `    ${v[0]}: ${v[1]}`).join('\n')}\n  }\n`
+      : ''
   }}>
-
-export type Hooks = {
-  onRequest?: onRequestHookHandler | onRequestHookHandler[]
-  preParsing?: preParsingHookHandler | preParsingHookHandler[]
-  preValidation?: preValidationHookHandler | preValidationHookHandler[]
-  preHandler?: preHandlerHookHandler | preHandlerHookHandler[]
-}
 
 export function defineHooks<T extends Hooks>(hooks: (fastify: FastifyInstance) => T): (fastify: FastifyInstance) => T
 export function defineHooks<T extends Record<string, any>, U extends Hooks>(deps: T, cb: (d: Deps<T>, fastify: FastifyInstance) => U): { (fastify: FastifyInstance): U; inject(d: Deps<T>): (fastify: FastifyInstance) => U }
@@ -72,27 +107,41 @@ export function defineController<T extends Record<string, any>>(methods: () => C
 }
 `
 
-  fs.writeFileSync(path.join(input, '$relay.ts'), text, 'utf8')
+  fs.writeFileSync(
+    path.join(input, '$relay.ts'),
+    text.replace(', {}', '').replace(' & {}', ''),
+    'utf8'
+  )
 }
+
+const getAdditionalResPath = (input: string, name: string) =>
+  fs.existsSync(path.join(input, `${name}.ts`)) &&
+  /(^|\n)export .+ AdditionalRequest(,| )/.test(
+    fs.readFileSync(path.join(input, `${name}.ts`), 'utf8')
+  )
+    ? [`./${name}`]
+    : []
 
 const createFiles = (
   appDir: string,
   dirPath: string,
   params: Param[],
   appPath: string,
-  user: string
+  additionalRequestPaths: string[]
 ) => {
   const input = path.posix.join(appDir, dirPath)
   const appText = `../${appPath}`
-  const userPath =
-    fs.existsSync(path.join(input, 'hooks.ts')) &&
-    /(^|\n)export .+ User(,| )/.test(fs.readFileSync(path.join(input, 'hooks.ts'), 'utf8'))
-      ? './hooks'
-      : user
-      ? `./.${user}`
-      : ''
+  const additionalReqs = [
+    ...additionalRequestPaths.map(p => `./.${p}`),
+    ...getAdditionalResPath(input, 'hooks')
+  ]
 
-  createRelayFile(input, appText, userPath, params)
+  createRelayFile(
+    input,
+    appText,
+    [...additionalReqs, ...getAdditionalResPath(input, 'controller')],
+    params
+  )
   createDefaultFiles(input)
 
   fs.readdirSync(input, { withFileTypes: true }).forEach(
@@ -105,13 +154,13 @@ const createFiles = (
           ? [...params, [d.name.slice(1).split('@')[0], d.name.split('@')[1] ?? 'string']]
           : params,
         appText,
-        userPath
+        additionalReqs
       )
   )
 }
 
 export default (appDir: string, project: string) => {
-  createFiles(appDir, '', [], '$server', '')
+  createFiles(appDir, '', [], '$server', [])
 
   const { program, checker } = initTSC(appDir, project)
   const hooksPaths: string[] = []
