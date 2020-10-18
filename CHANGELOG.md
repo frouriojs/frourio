@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.18.0](https://github.com/frouriojs/frourio/compare/v0.17.2...v0.18.0) (2020-10-18)
+
+
+### ⚠ BREAKING CHANGES
+
+* add AdditionalRequest
+
+### Features
+
+* add AdditionalRequest ([4f1df4e](https://github.com/frouriojs/frourio/commit/4f1df4ee99a76e60c2a87d7d0a385bd32d3b7748))
+
+
+### Documentation
+
+* change description ([7993ef2](https://github.com/frouriojs/frourio/commit/7993ef29b806a8219756ee73bbb9167f55de602f))
+* update benchmarks ([beb3c3f](https://github.com/frouriojs/frourio/commit/beb3c3f472b812abfb8bacb7ac9cad1753972a7c))
+
 ### [0.17.2](https://github.com/frouriojs/frourio/compare/v0.17.1...v0.17.2) (2020-10-13)
 
 
