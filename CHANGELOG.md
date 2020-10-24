@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.18.1](https://github.com/frouriojs/frourio/compare/v0.18.0...v0.18.1) (2020-10-24)
+
+
+### Bug Fixes
+
+* cascade hooks of empty methods dir ([abb5376](https://github.com/frouriojs/frourio/commit/abb5376cf3845b7672e771bc4856e0d73f49a75a))
+
+
+### Documentation
+
+* update README ([131f915](https://github.com/frouriojs/frourio/commit/131f915ce6a4367081cc7801345450fd8ad2b513))
+
 ## [0.18.0](https://github.com/frouriojs/frourio/compare/v0.17.2...v0.18.0) (2020-10-18)
 
 

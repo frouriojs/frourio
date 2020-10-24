@@ -5,8 +5,9 @@ import multipart, { FastifyMultipartOptions, Multipart } from 'fastify-multipart
 import { validateOrReject } from 'class-validator'
 import * as Validators from './validators'
 import hooksFn0 from './api/hooks'
-import hooksFn1 from './api/users/hooks'
-import hooksFn2 from './api/users/_userId@number/_name/hooks'
+import hooksFn1 from './api/empty/hooks'
+import hooksFn2 from './api/users/hooks'
+import hooksFn3 from './api/users/_userId@number/_name/hooks'
 import controllerFn0, { hooks as ctrlHooksFn0 } from './api/controller'
 import controllerFn1 from './api/500/controller'
 import controllerFn2 from './api/empty/noEmpty/controller'
@@ -182,6 +183,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   const hooks0 = hooksFn0(fastify)
   const hooks1 = hooksFn1(fastify)
   const hooks2 = hooksFn2(fastify)
+  const hooks3 = hooksFn3(fastify)
   const ctrlHooks0 = ctrlHooksFn0(fastify)
   const ctrlHooks1 = ctrlHooksFn1(fastify)
   const controller0 = controllerFn0()
@@ -241,8 +243,8 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   fastify.get(
     `${basePath}/empty/noEmpty`,
     {
-      onRequest: hooks0.onRequest,
-      preParsing: hooks0.preParsing
+      onRequest: [...hooks0.onRequest, ...hooks1.onRequest],
+      preParsing: [hooks0.preParsing, hooks1.preParsing]
     },
     methodToHandler(controller2.get)
   )
@@ -302,7 +304,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   fastify.get(
     `${basePath}/users`,
     {
-      onRequest: [...hooks0.onRequest, hooks1.onRequest],
+      onRequest: [...hooks0.onRequest, hooks2.onRequest],
       preParsing: hooks0.preParsing,
       preHandler: ctrlHooks1.preHandler
     },
@@ -312,7 +314,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   fastify.post(
     `${basePath}/users`,
     {
-      onRequest: [...hooks0.onRequest, hooks1.onRequest],
+      onRequest: [...hooks0.onRequest, hooks2.onRequest],
       preParsing: hooks0.preParsing,
       preValidation: createValidateHandler(req => [
           validateOrReject(Object.assign(new Validators.UserInfo(), req.body as any))
@@ -325,7 +327,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   fastify.get(
     `${basePath}/users/:userId`,
     {
-      onRequest: [...hooks0.onRequest, hooks1.onRequest],
+      onRequest: [...hooks0.onRequest, hooks2.onRequest],
       preParsing: hooks0.preParsing,
       preValidation: createTypedParamsHandler(['userId'])
     },
@@ -335,7 +337,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   fastify.get(
     `${basePath}/users/:userId/:name`,
     {
-      onRequest: [...hooks0.onRequest, hooks1.onRequest, hooks2.onRequest],
+      onRequest: [...hooks0.onRequest, hooks2.onRequest, hooks3.onRequest],
       preParsing: hooks0.preParsing,
       preValidation: createTypedParamsHandler(['userId'])
     },

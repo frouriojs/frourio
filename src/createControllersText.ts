@@ -167,11 +167,12 @@ export default (appDir: string, project: string) => {
   const controllers: [string, boolean][] = []
   const createText = (
     dirPath: string,
-    hooks: { name: string; events: { type: HooksEvent; isArray: boolean }[] }[]
+    cascadingHooks: { name: string; events: { type: HooksEvent; isArray: boolean }[] }[]
   ) => {
     const input = path.posix.join(appDir, dirPath)
     const source = program.getSourceFile(path.join(input, 'index.ts'))
     const results: string[] = []
+    let hooks = cascadingHooks
 
     if (source) {
       const methods = ts.forEachChild(source, node =>
@@ -182,53 +183,53 @@ export default (appDir: string, project: string) => {
           : undefined
       )
 
-      if (methods?.length) {
-        const hooksSource = program.getSourceFile(path.join(input, 'hooks.ts'))
+      const hooksSource = program.getSourceFile(path.join(input, 'hooks.ts'))
 
-        if (hooksSource) {
-          const events = ts.forEachChild(hooksSource, node => {
-            if (ts.isExportAssignment(node)) {
-              return node.forEachChild(
-                node =>
-                  ts.isCallExpression(node) &&
-                  node.forEachChild(node => {
-                    if (
-                      ts.isMethodDeclaration(node) ||
-                      ts.isArrowFunction(node) ||
-                      ts.isFunctionDeclaration(node)
-                    ) {
-                      return (
-                        node.body &&
-                        checker
-                          .getTypeAtLocation(node.body)
-                          .getProperties()
-                          .map(p => {
-                            const typeNode = checker.typeToTypeNode(
-                              checker.getTypeOfSymbolAtLocation(p, p.valueDeclaration),
-                              undefined,
-                              undefined
-                            )
+      if (hooksSource) {
+        const events = ts.forEachChild(hooksSource, node => {
+          if (ts.isExportAssignment(node)) {
+            return node.forEachChild(
+              node =>
+                ts.isCallExpression(node) &&
+                node.forEachChild(node => {
+                  if (
+                    ts.isMethodDeclaration(node) ||
+                    ts.isArrowFunction(node) ||
+                    ts.isFunctionDeclaration(node)
+                  ) {
+                    return (
+                      node.body &&
+                      checker
+                        .getTypeAtLocation(node.body)
+                        .getProperties()
+                        .map(p => {
+                          const typeNode = checker.typeToTypeNode(
+                            checker.getTypeOfSymbolAtLocation(p, p.valueDeclaration),
+                            undefined,
+                            undefined
+                          )
 
-                            return {
-                              type: p.name as HooksEvent,
-                              isArray: typeNode
-                                ? ts.isArrayTypeNode(typeNode) || ts.isTupleTypeNode(typeNode)
-                                : false
-                            }
-                          })
-                      )
-                    }
-                  })
-              )
-            }
-          })
-
-          if (events) {
-            hooks.push({ name: `hooks${hooksPaths.length}`, events })
-            hooksPaths.push(`${input}/hooks`)
+                          return {
+                            type: p.name as HooksEvent,
+                            isArray: typeNode
+                              ? ts.isArrayTypeNode(typeNode) || ts.isTupleTypeNode(typeNode)
+                              : false
+                          }
+                        })
+                    )
+                  }
+                })
+            )
           }
-        }
+        })
 
+        if (events) {
+          hooks = [...cascadingHooks, { name: `hooks${hooksPaths.length}`, events }]
+          hooksPaths.push(`${input}/hooks`)
+        }
+      }
+
+      if (methods?.length) {
         const controllerSource = program.getSourceFile(path.join(input, 'controller.ts'))
         let isPromiseMethods: string[] = []
         let ctrlHooksSignature: ts.Signature | undefined
