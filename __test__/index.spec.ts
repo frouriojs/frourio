@@ -32,14 +32,16 @@ test('GET: 200', async () => {
 
 test('GET: string', async () => {
   const text = 'test'
-  const res = await client.texts.$get({ query: { val: text } })
-  expect(res).toBe(text)
+  const res = await client.texts.get({ query: { val: text } })
+  expect(res.body).toBe(text)
+  expect(res.headers['content-type']).toBe('text/plain; charset=utf-8')
 })
 
 test('GET: params.userId', async () => {
   const userId = 1
-  const res = await client.users._userId(userId).$get()
-  expect(res.id).toBe(userId)
+  const res = await client.users._userId(userId).get()
+  expect(res.body.id).toBe(userId)
+  expect(res.headers['content-type']).toBe('application/json; charset=utf-8')
 })
 
 test('GET: 400', async () => {
