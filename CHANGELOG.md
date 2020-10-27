@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.19.0](https://github.com/frouriojs/frourio/compare/v0.18.2...v0.19.0) (2020-10-27)
+
+
+### Features
+
+* add defineResponseSchema ([b4f0628](https://github.com/frouriojs/frourio/commit/b4f0628af26f6844b040ab66352b2c9ce675e815))
+
 ### [0.18.2](https://github.com/frouriojs/frourio/compare/v0.18.1...v0.18.2) (2020-10-25)
 
 

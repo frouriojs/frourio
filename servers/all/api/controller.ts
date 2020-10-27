@@ -1,4 +1,4 @@
-import { defineController, defineHooks } from '~/$relay'
+import { defineController, defineHooks, defineResponseSchema } from '~/$relay'
 import { depend } from 'velona'
 
 const hooks = defineHooks({ print: (...args: string[]) => console.log(...args) }, ({ print }) => ({
@@ -6,6 +6,19 @@ const hooks = defineHooks({ print: (...args: string[]) => console.log(...args) }
     print('Controller level onRequest hook:', req.url)
     done()
   })
+}))
+
+const responseSchema = defineResponseSchema(() => ({
+  get: {
+    200: {
+      type: 'object',
+      properties: {
+        id: {
+          type: 'number'
+        }
+      }
+    }
+  }
 }))
 
 export default defineController(
@@ -27,4 +40,4 @@ export default defineController(
   })
 )
 
-export { hooks }
+export { hooks, responseSchema }

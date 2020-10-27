@@ -113,15 +113,9 @@ const methodToHandler = (
 ): RouteHandlerMethod => (req, reply) => {
   const data = methodCallback(req as any) as any
 
-  if (typeof data.body === 'object' && data.body !== null) {
-    reply.raw.setHeader('content-type', 'application/json; charset=utf-8')
+  if (data.headers) reply.headers(data.headers)
 
-    if (data.headers) reply.headers(data.headers)
-    reply.code(data.status).send(JSON.stringify(data.body))
-  } else {
-    if (data.headers) reply.headers(data.headers)
-    reply.code(data.status).send(data.body)
-  }
+  reply.code(data.status).send(data.body)
 }
 
 const asyncMethodToHandler = (
@@ -129,15 +123,9 @@ const asyncMethodToHandler = (
 ): RouteHandlerMethod => async (req, reply) => {
   const data = await methodCallback(req as any) as any
 
-  if (typeof data.body === 'object' && data.body !== null) {
-    reply.raw.setHeader('content-type', 'application/json; charset=utf-8')
+  if (data.headers) reply.headers(data.headers)
 
-    if (data.headers) reply.headers(data.headers)
-    reply.code(data.status).send(JSON.stringify(data.body))
-  } else {
-    if (data.headers) reply.headers(data.headers)
-    reply.code(data.status).send(data.body)
-  }
+  reply.code(data.status).send(data.body)
 }
 
 export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {

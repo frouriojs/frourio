@@ -1,5 +1,7 @@
 /* eslint-disable */
 import { FastifyInstance, onRequestHookHandler, preParsingHookHandler, preValidationHookHandler, preHandlerHookHandler } from 'fastify'
+import { Schema } from 'fast-json-stringify'
+import { HttpStatusOk } from 'aspida'
 import { Deps, depend } from 'velona'
 import { ServerMethods } from '../../../../$server'
 import { AdditionalRequest as AdditionalRequest0 } from '../../hooks'
@@ -20,6 +22,10 @@ type ControllerMethods = ServerMethods<Methods, AdditionalRequest & {
     name: string
   }
 }>
+
+export function defineResponseSchema<T extends { [U in keyof ControllerMethods]?: { [V in HttpStatusOk]?: Schema }}>(methods: () => T) {
+  return methods
+}
 
 export function defineHooks<T extends Hooks>(hooks: (fastify: FastifyInstance) => T): (fastify: FastifyInstance) => T
 export function defineHooks<T extends Record<string, any>, U extends Hooks>(deps: T, cb: (d: Deps<T>, fastify: FastifyInstance) => U): { (fastify: FastifyInstance): U; inject(d: Deps<T>): (fastify: FastifyInstance) => U }

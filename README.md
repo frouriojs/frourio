@@ -134,6 +134,7 @@ export default defineController(() => ({
   - [Case 2 - Define POST: /tasks](#Controller-case2)
   - [Case 3 - Define GET: /tasks/{taskId}](#Controller-case3)
 - [HTTP client](#HttpClient)
+- [Performance](#Performance)
 - [Hooks](#Hooks)
   - [Lifecycle](#Lifecycle)
   - [Directory level hooks](#Hooks-dir)
@@ -329,6 +330,44 @@ Use [aspida](https://github.com/aspida/aspida) for the frontend HTTP client.
 (Frourio and aspida are maintained by the same developer)
 
 Next.js also uses [@aspida/swr](https://github.com/aspida/aspida/tree/master/packages/aspida-swr).
+
+## Performance
+
+When exporting the responseSchema from the controller, [fast-json-stringify](https://github.com/fastify/fast-json-stringify) is enabled and JSON response becomes fast.
+
+`server/api/tasks/_taskId@number/controller.ts`
+
+```ts
+import { defineResponseSchema, defineController } from './$relay'
+import { findTask } from '$/service/tasks'
+
+export const responseSchema = defineResponseSchema(() => ({
+  get: {
+    200: {
+      type: 'object',
+      properties: {
+        id: {
+          type: 'number'
+        },
+        label: {
+          type: 'string'
+        },
+        done: {
+          type: 'boolean'
+        }
+      }
+    }
+  }
+}))
+
+export default defineController(() => ({
+  get: async ({ params }) => {
+    const task = await findTask(params.taskId)
+
+    return task ? { status: 200, body: task } : { status: 404 }
+  }
+}))
+```
 
 ## Hooks
 
