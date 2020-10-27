@@ -1,7 +1,7 @@
 /* eslint-disable */
 import { LowerHttpMethod, AspidaMethods, HttpStatusOk, AspidaMethodParams } from 'aspida'
 import { FastifyInstance, RouteHandlerMethod } from 'fastify'
-import controllerFn0 from './api/controller'
+import controllerFn0, { responseSchema as responseSchemaFn0 } from './api/controller'
 
 export type FrourioOptions = {
   basePath?: string
@@ -51,22 +51,23 @@ const methodToHandler = (
 ): RouteHandlerMethod => (req, reply) => {
   const data = methodCallback(req as any) as any
 
-  if (typeof data.body === 'object' && data.body !== null) {
-    reply.raw.setHeader('content-type', 'application/json; charset=utf-8')
+  if (data.headers) reply.headers(data.headers)
 
-    if (data.headers) reply.headers(data.headers)
-    reply.code(data.status).send(JSON.stringify(data.body))
-  } else {
-    if (data.headers) reply.headers(data.headers)
-    reply.code(data.status).send(data.body)
-  }
+  reply.code(data.status).send(data.body)
 }
 
 export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   const basePath = options.basePath ?? ''
+  const responseSchema0 = responseSchemaFn0()
   const controller0 = controllerFn0()
 
-  fastify.get(`${basePath}/`, methodToHandler(controller0.get))
+  fastify.get(
+    `${basePath}/`,
+    {
+      schema: { response: responseSchema0.get }
+    },
+    methodToHandler(controller0.get)
+  )
 
   return fastify
 }

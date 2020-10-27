@@ -132,6 +132,7 @@ export default defineController(() => ({
   - [Case 2 - Define POST: /tasks](#Controller-case2)
   - [Case 3 - Define GET: /tasks/{taskId}](#Controller-case3)
 - [HTTP client](#HttpClient)
+- [Performance](#Performance)
 - [Hooks](#Hooks)
   - [Lifecycle](#Lifecycle)
   - [Directory level hooks](#Hooks-dir)
@@ -327,6 +328,44 @@ export default defineController(() => ({
 (frourio と aspida は同じ開発者によってメンテナンスされている)
 
 Next.js は [@aspida/swr](https://github.com/aspida/aspida/tree/master/packages/aspida-swr) も併用する
+
+## Performance
+
+responseSchemaをcontrollerからexportすると [fast-json-stringify](https://github.com/fastify/fast-json-stringify) が有効になり、JSONレスポンスが高速になる
+
+`server/api/tasks/_taskId@number/controller.ts`
+
+```ts
+import { defineResponseSchema, defineController } from './$relay'
+import { findTask } from '$/service/tasks'
+
+export const responseSchema = defineResponseSchema(() => ({
+  get: {
+    200: {
+      type: 'object',
+      properties: {
+        id: {
+          type: 'number'
+        },
+        label: {
+          type: 'string'
+        },
+        done: {
+          type: 'boolean'
+        }
+      }
+    }
+  }
+}))
+
+export default defineController(() => ({
+  get: async ({ params }) => {
+    const task = await findTask(params.taskId)
+
+    return task ? { status: 200, body: task } : { status: 404 }
+  }
+}))
+```
 
 ## Hooks
 

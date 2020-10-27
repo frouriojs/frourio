@@ -9,9 +9,9 @@ const api = <T>({ baseURL, fetch }: AspidaClient<T>) => {
 
   return {
     get: (option?: { config?: T }) =>
-      fetch<Methods0['get']['resBody']>(prefix, '', GET, option).text(),
+      fetch<Methods0['get']['resBody']>(prefix, '', GET, option).json(),
     $get: (option?: { config?: T }) =>
-      fetch<Methods0['get']['resBody']>(prefix, '', GET, option).text().then(r => r.body),
+      fetch<Methods0['get']['resBody']>(prefix, '', GET, option).json().then(r => r.body),
     $path: () => `${prefix}${''}`
   }
 }
