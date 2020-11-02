@@ -96,7 +96,7 @@
     "class-validator": "^0.12.2",
     "eslint": "^7.12.1",
     "eslint-config-prettier": "^6.15.0",
-    "eslint-config-standard": "^15.0.0",
+    "eslint-config-standard": "^16.0.1",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-jest": "^24.1.0",
     "eslint-plugin-node": "^11.1.0",
