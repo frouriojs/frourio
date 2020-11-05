@@ -1,12 +1,12 @@
 {
   "name": "frourio",
   "version": "0.19.0",
-  "description": "Fast and type safe full stack REST framework, for TypeScript",
+  "description": "Fast and type-safe full stack framework, for TypeScript",
   "author": "Solufa <solufa2020@gmail.com>",
   "license": "MIT",
   "main": "dist/index.js",
   "bin": "bin/index.js",
-  "homepage": "https://github.com/frouriojs/frourio#readme",
+  "homepage": "https://frourio.io",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/frouriojs/frourio.git"

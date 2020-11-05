@@ -21,7 +21,7 @@
   </a>
 </div>
 
-<p align="center">Fast and type safe full stack REST framework, for TypeScript</p>
+<p align="center">Fast and type-safe full stack framework, for TypeScript</p>
 <div align="center">
   <a href="https://github.com/frouriojs/frourio#readme">🇺🇸English</a> |
   <a href="https://github.com/frouriojs/frourio/tree/master/docs/ja#readme">🇯🇵日本語</a>
@@ -51,88 +51,17 @@ Frourio は "1つのTypeScript" で速く安全に開発するためのフレー
 <br />
 <br />
 
-## Benchmarks
+## Documents
 
-__Machine:__ Linux fv-az18 5.4.0-1026-azure #26~18.04.1-Ubuntu SMP Thu Sep 10 16:19:25 UTC 2020 x86_64 x86_64 x86_64 GNU/Linux | 2 vCPUs | 7GB.  
-__Method:__ `autocannon -c 100 -d 40 -p 10 localhost:3000` (two rounds; one to warm-up, one to measure).
-
-| Framework           | Version          | Requests/sec  | Latency   |
-| :------------------ | :--------------- | ------------: | --------: |
-| **frourio**         | **0.17.2**       | **58,654**    | **1.62**  |
-| fastify             | 3.6.0	           | 57,867	       | 1.64      |
-| nest-fastify        | 7.4.4            | 51,190        | 1.87      |
-| frourio-express     | 0.17.1           | 11,466        | 8.60      |
-| express             | 4.17.1	         | 10,899        | 9.04      |
-| nest                | 7.4.4            | 9,587         | 10.31     |
-
-出典: https://github.com/frouriojs/benchmarks
-
-## 破壊的変更 (2020/10/19) :warning:
-
-frourio >= `0.18.0` から request オブジェクトに user プロパティを追加する方法が変わりました
-
-`server/api/user/hooks.ts`
-
-```ts
-import { defineHooks } from './$relay'
-import { getUserIdByToken } from '$/service/user'
-
-// < 0.18.0
-// export type User = {
-//   id: string
-// }
-
-// >= 0.18.0
-export type AdditionalRequest = {
-  user: {
-    id: string
-  }
-}
-
-export default defineHooks((fastify) => ({
-  preHandler: fastify.auth([
-    (req, _, done) => {
-      const user =
-        typeof req.headers.token === 'string' &&
-        getUserIdByToken(req.headers.token)
-
-      if (user) {
-        // eslint-disable-next-line
-        // @ts-expect-error
-        req.user = user
-        done()
-      } else {
-        done(new Error('Unauthorized'))
-      }
-    }
-  ])
-}))
-```
-
-`server/api/user/controller.ts`
-
-```ts
-import { defineController } from './$relay'
-import { getUserNameById } from '$/service/user'
-
-export default defineController(() => ({
-  // user was added by AdditionalRequest of ./hooks.ts
-  get: async ({ user }) => ({ status: 200, body: await getUserNameById(user.id) })
-}))
-```
+https://frourio.io/docs
 
 ## Table of Contents
 
 - [Install](#Install)
-- [Express.js mode](#Expressjs)
-- [Environment](#Environment)
-- [Entrypoint](#Entrypoint)
 - [Controller](#Controller)
   - [Case 1 - Define GET: /tasks?limit={number}](#Controller-case1)
   - [Case 2 - Define POST: /tasks](#Controller-case2)
   - [Case 3 - Define GET: /tasks/{taskId}](#Controller-case3)
-- [HTTP client](#HttpClient)
-- [Performance](#Performance)
 - [Hooks](#Hooks)
   - [Lifecycle](#Lifecycle)
   - [Directory level hooks](#Hooks-dir)
@@ -146,71 +75,34 @@ export default defineController(() => ({
 - [Error handling](#Error)
   - [Controller error handler](#Error-controller)
   - [The default error handler](#Error-default)
-- [FormData](#FormData)
-  - [Options](#FormData-options)
-- [O/R mapping tool](#ORM)
-  - [Prisma](#ORM-prisma)
-  - [TypeORM](#ORM-typeorm)
-- [CORS / Helmet](#CORS-Helmet)
 - [Deployment](#Deployment)
   - [Frontend](#Deployment-frontend)
   - [Server](#Deployment-server)
 - [Dependency Injection](#DI)
+- [Support](#Support)
+- [License](#License)
 
 ## Install
 
 Make sure you have [npx](https://www.npmjs.com/package/npx) installed (`npx` is shipped by default since [npm](https://www.npmjs.com/get-npm) `5.2.0`)
 
 ```sh
-$ npx create-frourio-app <my-project>
+$ npx create-frourio-app
 ```
 
 Or starting with npm v6.1 you can do:
 
 ```sh
-$ npm init frourio-app <my-project>
+$ npm init frourio-app
 ```
 
 Or with [yarn](https://yarnpkg.com/en/):
 
 ```sh
-$ yarn create frourio-app <my-project>
-```
-
-<a id="Expressjs"></a>
-
-## Express.js mode
-
-frourio は HTTPサーバーに [Fastify](https://www.fastify.io/) を採用している  
-もし create-frourio-app で [Express](https://expressjs.com/) を選んだ場合は以下リポジトリを参照  
-[GitHub: frourio-express](https://github.com/frouriojs/frourio-express)
-
-※ frourio は frourio-express よりも5倍以上速い
-
-## Environment
-
-frourio は TypeScript >= v3.9 と Node.js >= v12 の環境で動作する  
-もし VSCode の TypeScript バージョンが低いと開発中にエラーが表示される
-
-## Entrypoint
-
-`server/index.ts`
-
-```ts
-import Fastify from 'fastify'
-import server from './$server' // '$server.ts' は frourio が自動生成
-
-const fastify = Fastify()
-
-server(fastify, { basePath: '/api/v1' })
-fastify.listen(3000)
+$ yarn create frourio-app
 ```
 
 ## Controller
-
-```sh
-$ npm run dev
-```
 
 <a id="Controller-case1"></a>
 
@@ -310,53 +202,6 @@ export type Methods = {
 ```ts
 import { defineController } from './$relay' // '$relay.ts' is は frourio が自動生成
 import { findTask } from '$/service/tasks'
-
-export default defineController(() => ({
-  get: async ({ params }) => {
-    const task = await findTask(params.taskId)
-
-    return task ? { status: 200, body: task } : { status: 404 }
-  }
-}))
-```
-
-<a id="HttpClient"></a>
-
-## HTTP client
-
-[aspida](https://github.com/aspida/aspida) を HTTP クライアントとして利用する  
-(frourio と aspida は同じ開発者によってメンテナンスされている)
-
-Next.js は [@aspida/swr](https://github.com/aspida/aspida/tree/master/packages/aspida-swr) も併用する
-
-## Performance
-
-responseSchemaをcontrollerからexportすると [fast-json-stringify](https://github.com/fastify/fast-json-stringify) が有効になり、JSONレスポンスが高速になる
-
-`server/api/tasks/_taskId@number/controller.ts`
-
-```ts
-import { defineResponseSchema, defineController } from './$relay'
-import { findTask } from '$/service/tasks'
-
-export const responseSchema = defineResponseSchema(() => ({
-  get: {
-    200: {
-      type: 'object',
-      properties: {
-        id: {
-          type: 'number'
-        },
-        label: {
-          type: 'string'
-        },
-        done: {
-          type: 'boolean'
-        }
-      }
-    }
-  }
-}))
 
 export default defineController(() => ({
   get: async ({ params }) => {
@@ -781,156 +626,6 @@ server(fastify, { basePath: '/api/v1' })
 fastify.addHook('onError', (req, reply, err) => {
   console.error(err.stack)
 })
-fastify.listen(3000)
-```
-
-## FormData
-
-FormData は [fastify-multipart](https://github.com/fastify/fastify-multipart) で自動パースされる
-
-`server/api/user/index.ts`
-
-```ts
-export type Methods = {
-  post: {
-    reqFormat: FormData
-    reqBody: { icon: Blob }
-    status: 204
-  }
-}
-```
-
-Blob または Blob[] のプロパティは Multipart object に変換される
-
-`server/api/user/controller.ts`
-
-```ts
-import { defineController } from './$relay'
-import { changeIcon } from '$/service/user'
-
-export default defineController(() => ({
-  post: async ({ params, body }) => {
-    // body.icon is multer object
-    await changeIcon(params.userId, body.icon)
-
-    return { status: 204 }
-  }
-}))
-```
-
-<a id="FormData-options"></a>
-
-### Options
-
-https://github.com/mscdex/busboy#busboy-methods
-
-`server/index.ts`
-
-```ts
-import Fastify from 'fastify'
-import server from './$server' // '$server.ts' is automatically generated by frourio
-
-const fastify = Fastify()
-
-server(fastify, { basePath: '/api/v1', multipart: { /* limit, ... */} })
-fastify.listen(3000)
-```
-
-<a id="ORM"></a>
-
-## O/R mapping tool
-
-<a id="ORM-prisma"></a>
-
-### Prisma
-
-1. create-frourio-app でDBを選択
-1. DB を起動
-1. 開発コマンドを呼ぶ
-    ```sh
-    $ npm run dev
-    ```
-1. スキーマファイルを作成
-    `server/prisma/schema.prisma`
-
-    ```ts
-    datasource db {
-      provider = "mysql"
-      url      = env("DATABASE_URL")
-    }
-
-    generator client {
-      provider = "prisma-client-js"
-    }
-
-    model Task {
-      id    Int     @id @default(autoincrement())
-      label String
-      done  Boolean @default(false)
-    }
-    ```
-1. マイグレーションコマンドを呼ぶ
-    ```sh
-    $ npm run migrate
-    ```
-1. DB がマイグレーションされる
-
-<a id="ORM-typeorm"></a>
-
-### TypeORM
-
-1. create-frourio-app でDBを選択
-1. DB を起動
-1. 開発コマンドを呼ぶ
-    ```sh
-    $ npm run dev
-    ```
-1. エンティティファイルを作成
-    `server/entity/Task.ts`
-
-    ```ts
-    import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm'
-
-    @Entity()
-    export class Task {
-      @PrimaryGeneratedColumn()
-      id: number
-
-      @Column({ length: 100 })
-      label: string
-
-      @Column({ default: false })
-      done: boolean
-    }
-    ```
-1. マイグレーションコマンドを呼ぶ
-    ```sh
-    $ npm run migration:generate
-    ```
-1. DB がマイグレーションされる
-
-<a id="CORS-Helmet"></a>
-
-## CORS / Helmet
-
-```sh
-$ cd server
-$ npm install fastify-cors fastify-helmet
-```
-
-`server/index.ts`
-
-```ts
-import Fastify from 'fastify'
-import helmet from 'helmet'
-import cors from 'fastify-cors'
-import server from './$server'
-
-const fastify = Fastify()
-fastify.register(helmet)
-fastify.register(cors)
-
-server(fastify, { basePath: '/api/v1' })
 fastify.listen(3000)
 ```
 
