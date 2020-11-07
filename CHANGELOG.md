@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.19.1](https://github.com/frouriojs/frourio/compare/v0.19.0...v0.19.1) (2020-11-07)
+
+
+### Bug Fixes
+
+* remove flatMap for node v10 ([b1cb1aa](https://github.com/frouriojs/frourio/commit/b1cb1aa8e95b63898650f0d0976042d9b8169142))
+
 ## [0.19.0](https://github.com/frouriojs/frourio/compare/v0.18.2...v0.19.0) (2020-10-27)
 
 

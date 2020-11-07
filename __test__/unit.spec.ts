@@ -1,4 +1,5 @@
 import fs from 'fs'
+import rimraf from 'rimraf'
 import createDefaultFilesIfNotExists from '../src/createDefaultFilesIfNotExists'
 
 test('createDefaultFilesIfNotExists', () => {
@@ -38,5 +39,5 @@ export default defineHooks(() => ({
 `
   )
 
-  fs.rmdirSync(dir, { recursive: true })
+  rimraf.sync(dir)
 })

@@ -1,5 +1,6 @@
 /* eslint-disable jest/no-done-callback */
 import fs from 'fs'
+import rimraf from 'rimraf'
 import fastify, { FastifyInstance } from 'fastify'
 import FormData from 'form-data'
 import axios from 'axios'
@@ -19,7 +20,7 @@ beforeEach(cb => {
 })
 
 afterEach(cb => {
-  fs.rmdirSync('packages/frourio/servers/all/.upload', { recursive: true })
+  rimraf.sync('packages/frourio/servers/all/.upload')
   server.close(cb)
 })
 

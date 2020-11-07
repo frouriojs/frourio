@@ -10,12 +10,16 @@ type Param = [string, string]
 const findRootFiles = (dir: string): string[] =>
   fs
     .readdirSync(dir, { withFileTypes: true })
-    .flatMap(d =>
-      d.isDirectory()
-        ? findRootFiles(`${dir}/${d.name}`)
-        : d.name === 'hooks.ts' || d.name === 'controller.ts'
-        ? [`${dir}/${d.name}`]
-        : []
+    .reduce<string[]>(
+      (prev, d) => [
+        ...prev,
+        ...(d.isDirectory()
+          ? findRootFiles(`${dir}/${d.name}`)
+          : d.name === 'hooks.ts' || d.name === 'controller.ts'
+          ? [`${dir}/${d.name}`]
+          : [])
+      ],
+      []
     )
 
 const initTSC = (appDir: string, project: string) => {
@@ -340,10 +344,10 @@ export default (appDir: string, project: string) => {
           })
 
         const genHookTexts = (event: HooksEvent) => [
-          ...hooks.flatMap(h => {
+          ...hooks.reduce<string[]>((prev, h) => {
             const ev = h.events.find(e => e.type === event)
-            return ev ? [`${ev.isArray ? '...' : ''}${h.name}.${event}`] : []
-          }),
+            return ev ? [...prev, `${ev.isArray ? '...' : ''}${h.name}.${event}`] : prev
+          }, []),
           ...(ctrlHooksEvents?.map(e =>
             e.type === event
               ? `${e.isArray ? '...' : ''}ctrlHooks${controllers.filter(c => c[1]).length}.${event}`
@@ -524,7 +528,10 @@ ${validateInfo
       results.push(
         ...childrenDirs
           .filter(d => !d.name.startsWith('_'))
-          .flatMap(d => createText(path.posix.join(dirPath, d.name), hooks))
+          .reduce<string[]>(
+            (prev, d) => [...prev, ...createText(path.posix.join(dirPath, d.name), hooks)],
+            []
+          )
       )
 
       const value = childrenDirs.find(d => d.name.startsWith('_'))
