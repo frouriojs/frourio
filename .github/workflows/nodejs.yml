@@ -9,7 +9,10 @@ jobs:
     strategy:
       matrix:
         node-version: [10, 12, 14]
-        os: [windows-latest, ubuntu-latest]
+        os: ubuntu-latest
+        include:
+          - os: windows-latest
+            node-version: 14
     steps:
       - uses: actions/checkout@v2
       - name: setup Node.js ${{ matrix.node-version }}
