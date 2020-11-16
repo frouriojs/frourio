@@ -91,7 +91,7 @@
     "@types/busboy": "^0.2.3",
     "@types/jest": "^26.0.15",
     "@types/rimraf": "^3.0.0",
-    "@typescript-eslint/eslint-plugin": "^4.6.1",
+    "@typescript-eslint/eslint-plugin": "^4.7.0",
     "@typescript-eslint/parser": "^4.6.1",
     "axios": "^0.21.0",
     "class-validator": "^0.12.2",
