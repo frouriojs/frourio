@@ -460,7 +460,7 @@ ${validateInfo
         v.hasQuestion ? `Object.keys(req.${v.name} as any).length ? ` : ''
       }validateOrReject(Object.assign(new Validators.${checker.typeToString(v.type)}(), req.${
         v.name
-      } as any))${v.hasQuestion ? ' : null' : ''}`
+      } as any), options.validator)${v.hasQuestion ? ' : null' : ''}`
   )
   .join(',\n')}\n        ])`
                         : '',

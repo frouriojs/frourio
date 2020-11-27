@@ -2,7 +2,7 @@
 import { LowerHttpMethod, AspidaMethods, HttpStatusOk, AspidaMethodParams } from 'aspida'
 import { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, FastifyRequest } from 'fastify'
 import multipart, { FastifyMultipartOptions, Multipart } from 'fastify-multipart'
-import { validateOrReject } from 'class-validator'
+import { validateOrReject, ValidatorOptions } from 'class-validator'
 import * as Validators from './validators'
 import hooksFn0 from './api/hooks'
 import hooksFn1 from './api/users/hooks'
@@ -15,6 +15,7 @@ import controllerFn5, { hooks as ctrlHooksFn1 } from './api/users/controller'
 
 export type FrourioOptions = {
   basePath?: string
+  validator?: ValidatorOptions
   multipart?: FastifyMultipartOptions
 }
 
@@ -135,7 +136,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
     {
       onRequest: [hooks0.onRequest, ctrlHooks0.onRequest],
       preValidation: createValidateHandler(req => [
-          Object.keys(req.query as any).length ? validateOrReject(Object.assign(new Validators.Query(), req.query as any)) : null
+          Object.keys(req.query as any).length ? validateOrReject(Object.assign(new Validators.Query(), req.query as any), options.validator) : null
         ])
     },
     asyncMethodToHandler(controller0.get)
@@ -148,8 +149,8 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
       preValidation: [
         formatMultipartData([]),
         createValidateHandler(req => [
-          validateOrReject(Object.assign(new Validators.Query(), req.query as any)),
-          validateOrReject(Object.assign(new Validators.Body(), req.body as any))
+          validateOrReject(Object.assign(new Validators.Query(), req.query as any), options.validator),
+          validateOrReject(Object.assign(new Validators.Body(), req.body as any), options.validator)
         ])
       ]
     },
@@ -171,7 +172,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
       preValidation: [
         formatMultipartData([['empty', false], ['vals', false], ['files', false]]),
         createValidateHandler(req => [
-          validateOrReject(Object.assign(new Validators.MultiForm(), req.body as any))
+          validateOrReject(Object.assign(new Validators.MultiForm(), req.body as any), options.validator)
         ])
       ]
     },
@@ -216,7 +217,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
     {
       onRequest: [hooks0.onRequest, hooks1.onRequest],
       preValidation: createValidateHandler(req => [
-          validateOrReject(Object.assign(new Validators.UserInfo(), req.body as any))
+          validateOrReject(Object.assign(new Validators.UserInfo(), req.body as any), options.validator)
         ]),
       preHandler: ctrlHooks1.preHandler
     },

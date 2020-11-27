@@ -33,11 +33,13 @@ import { FastifyInstance, RouteHandlerMethod${
       hasMultipart
         ? "\nimport multipart, { FastifyMultipartOptions, Multipart } from 'fastify-multipart'"
         : ''
-    }${hasValidator ? "\nimport { validateOrReject } from 'class-validator'" : ''}
+    }${hasValidator ? "\nimport { validateOrReject, ValidatorOptions } from 'class-validator'" : ''}
 ${hasValidator ? `import * as Validators from './validators'\n` : ''}${imports}
 export type FrourioOptions = {
   basePath?: string
-${hasMultipart ? '  multipart?: FastifyMultipartOptions\n' : ''}}
+${hasValidator ? '  validator?: ValidatorOptions\n' : ''}${
+      hasMultipart ? '  multipart?: FastifyMultipartOptions\n' : ''
+    }}
 
 type HttpStatusNoOk = 301 | 302 | 400 | 401 | 402 | 403 | 404 | 405 | 406 | 409 | 500 | 501 | 502 | 503 | 504 | 505
 
