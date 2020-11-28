@@ -59,7 +59,7 @@ const methodToHandler = (
 export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   const basePath = options.basePath ?? ''
   const responseSchema0 = responseSchemaFn0()
-  const controller0 = controllerFn0()
+  const controller0 = controllerFn0(fastify)
 
   fastify.get(
     `${basePath}/`,

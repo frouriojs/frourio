@@ -32,8 +32,8 @@ export function defineHooks<T extends Record<string, any>>(hooks: (fastify: Fast
   return cb && typeof hooks !== 'function' ? depend(hooks, cb) : hooks
 }
 
-export function defineController(methods: () => ControllerMethods): () => ControllerMethods
-export function defineController<T extends Record<string, any>>(deps: T, cb: (d: Deps<T>) => ControllerMethods): { (): ControllerMethods; inject(d: Deps<T>): () => ControllerMethods }
-export function defineController<T extends Record<string, any>>(methods: () => ControllerMethods | T, cb?: (deps: Deps<T>) => ControllerMethods) {
+export function defineController(methods: (fastify: FastifyInstance) => ControllerMethods): (fastify: FastifyInstance) => ControllerMethods
+export function defineController<T extends Record<string, any>>(deps: T, cb: (d: Deps<T>, fastify: FastifyInstance) => ControllerMethods): { (fastify: FastifyInstance): ControllerMethods; inject(d: Deps<T>): (fastify: FastifyInstance) => ControllerMethods }
+export function defineController<T extends Record<string, any>>(methods: (fastify: FastifyInstance) => ControllerMethods | T, cb?: (deps: Deps<T>, fastify: FastifyInstance) => ControllerMethods) {
   return cb && typeof methods !== 'function' ? depend(methods, cb) : methods
 }

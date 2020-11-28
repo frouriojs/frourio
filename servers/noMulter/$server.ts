@@ -102,12 +102,12 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   const hooks1 = hooksFn1(fastify)
   const ctrlHooks0 = ctrlHooksFn0(fastify)
   const ctrlHooks1 = ctrlHooksFn1(fastify)
-  const controller0 = controllerFn0()
-  const controller1 = controllerFn1()
-  const controller2 = controllerFn2()
-  const controller3 = controllerFn3()
-  const controller4 = controllerFn4()
-  const controller5 = controllerFn5()
+  const controller0 = controllerFn0(fastify)
+  const controller1 = controllerFn1(fastify)
+  const controller2 = controllerFn2(fastify)
+  const controller3 = controllerFn3(fastify)
+  const controller4 = controllerFn4(fastify)
+  const controller5 = controllerFn5(fastify)
 
   fastify.get(
     `${basePath}/`,
