@@ -21,6 +21,7 @@ export default (input: string, project?: string) => {
   const hasMultipart = controllers.includes(' formatMultipartData(')
   const hasMethodToHandler = controllers.includes(' methodToHandler(')
   const hasAsyncMethodToHandler = controllers.includes(' asyncMethodToHandler(')
+  const hasRouteShorthandOptions = controllers.includes(' as RouteShorthandOptions,')
 
   return {
     text: `/* eslint-disable */
@@ -29,7 +30,9 @@ import { FastifyInstance, RouteHandlerMethod${
       hasNumberTypeQuery || hasTypedParams || hasValidator || hasMultipart
         ? ', preValidationHookHandler'
         : ''
-    }${hasValidator ? ', FastifyRequest' : ''} } from 'fastify'${
+    }${hasValidator ? ', FastifyRequest' : ''}${
+      hasRouteShorthandOptions ? ', RouteShorthandOptions' : ''
+    } } from 'fastify'${
       hasMultipart
         ? "\nimport multipart, { FastifyMultipartOptions, Multipart } from 'fastify-multipart'"
         : ''
