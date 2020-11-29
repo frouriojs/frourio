@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.21.1](https://github.com/frouriojs/frourio/compare/v0.21.0...v0.21.1) (2020-11-29)
+
+
+### Bug Fixes
+
+* add RouteShorthandOptions ([859fcd2](https://github.com/frouriojs/frourio/commit/859fcd25769942dc1a2cbdd754a911d49a51cb42))
+
 ## [0.21.0](https://github.com/frouriojs/frourio/compare/v0.20.0...v0.21.0) (2020-11-28)
 
 

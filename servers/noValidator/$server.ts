@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { LowerHttpMethod, AspidaMethods, HttpStatusOk, AspidaMethodParams } from 'aspida'
-import { FastifyInstance, RouteHandlerMethod, preValidationHookHandler } from 'fastify'
+import { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, RouteShorthandOptions } from 'fastify'
 import multipart, { FastifyMultipartOptions, Multipart } from 'fastify-multipart'
 import hooksFn0 from './api/hooks'
 import hooksFn1 from './api/users/hooks'
@@ -207,7 +207,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
     {
       onRequest: [hooks0.onRequest, hooks1.onRequest],
       preHandler: ctrlHooks1.preHandler
-    },
+    } as RouteShorthandOptions,
     asyncMethodToHandler(controller5.get)
   )
 
@@ -216,7 +216,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
     {
       onRequest: [hooks0.onRequest, hooks1.onRequest],
       preHandler: ctrlHooks1.preHandler
-    },
+    } as RouteShorthandOptions,
     methodToHandler(controller5.post)
   )
 
@@ -225,7 +225,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
     {
       onRequest: [hooks0.onRequest, hooks1.onRequest],
       preValidation: createTypedParamsHandler(['userId'])
-    },
+    } as RouteShorthandOptions,
     methodToHandler(controller6.get)
   )
 

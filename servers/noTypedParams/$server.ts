@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { LowerHttpMethod, AspidaMethods, HttpStatusOk, AspidaMethodParams } from 'aspida'
-import { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, FastifyRequest } from 'fastify'
+import { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, FastifyRequest, RouteShorthandOptions } from 'fastify'
 import multipart, { FastifyMultipartOptions, Multipart } from 'fastify-multipart'
 import { validateOrReject, ValidatorOptions } from 'class-validator'
 import * as Validators from './validators'
@@ -208,7 +208,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
     {
       onRequest: [hooks0.onRequest, hooks1.onRequest],
       preHandler: ctrlHooks1.preHandler
-    },
+    } as RouteShorthandOptions,
     asyncMethodToHandler(controller5.get)
   )
 
@@ -220,7 +220,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
           validateOrReject(Object.assign(new Validators.UserInfo(), req.body as any), options.validator)
         ]),
       preHandler: ctrlHooks1.preHandler
-    },
+    } as RouteShorthandOptions,
     methodToHandler(controller5.post)
   )
 
