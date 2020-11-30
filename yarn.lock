@@ -2385,10 +2385,10 @@ fastify-error@^0.2.0:
   resolved "https://registry.yarnpkg.com/fastify-error/-/fastify-error-0.2.0.tgz#9a1c28d4f42b6259e7a549671c8e5e2d85660634"
   integrity sha512-zabxsBatj59ROG0fhP36zNdc5Q1/eYeH9oSF9uvfrurZf8/JKfrJbMcIGrLpLWcf89rS6L91RHWm20A/X85hcA==
 
-fastify-multipart@^3.3.0:
-  version "3.3.0"
-  resolved "https://registry.yarnpkg.com/fastify-multipart/-/fastify-multipart-3.3.0.tgz#ad95e4a5c644e377a41d6167b46ba7e4b8f71bbc"
-  integrity sha512-iToiMsVcs6nt2iU9ypHw8QYwhpEIgSwHC+kqX88TrNZtfQ054zazY4h60r0carZ3ooZ9fZ4dPGgi3mIi/aelig==
+fastify-multipart@^3.3.1:
+  version "3.3.1"
+  resolved "https://registry.yarnpkg.com/fastify-multipart/-/fastify-multipart-3.3.1.tgz#1a74ec9c81fb8dbae2281eb2d84870dedb0c0b8f"
+  integrity sha512-66fwP97W5eihJGoYJisoJ+K7Mk7Fj0YYsdTLdESefVfi78C2FwbDQcYE4JWH27ucCpLvd199KUpClhQsWD8Dbg==
   dependencies:
     busboy "^0.3.1"
     deepmerge "^4.2.2"
