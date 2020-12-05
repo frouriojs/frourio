@@ -64,7 +64,7 @@ https://frourio.io/docs
   - [Controller level hooks](#Hooks-ctrl)
 - [Validation](#Validation)
 - [Deployment](#Deployment)
-  - [Frontend](#Deployment-frontend)
+  - [Client](#Deployment-client)
   - [Server](#Deployment-server)
 - [Dependency Injection](#DI)
 - [License](#License)
@@ -357,16 +357,16 @@ HTTP/1.1 401 Unauthorized
 ## Deployment
 
 Frourio is complete in one directory, but not monolithic.  
-Frontend and server are just statically connected by a type and are separate projects.  
+Client and server are just statically connected by a type and are separate projects.  
 So they can be deployed in different environments.
 
-<a id="Deployment-frontend"></a>
+<a id="Deployment-client"></a>
 
-### Frontend
+### Client
 
 ```sh
-$ npm run build:front
-$ npm run start:front
+$ npm run build:client
+$ npm run start:client
 ```
 
 <a id="Deployment-server"></a>
