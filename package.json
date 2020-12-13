@@ -83,11 +83,11 @@
     ]
   },
   "dependencies": {
-    "aspida": "^1.0.0",
+    "aspida": "^1.1.0",
     "velona": "^0.5.1"
   },
   "devDependencies": {
-    "@aspida/axios": "^1.0.0",
+    "@aspida/axios": "^1.1.0",
     "@types/busboy": "^0.2.3",
     "@types/jest": "^26.0.19",
     "@types/rimraf": "^3.0.0",
