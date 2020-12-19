@@ -5,6 +5,7 @@
   "author": "Solufa <solufa2020@gmail.com>",
   "license": "MIT",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "bin": "bin/index.js",
   "homepage": "https://frourio.io",
   "repository": {

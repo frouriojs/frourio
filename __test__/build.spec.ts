@@ -1,6 +1,6 @@
 import fs from 'fs'
 import { version } from '../package.json'
-import { run } from '../src/cli'
+import { run } from '../src'
 import build from '../src/buildServerFile'
 import aspidaBuild from 'aspida/dist/buildTemplate'
 
