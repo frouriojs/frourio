@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.21.4](https://github.com/frouriojs/frourio/compare/v0.21.3...v0.21.4) (2020-12-19)
+
+
+### Bug Fixes
+
+* add types property to package.json ([7f96217](https://github.com/frouriojs/frourio/commit/7f96217d463f55a5608ca28c0a87b8d9af862bcd))
+
 ### [0.21.3](https://github.com/frouriojs/frourio/compare/v0.21.2...v0.21.3) (2020-12-13)
 
 
