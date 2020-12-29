@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.22.0](https://github.com/frouriojs/frourio/compare/v0.21.4...v0.22.0) (2020-12-29)
+
+
+### Features
+
+* add import type ([ae7479c](https://github.com/frouriojs/frourio/commit/ae7479ca102c19282abdf3a4b8eeab901a13eda2))
+* send validation errors to client ([5359ff4](https://github.com/frouriojs/frourio/commit/5359ff4aeaeef0a035e484bc878c2af4ab6de056))
+* update velona to use Injectable type ([2e782fa](https://github.com/frouriojs/frourio/commit/2e782fabd02397dc9177e472d87db183bed1f40c))
+
 ### [0.21.4](https://github.com/frouriojs/frourio/compare/v0.21.3...v0.21.4) (2020-12-19)
 
 
