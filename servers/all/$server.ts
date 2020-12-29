@@ -132,7 +132,7 @@ const createTypedParamsHandler = (numberTypeParams: string[]): preValidationHook
 }
 
 const createValidateHandler = (validators: (req: FastifyRequest) => (Promise<void> | null)[]): preValidationHookHandler =>
-  (req, reply) => Promise.all(validators(req)).catch(() => reply.code(400).send())
+  (req, reply) => Promise.all(validators(req)).catch(err => reply.code(400).send(err))
 
 const formatMultipartData = (arrayTypeKeys: [string, boolean][]): preValidationHookHandler => (req, _, done) => {
   const body: any = req.body
@@ -181,6 +181,7 @@ const asyncMethodToHandler = (
 
 export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   const basePath = options.basePath ?? ''
+  const validatorOptions: ValidatorOptions = { validationError: { target: false }, ...options.validator }
   const hooks0 = hooksFn0(fastify)
   const hooks1 = hooksFn1(fastify)
   const hooks2 = hooksFn2(fastify)
@@ -210,7 +211,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
       preValidation: [
         parseNumberTypeQueryParams(query => !Object.keys(query).length ? [] : [['requiredNum', false, false], ['optionalNum', true, false], ['optionalNumArr', true, true], ['emptyNum', true, false], ['requiredNumArr', false, true]]),
         createValidateHandler(req => [
-          Object.keys(req.query as any).length ? validateOrReject(Object.assign(new Validators.Query(), req.query as any), options.validator) : null
+          Object.keys(req.query as any).length ? validateOrReject(Object.assign(new Validators.Query(), req.query as any), validatorOptions) : null
         ])
       ]
     },
@@ -226,8 +227,8 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
         parseNumberTypeQueryParams(() => [['requiredNum', false, false], ['optionalNum', true, false], ['optionalNumArr', true, true], ['emptyNum', true, false], ['requiredNumArr', false, true]]),
         formatMultipartData([]),
         createValidateHandler(req => [
-          validateOrReject(Object.assign(new Validators.Query(), req.query as any), options.validator),
-          validateOrReject(Object.assign(new Validators.Body(), req.body as any), options.validator)
+          validateOrReject(Object.assign(new Validators.Query(), req.query as any), validatorOptions),
+          validateOrReject(Object.assign(new Validators.Body(), req.body as any), validatorOptions)
         ])
       ]
     },
@@ -260,7 +261,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
       preValidation: [
         formatMultipartData([['requiredArr', false], ['optionalArr', true], ['empty', true], ['vals', false], ['files', false]]),
         createValidateHandler(req => [
-          validateOrReject(Object.assign(new Validators.MultiForm(), req.body as any), options.validator)
+          validateOrReject(Object.assign(new Validators.MultiForm(), req.body as any), validatorOptions)
         ])
       ]
     },
@@ -320,7 +321,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
       onRequest: [...hooks0.onRequest, hooks2.onRequest],
       preParsing: hooks0.preParsing,
       preValidation: createValidateHandler(req => [
-          validateOrReject(Object.assign(new Validators.UserInfo(), req.body as any), options.validator)
+          validateOrReject(Object.assign(new Validators.UserInfo(), req.body as any), validatorOptions)
         ]),
       preHandler: ctrlHooks1.preHandler
     } as RouteShorthandOptions,

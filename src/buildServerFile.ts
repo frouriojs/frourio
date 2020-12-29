@@ -165,7 +165,7 @@ const createTypedParamsHandler = (numberTypeParams: string[]): preValidationHook
       hasValidator
         ? `
 const createValidateHandler = (validators: (req: FastifyRequest) => (Promise<void> | null)[]): preValidationHookHandler =>
-  (req, reply) => Promise.all(validators(req)).catch(() => reply.code(400).send())
+  (req, reply) => Promise.all(validators(req)).catch(err => reply.code(400).send(err))
 `
         : ''
     }${
@@ -202,7 +202,11 @@ const formatMultipartData = (arrayTypeKeys: [string, boolean][]): preValidationH
     }
 export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   const basePath = options.basePath ?? ''
-${consts}
+${
+  hasValidator
+    ? '  const validatorOptions: ValidatorOptions = { validationError: { target: false }, ...options.validator }\n'
+    : ''
+}${consts}
 ${
   hasMultipart
     ? '  fastify.register(multipart, { attachFieldsToBody: true, limits: { fileSize: 1024 ** 3 }, ...options.multipart })\n\n'
