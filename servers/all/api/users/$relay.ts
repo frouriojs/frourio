@@ -1,12 +1,12 @@
 /* eslint-disable */
-import { FastifyInstance, onRequestHookHandler, preParsingHookHandler, preValidationHookHandler, preHandlerHookHandler } from 'fastify'
-import { Schema } from 'fast-json-stringify'
-import { HttpStatusOk } from 'aspida'
-import { Deps, depend } from 'velona'
-import { ServerMethods } from '../../$server'
-import { AdditionalRequest as AdditionalRequest0 } from './hooks'
-import { AdditionalRequest as AdditionalRequest1 } from './controller'
-import { Methods } from './'
+import type { FastifyInstance, onRequestHookHandler, preParsingHookHandler, preValidationHookHandler, preHandlerHookHandler } from 'fastify'
+import type { Schema } from 'fast-json-stringify'
+import type { HttpStatusOk } from 'aspida'
+import type { ServerMethods } from '../../$server'
+import type { AdditionalRequest as AdditionalRequest0 } from './hooks'
+import type { AdditionalRequest as AdditionalRequest1 } from './controller'
+import type { Methods } from './'
+import { depend } from 'velona'
 
 type AdditionalRequest = AdditionalRequest0 & AdditionalRequest1
 type AddedHandler<T> = T extends (req: infer U, ...args: infer V) => infer W ? (req: U & Partial<AdditionalRequest>, ...args: V) => W : never
@@ -23,13 +23,13 @@ export function defineResponseSchema<T extends { [U in keyof ControllerMethods]?
 }
 
 export function defineHooks<T extends Hooks>(hooks: (fastify: FastifyInstance) => T): (fastify: FastifyInstance) => T
-export function defineHooks<T extends Record<string, any>, U extends Hooks>(deps: T, cb: (d: Deps<T>, fastify: FastifyInstance) => U): { (fastify: FastifyInstance): U; inject(d: Deps<T>): (fastify: FastifyInstance) => U }
-export function defineHooks<T extends Record<string, any>>(hooks: (fastify: FastifyInstance) => Hooks | T, cb?: (deps: Deps<T>, fastify: FastifyInstance) => Hooks) {
+export function defineHooks<T extends Record<string, any>, U extends Hooks>(deps: T, cb: (d: T, fastify: FastifyInstance) => U): { (fastify: FastifyInstance): U; inject(d: Partial<T>): (fastify: FastifyInstance) => U }
+export function defineHooks<T extends Record<string, any>>(hooks: (fastify: FastifyInstance) => Hooks | T, cb?: (deps: T, fastify: FastifyInstance) => Hooks) {
   return cb && typeof hooks !== 'function' ? depend(hooks, cb) : hooks
 }
 
 export function defineController(methods: (fastify: FastifyInstance) => ControllerMethods): (fastify: FastifyInstance) => ControllerMethods
-export function defineController<T extends Record<string, any>>(deps: T, cb: (d: Deps<T>, fastify: FastifyInstance) => ControllerMethods): { (fastify: FastifyInstance): ControllerMethods; inject(d: Deps<T>): (fastify: FastifyInstance) => ControllerMethods }
-export function defineController<T extends Record<string, any>>(methods: (fastify: FastifyInstance) => ControllerMethods | T, cb?: (deps: Deps<T>, fastify: FastifyInstance) => ControllerMethods) {
+export function defineController<T extends Record<string, any>>(deps: T, cb: (d: T, fastify: FastifyInstance) => ControllerMethods): { (fastify: FastifyInstance): ControllerMethods; inject(d: Partial<T>): (fastify: FastifyInstance) => ControllerMethods }
+export function defineController<T extends Record<string, any>>(methods: (fastify: FastifyInstance) => ControllerMethods | T, cb?: (deps: T, fastify: FastifyInstance) => ControllerMethods) {
   return cb && typeof methods !== 'function' ? depend(methods, cb) : methods
 }

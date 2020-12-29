@@ -25,8 +25,8 @@ export default (input: string, project?: string) => {
 
   return {
     text: `/* eslint-disable */
-import { LowerHttpMethod, AspidaMethods, HttpStatusOk, AspidaMethodParams } from 'aspida'
-import { FastifyInstance, RouteHandlerMethod${
+import type { LowerHttpMethod, AspidaMethods, HttpStatusOk, AspidaMethodParams } from 'aspida'
+import type { FastifyInstance, RouteHandlerMethod${
       hasNumberTypeQuery || hasTypedParams || hasValidator || hasMultipart
         ? ', preValidationHookHandler'
         : ''
