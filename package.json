@@ -85,7 +85,7 @@
   },
   "dependencies": {
     "aspida": "^1.1.1",
-    "velona": "^0.6.0"
+    "velona": "^0.7.0"
   },
   "devDependencies": {
     "@aspida/axios": "^1.1.1",

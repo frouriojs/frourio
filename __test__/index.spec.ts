@@ -124,12 +124,18 @@ test('POST: 400', async () => {
 test('controller dependency injection', async () => {
   let val = 0
   const id = '5'
-  const injectedController = controller.inject({
-    log: (n: number) => {
-      val = n
-      return Promise.resolve(n)
-    }
-  })(server)
+  const injectedController = controller
+    .inject({
+      log: () => {
+        throw new Error()
+      }
+    })
+    .inject(() => ({
+      log: (n: number) => {
+        val = n
+        return Promise.resolve(n)
+      }
+    }))(server)
 
   await expect(
     injectedController.get({

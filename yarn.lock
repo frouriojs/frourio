@@ -5914,10 +5914,10 @@ validator@13.0.0:
   resolved "https://registry.yarnpkg.com/validator/-/validator-13.0.0.tgz#0fb6c6bb5218ea23d368a8347e6d0f5a70e3bcab"
   integrity sha512-anYx5fURbgF04lQV18nEQWZ/3wHGnxiKdG4aL8J+jEDsm98n/sU/bey+tYk6tnGJzm7ioh5FoqrAiQ6m03IgaA==
 
-velona@^0.6.0:
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/velona/-/velona-0.6.0.tgz#4f7528a02b0a15bba9c8bb23b14824ac247d4ecb"
-  integrity sha512-XyH/5gmrvOJwZg/LNUz7YdOT3wQKj48DV4Fhh0D+g4hZRlKXwc8l2CdHfJPFrabHRzkxVEvGRMsqo9wO9vUGoA==
+velona@^0.7.0:
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/velona/-/velona-0.7.0.tgz#9f1f5b4c9095959977fcc292f30600866b34ee97"
+  integrity sha512-+lFXKHJxj7mK3OnYKLHGijf+LCPvv8Mphvy3JETAGvKbn2179dQcOxvlYggOzYUfVHSn9kWmerivMZBtz3eN0Q==
 
 verror@1.10.0:
   version "1.10.0"
