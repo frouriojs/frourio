@@ -1,6 +1,6 @@
 /* eslint-disable */
-import { LowerHttpMethod, AspidaMethods, HttpStatusOk, AspidaMethodParams } from 'aspida'
-import { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, FastifyRequest, RouteShorthandOptions } from 'fastify'
+import type { LowerHttpMethod, AspidaMethods, HttpStatusOk, AspidaMethodParams } from 'aspida'
+import type { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, FastifyRequest, RouteShorthandOptions } from 'fastify'
 import { validateOrReject, ValidatorOptions } from 'class-validator'
 import * as Validators from './validators'
 import hooksFn0 from './api/hooks'
@@ -74,7 +74,7 @@ const createTypedParamsHandler = (numberTypeParams: string[]): preValidationHook
 }
 
 const createValidateHandler = (validators: (req: FastifyRequest) => (Promise<void> | null)[]): preValidationHookHandler =>
-  (req, reply) => Promise.all(validators(req)).catch(() => reply.code(400).send())
+  (req, reply) => Promise.all(validators(req)).catch(err => reply.code(400).send(err))
 
 const methodToHandler = (
   methodCallback: ServerMethods<any, any>[LowerHttpMethod]
@@ -98,6 +98,7 @@ const asyncMethodToHandler = (
 
 export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   const basePath = options.basePath ?? ''
+  const validatorOptions: ValidatorOptions = { validationError: { target: false }, ...options.validator }
   const hooks0 = hooksFn0(fastify)
   const hooks1 = hooksFn1(fastify)
   const ctrlHooks0 = ctrlHooksFn0(fastify)
@@ -114,7 +115,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
     {
       onRequest: [hooks0.onRequest, ctrlHooks0.onRequest],
       preValidation: createValidateHandler(req => [
-          Object.keys(req.query as any).length ? validateOrReject(Object.assign(new Validators.Query(), req.query as any), options.validator) : null
+          Object.keys(req.query as any).length ? validateOrReject(Object.assign(new Validators.Query(), req.query as any), validatorOptions) : null
         ])
     },
     asyncMethodToHandler(controller0.get)
@@ -125,8 +126,8 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
     {
       onRequest: [hooks0.onRequest, ctrlHooks0.onRequest],
       preValidation: createValidateHandler(req => [
-          validateOrReject(Object.assign(new Validators.Query(), req.query as any), options.validator),
-          validateOrReject(Object.assign(new Validators.Body(), req.body as any), options.validator)
+          validateOrReject(Object.assign(new Validators.Query(), req.query as any), validatorOptions),
+          validateOrReject(Object.assign(new Validators.Body(), req.body as any), validatorOptions)
         ])
     },
     methodToHandler(controller0.post)
@@ -178,7 +179,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
     {
       onRequest: [hooks0.onRequest, hooks1.onRequest],
       preValidation: createValidateHandler(req => [
-          validateOrReject(Object.assign(new Validators.UserInfo(), req.body as any), options.validator)
+          validateOrReject(Object.assign(new Validators.UserInfo(), req.body as any), validatorOptions)
         ]),
       preHandler: ctrlHooks1.preHandler
     } as RouteShorthandOptions,

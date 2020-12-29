@@ -1,6 +1,6 @@
 /* eslint-disable */
-import { LowerHttpMethod, AspidaMethods, HttpStatusOk, AspidaMethodParams } from 'aspida'
-import { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, RouteShorthandOptions } from 'fastify'
+import type { LowerHttpMethod, AspidaMethods, HttpStatusOk, AspidaMethodParams } from 'aspida'
+import type { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, RouteShorthandOptions } from 'fastify'
 import multipart, { FastifyMultipartOptions, Multipart } from 'fastify-multipart'
 import hooksFn0 from './api/hooks'
 import hooksFn1 from './api/users/hooks'
