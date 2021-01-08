@@ -48,15 +48,15 @@ const api = <T>({ baseURL, fetch }: AspidaClient<T>) => {
       $path: () => `${prefix}${PATH2}`
     },
     texts: {
-      _label: (val0: string) => {
-        const prefix0 = `${PATH3}/${val0}`
+      _label: (val1: string) => {
+        const prefix1 = `${PATH3}/${val1}`
 
         return {
           get: (option?: { config?: T }) =>
-            fetch<Methods5['get']['resBody']>(prefix, prefix0, GET, option).text(),
+            fetch<Methods5['get']['resBody']>(prefix, prefix1, GET, option).text(),
           $get: (option?: { config?: T }) =>
-            fetch<Methods5['get']['resBody']>(prefix, prefix0, GET, option).text().then(r => r.body),
-          $path: () => `${prefix}${prefix0}`
+            fetch<Methods5['get']['resBody']>(prefix, prefix1, GET, option).text().then(r => r.body),
+          $path: () => `${prefix}${prefix1}`
         }
       },
       sample: {
@@ -119,7 +119,7 @@ const api = <T>({ baseURL, fetch }: AspidaClient<T>) => {
     $post: (option: { body: Methods0['post']['reqBody'], query: Methods0['post']['query'], config?: T }) =>
       fetch<Methods0['post']['resBody'], BasicHeaders, Methods0['post']['status']>(prefix, '', POST, option, 'FormData').json().then(r => r.body),
     $path: (option?: { method?: 'get'; query: Methods0['get']['query'] } | { method: 'post'; query: Methods0['post']['query'] }) =>
-      `${prefix}${''}${option && option.query ? `?${dataToURLString(option.query)}` : ''}`
+      `${prefix}${option && option.query ? `?${dataToURLString(option.query)}` : ''}`
   }
 }
 

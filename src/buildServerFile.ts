@@ -24,20 +24,22 @@ export default (input: string, project?: string) => {
   const hasRouteShorthandOptions = controllers.includes(' as RouteShorthandOptions,')
 
   return {
-    text: `/* eslint-disable */
-import type { LowerHttpMethod, AspidaMethods, HttpStatusOk, AspidaMethodParams } from 'aspida'
+    text: `/* eslint-disable */${
+      hasMultipart
+        ? "\nimport multipart, { FastifyMultipartOptions, Multipart } from 'fastify-multipart'"
+        : ''
+    }${hasValidator ? "\nimport { validateOrReject, ValidatorOptions } from 'class-validator'" : ''}
+${
+  hasValidator ? `import * as Validators from './validators'\n` : ''
+}${imports}import type { LowerHttpMethod, AspidaMethods, HttpStatusOk, AspidaMethodParams } from 'aspida'
 import type { FastifyInstance, RouteHandlerMethod${
       hasNumberTypeQuery || hasTypedParams || hasValidator || hasMultipart
         ? ', preValidationHookHandler'
         : ''
     }${hasValidator ? ', FastifyRequest' : ''}${
       hasRouteShorthandOptions ? ', RouteShorthandOptions' : ''
-    } } from 'fastify'${
-      hasMultipart
-        ? "\nimport multipart, { FastifyMultipartOptions, Multipart } from 'fastify-multipart'"
-        : ''
-    }${hasValidator ? "\nimport { validateOrReject, ValidatorOptions } from 'class-validator'" : ''}
-${hasValidator ? `import * as Validators from './validators'\n` : ''}${imports}
+    } } from 'fastify'
+
 export type FrourioOptions = {
   basePath?: string
 ${hasValidator ? '  validator?: ValidatorOptions\n' : ''}${
