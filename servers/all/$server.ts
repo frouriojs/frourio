@@ -1,6 +1,4 @@
 /* eslint-disable */
-import type { LowerHttpMethod, AspidaMethods, HttpStatusOk, AspidaMethodParams } from 'aspida'
-import type { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, FastifyRequest, RouteShorthandOptions } from 'fastify'
 import multipart, { FastifyMultipartOptions, Multipart } from 'fastify-multipart'
 import { validateOrReject, ValidatorOptions } from 'class-validator'
 import * as Validators from './validators'
@@ -18,6 +16,8 @@ import controllerFn6 from './api/texts/_label@string/controller'
 import controllerFn7, { hooks as ctrlHooksFn1 } from './api/users/controller'
 import controllerFn8 from './api/users/_userId@number/controller'
 import controllerFn9 from './api/users/_userId@number/_name/controller'
+import type { LowerHttpMethod, AspidaMethods, HttpStatusOk, AspidaMethodParams } from 'aspida'
+import type { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, FastifyRequest, RouteShorthandOptions } from 'fastify'
 
 export type FrourioOptions = {
   basePath?: string

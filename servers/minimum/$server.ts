@@ -1,7 +1,7 @@
 /* eslint-disable */
+import controllerFn0, { responseSchema as responseSchemaFn0 } from './api/controller'
 import type { LowerHttpMethod, AspidaMethods, HttpStatusOk, AspidaMethodParams } from 'aspida'
 import type { FastifyInstance, RouteHandlerMethod } from 'fastify'
-import controllerFn0, { responseSchema as responseSchemaFn0 } from './api/controller'
 
 export type FrourioOptions = {
   basePath?: string

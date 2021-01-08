@@ -1,10 +1,10 @@
 /* eslint-disable */
+import { Injectable, depend } from 'velona'
 import type { FastifyInstance, onRequestHookHandler, preParsingHookHandler, preValidationHookHandler, preHandlerHookHandler } from 'fastify'
 import type { Schema } from 'fast-json-stringify'
 import type { HttpStatusOk } from 'aspida'
 import type { ServerMethods } from '../../$server'
 import type { Methods } from './'
-import { Injectable, depend } from 'velona'
 
 type Hooks = {
   onRequest?: onRequestHookHandler | onRequestHookHandler[]
