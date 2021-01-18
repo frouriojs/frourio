@@ -2407,6 +2407,11 @@ fastify-error@^0.2.0:
   resolved "https://registry.yarnpkg.com/fastify-error/-/fastify-error-0.2.0.tgz#9a1c28d4f42b6259e7a549671c8e5e2d85660634"
   integrity sha512-zabxsBatj59ROG0fhP36zNdc5Q1/eYeH9oSF9uvfrurZf8/JKfrJbMcIGrLpLWcf89rS6L91RHWm20A/X85hcA==
 
+fastify-error@^0.3.0:
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/fastify-error/-/fastify-error-0.3.0.tgz#08866323d521156375a8be7c7fcaf98df946fafb"
+  integrity sha512-Jm2LMTB5rsJqlS1+cmgqqM9tTs0UrlgYR7TvDT3ZgXsUI5ib1NjQlqZHf+tDK5tVPdFGwyq02wAoJtyYIRSiFA==
+
 fastify-multipart@^3.3.1:
   version "3.3.1"
   resolved "https://registry.yarnpkg.com/fastify-multipart/-/fastify-multipart-3.3.1.tgz#1a74ec9c81fb8dbae2281eb2d84870dedb0c0b8f"
@@ -2430,16 +2435,16 @@ fastify-warning@^0.2.0:
   resolved "https://registry.yarnpkg.com/fastify-warning/-/fastify-warning-0.2.0.tgz#e717776026a4493dc9a2befa44db6d17f618008f"
   integrity sha512-s1EQguBw/9qtc1p/WTY4eq9WMRIACkj+HTcOIK1in4MV5aFaQC9ZCIt0dJ7pr5bIf4lPpHvAtP2ywpTNgs7hqw==
 
-fastify@^3.9.2:
-  version "3.9.2"
-  resolved "https://registry.yarnpkg.com/fastify/-/fastify-3.9.2.tgz#20007d1a558cf8c88a8ef2936b4e484553fdf706"
-  integrity sha512-8VEf4l6a2tdtrYQQwgT9Zh2/OvOgE4Sf6cDNMduAnKZ44CXrT0tXuH/uQkXuxqMAW27ZOy4jeexBl8CFaECntg==
+fastify@^3.10.1:
+  version "3.10.1"
+  resolved "https://registry.yarnpkg.com/fastify/-/fastify-3.10.1.tgz#9a17b395e162e90c2dded93353bf2e04410884ff"
+  integrity sha512-ChjHCXbCFzftVzQ1sDD8f8Ou1uDObkcVXBJmDkzVoZSNTxDrIapg63HIy3tPwScTNyMdmikA+QbP6zkGP+cFzw==
   dependencies:
     abstract-logging "^2.0.0"
     ajv "^6.12.2"
     avvio "^7.1.2"
     fast-json-stringify "^2.2.1"
-    fastify-error "^0.2.0"
+    fastify-error "^0.3.0"
     fastify-warning "^0.2.0"
     find-my-way "^3.0.5"
     flatstr "^1.0.12"
