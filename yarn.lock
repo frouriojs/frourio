@@ -711,10 +711,10 @@
   resolved "https://registry.yarnpkg.com/@types/stack-utils/-/stack-utils-2.0.0.tgz#7036640b4e21cc2f259ae826ce843d277dad8cff"
   integrity sha512-RJJrrySY7A8havqpGObOB4W92QXKJo63/jFLLgpvOtsGUqbQZ9Sbgl35KMm1DjC6j7AvmmU2bIno+3IyEaemaw==
 
-"@types/validator@13.0.0":
-  version "13.0.0"
-  resolved "https://registry.yarnpkg.com/@types/validator/-/validator-13.0.0.tgz#365f1bf936aeaddd0856fc41aa1d6f82d88ee5b3"
-  integrity sha512-WAy5txG7aFX8Vw3sloEKp5p/t/Xt8jD3GRD9DacnFv6Vo8ubudAsRTXgxpQwU0mpzY/H8U4db3roDuCMjShBmw==
+"@types/validator@^13.1.3":
+  version "13.1.3"
+  resolved "https://registry.yarnpkg.com/@types/validator/-/validator-13.1.3.tgz#366b394aa3fbeed2392bf0a20ded606fa4a3d35e"
+  integrity sha512-DaOWN1zf7j+8nHhqXhIgNmS+ltAC53NXqGxYuBhWqWgqolRhddKzfZU814lkHQSTG0IUfQxU7Cg0gb8fFWo2mA==
 
 "@types/yargs-parser@*":
   version "15.0.0"
@@ -1392,15 +1392,14 @@ class-utils@^0.3.5:
     isobject "^3.0.0"
     static-extend "^0.1.1"
 
-class-validator@^0.12.2:
-  version "0.12.2"
-  resolved "https://registry.yarnpkg.com/class-validator/-/class-validator-0.12.2.tgz#2ceb72f88873e9c714cf5f9c278cbc71f6f6c8ef"
-  integrity sha512-TDzPzp8BmpsbPhQpccB3jMUE/3pK0TyqamrK0kcx+ZeFytMA+O6q87JZZGObHHnoo9GM8vl/JppIyKWeEA/EVw==
+class-validator@^0.13.1:
+  version "0.13.1"
+  resolved "https://registry.yarnpkg.com/class-validator/-/class-validator-0.13.1.tgz#381b2001ee6b9e05afd133671fbdf760da7dec67"
+  integrity sha512-zWIeYFhUitvAHBwNhDdCRK09hWx+P0HUwFE8US8/CxFpMVzkUK8RJl7yOIE+BVu2lxyPNgeOaFv78tLE47jBIg==
   dependencies:
-    "@types/validator" "13.0.0"
-    google-libphonenumber "^3.2.8"
-    tslib ">=1.9.0"
-    validator "13.0.0"
+    "@types/validator" "^13.1.3"
+    libphonenumber-js "^1.9.7"
+    validator "^13.5.2"
 
 cliui@^6.0.0:
   version "6.0.0"
@@ -2787,11 +2786,6 @@ globby@^11.0.1:
     merge2 "^1.3.0"
     slash "^3.0.0"
 
-google-libphonenumber@^3.2.8:
-  version "3.2.13"
-  resolved "https://registry.yarnpkg.com/google-libphonenumber/-/google-libphonenumber-3.2.13.tgz#8f41f2ce1739d40e2b9ebccc75dca95474cdf0b5"
-  integrity sha512-USnpjJkD8St+wyshy154lF74JeauNCd8vrcusSlWjSFWitXzl7ZSuCunA/XxeVLqBv6DShrSfFMYdwGZ7x4hOw==
-
 graceful-fs@^4.1.2, graceful-fs@^4.2.4:
   version "4.2.4"
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.2.4.tgz#2256bde14d3632958c465ebc96dc467ca07a29fb"
@@ -3885,6 +3879,11 @@ levn@~0.3.0:
   dependencies:
     prelude-ls "~1.1.2"
     type-check "~0.3.2"
+
+libphonenumber-js@^1.9.7:
+  version "1.9.8"
+  resolved "https://registry.yarnpkg.com/libphonenumber-js/-/libphonenumber-js-1.9.8.tgz#82f88ea473c2214667709c24220bade4b85e0752"
+  integrity sha512-gXzuhvlqdH20MlKAy1jXOVouCYByz43ZGCAeNnNuKQXUM+Wl36gbql0M27QQI3ahYCHJErd2W8ciqWweoQdbrQ==
 
 light-my-request@^4.2.0:
   version "4.2.1"
@@ -5840,11 +5839,6 @@ tsconfig-paths@^3.9.0:
     minimist "^1.2.0"
     strip-bom "^3.0.0"
 
-tslib@>=1.9.0:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.0.1.tgz#410eb0d113e5b6356490eec749603725b021b43e"
-  integrity sha512-SgIkNheinmEBgx1IUNirK0TUD4X9yjjBRTqqjggWCU3pUEqIk3/Uwl3yRixYKT6WjQuGiwDv4NomL3wqRCj+CQ==
-
 tslib@^1.8.1:
   version "1.13.0"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.13.0.tgz#c881e13cc7015894ed914862d276436fa9a47043"
@@ -6007,10 +6001,10 @@ validate-npm-package-license@^3.0.1:
     spdx-correct "^3.0.0"
     spdx-expression-parse "^3.0.0"
 
-validator@13.0.0:
-  version "13.0.0"
-  resolved "https://registry.yarnpkg.com/validator/-/validator-13.0.0.tgz#0fb6c6bb5218ea23d368a8347e6d0f5a70e3bcab"
-  integrity sha512-anYx5fURbgF04lQV18nEQWZ/3wHGnxiKdG4aL8J+jEDsm98n/sU/bey+tYk6tnGJzm7ioh5FoqrAiQ6m03IgaA==
+validator@^13.5.2:
+  version "13.5.2"
+  resolved "https://registry.yarnpkg.com/validator/-/validator-13.5.2.tgz#c97ae63ed4224999fb6f42c91eaca9567fe69a46"
+  integrity sha512-mD45p0rvHVBlY2Zuy3F3ESIe1h5X58GPfAtslBjY7EtTqGquZTj+VX/J4RnHWN8FKq0C9WRVt1oWAcytWRuYLQ==
 
 velona@^0.7.0:
   version "0.7.0"
