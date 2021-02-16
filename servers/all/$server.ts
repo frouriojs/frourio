@@ -85,12 +85,7 @@ const parseNumberTypeQueryParams = (numberTypeParamsFn: (query: any) => ([string
       if (!isOptional && param === undefined) {
         query[key] = []
       } else if (!isOptional || param !== undefined) {
-        if (!Array.isArray(param)) {
-          reply.code(400).send()
-          return
-        }
-
-        const vals = (param as string[]).map(Number)
+        const vals = (Array.isArray(param) ? param : [param]).map(Number)
 
         if (vals.some(isNaN)) {
           reply.code(400).send()
@@ -127,12 +122,7 @@ const parseBooleanTypeQueryParams = (booleanTypeParamsFn: (query: any) => ([stri
       if (!isOptional && param === undefined) {
         query[key] = []
       } else if (!isOptional || param !== undefined) {
-        if (!Array.isArray(param)) {
-          reply.code(400).send()
-          return
-        }
-
-        const vals = (param as string[]).map(p => p === 'true' ? true : p === 'false' ? false : null)
+        const vals = (Array.isArray(param) ? param : [param]).map(p => p === 'true' ? true : p === 'false' ? false : null)
 
         if (vals.some(v => v === null)) {
           reply.code(400).send()

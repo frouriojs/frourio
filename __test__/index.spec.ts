@@ -77,15 +77,15 @@ test('GET: 400', () =>
       {
         requiredNum: 0,
         requiredNumArr: [],
-        id: '1',
+        id: '2',
         disable: 'true',
         bool: false,
-        boolArray: ['true']
+        boolArray: ['no boolean']
       },
       {
         requiredNum: 0,
-        requiredNumArr: ['1'],
-        id: '1',
+        requiredNumArr: ['no number'],
+        id: '3',
         disable: 'true',
         bool: false,
         boolArray: []
