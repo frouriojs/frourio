@@ -4,7 +4,7 @@ export type Methods = {
   get: {
     query?: Query
     status: 200
-    resBody?: { id: number }
+    resBody?: Query
   }
 
   post: {

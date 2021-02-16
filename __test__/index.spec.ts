@@ -24,12 +24,30 @@ afterEach(cb => {
   server.close(cb)
 })
 
-test('GET: 200', async () => {
-  const res = await client.$get({
-    query: { requiredNum: 1, requiredNumArr: [1, 2], id: '1', disable: 'false' }
-  })
-  expect(res?.id).toBe(1)
-})
+test('GET: 200', () =>
+  Promise.all(
+    [
+      {
+        requiredNum: 1,
+        requiredNumArr: [1, 2],
+        id: '1',
+        disable: 'false',
+        bool: true,
+        boolArray: [false, true]
+      },
+      {
+        requiredNum: 2,
+        emptyNum: 0,
+        requiredNumArr: [],
+        id: '1',
+        disable: 'false',
+        bool: false,
+        optionalBool: true,
+        boolArray: [],
+        optionalBoolArray: [true, false, false]
+      }
+    ].map(query => expect(client.$get({ query })).resolves.toEqual(query))
+  ))
 
 test('GET: string', async () => {
   const text = 'test'
@@ -45,18 +63,44 @@ test('GET: params.userId', async () => {
   expect(res.headers['content-type']).toBe('application/json; charset=utf-8')
 })
 
-test('GET: 400', async () => {
-  await Promise.all([
-    expect(
-      client.get({ query: { requiredNum: 0, requiredNumArr: [], id: '1', disable: 'no boolean' } })
-    ).rejects.toHaveProperty('response.status', 400),
-    expect(
-      client.get({
-        query: { requiredNum: 1, requiredNumArr: [1, 2], id: 'no number', disable: 'true' }
-      })
-    ).rejects.toHaveProperty('response.status', 400)
-  ])
-})
+test('GET: 400', () =>
+  Promise.all(
+    [
+      {
+        requiredNum: 0,
+        requiredNumArr: [],
+        id: '1',
+        disable: 'no boolean',
+        bool: false,
+        boolArray: []
+      },
+      {
+        requiredNum: 0,
+        requiredNumArr: [],
+        id: '1',
+        disable: 'true',
+        bool: false,
+        boolArray: ['true']
+      },
+      {
+        requiredNum: 0,
+        requiredNumArr: ['1'],
+        id: '1',
+        disable: 'true',
+        bool: false,
+        boolArray: []
+      },
+      {
+        requiredNum: 1,
+        requiredNumArr: [1, 2],
+        id: 'no number',
+        disable: 'true',
+        bool: false,
+        boolArray: []
+      }
+      // @ts-expect-error
+    ].map(query => expect(client.get({ query })).rejects.toHaveProperty('response.status', 400))
+  ))
 
 test('GET: 500', async () => {
   await expect(client.$500.get()).rejects.toHaveProperty('response.status', 500)
@@ -76,7 +120,14 @@ test('POST: formdata', async () => {
   form.append('file', fs.createReadStream(fileName))
   const res = await axios.post(baseURL, form, {
     headers: form.getHeaders(),
-    params: { requiredNum: 0, requiredNumArr: [], id: 1, disable: true }
+    params: {
+      requiredNum: 0,
+      requiredNumArr: [],
+      id: 1,
+      disable: true,
+      bool: false,
+      boolArray: []
+    }
   })
   expect(res.data.port).toBe(port)
   expect(res.data.fileName).toBe(fileName)
@@ -131,16 +182,23 @@ test('controller dependency injection', async () => {
       }
     })
     .inject(() => ({
-      log: (n: number) => {
-        val = n
-        return Promise.resolve(n)
+      log: n => {
+        val = +n * 2
+        return Promise.resolve(`${val}`)
       }
     }))(server)
 
   await expect(
     injectedController.get({
-      query: { id, requiredNum: 1, requiredNumArr: [0], disable: 'true' }
+      query: {
+        id,
+        requiredNum: 1,
+        requiredNumArr: [0],
+        disable: 'true',
+        bool: false,
+        boolArray: []
+      }
     })
-  ).resolves.toHaveProperty('body', { id: +id })
-  expect(val).toBe(+id)
+  ).resolves.toHaveProperty('body.id', `${+id * 2}`)
+  expect(val).toBe(+id * 2)
 })
