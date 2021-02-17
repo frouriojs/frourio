@@ -74,9 +74,8 @@ export type ServerMethods<T extends AspidaMethods, U extends Record<string, any>
   ) => ServerResponse<T[K]> | Promise<ServerResponse<T[K]>>
 }
 
-const parseNumberTypeQueryParams = (numberTypeParamsFn: (query: any) => ([string, boolean, boolean][])): preValidationHookHandler => (req, reply, done) => {
+const parseNumberTypeQueryParams = (numberTypeParams: [string, boolean, boolean][]): preValidationHookHandler => (req, reply, done) => {
   const query: any = req.query
-  const numberTypeParams = numberTypeParamsFn(query)
 
   for (const [key, isOptional, isArray] of numberTypeParams) {
     const param = isArray ? (query[`${key}[]`] ?? query[key]) : query[key]
@@ -111,9 +110,8 @@ const parseNumberTypeQueryParams = (numberTypeParamsFn: (query: any) => ([string
   done()
 }
 
-const parseBooleanTypeQueryParams = (booleanTypeParamsFn: (query: any) => ([string, boolean, boolean][])): preValidationHookHandler => (req, reply, done) => {
+const parseBooleanTypeQueryParams = (booleanTypeParams: [string, boolean, boolean][]): preValidationHookHandler => (req, reply, done) => {
   const query: any = req.query
-  const booleanTypeParams = booleanTypeParamsFn(query)
 
   for (const [key, isOptional, isArray] of booleanTypeParams) {
     const param = isArray ? (query[`${key}[]`] ?? query[key]) : query[key]
@@ -147,6 +145,9 @@ const parseBooleanTypeQueryParams = (booleanTypeParamsFn: (query: any) => ([stri
 
   done()
 }
+
+const callParserIfExistsQuery = (parser: preValidationHookHandler): preValidationHookHandler => (req, reply, done) =>
+  Object.keys(req.query as any).length ? parser(req, reply, done) : done()
 
 const normalizeQuery: preValidationHookHandler = (req, _, done) => {
   req.query = JSON.parse(JSON.stringify(req.query))
@@ -248,8 +249,8 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
       onRequest: [...hooks0.onRequest, ctrlHooks0.onRequest],
       preParsing: hooks0.preParsing,
       preValidation: [
-        parseNumberTypeQueryParams(query => !Object.keys(query).length ? [] : [['requiredNum', false, false], ['optionalNum', true, false], ['optionalNumArr', true, true], ['emptyNum', true, false], ['requiredNumArr', false, true]]),
-        parseBooleanTypeQueryParams(query => !Object.keys(query).length ? [] : [['bool', false, false], ['optionalBool', true, false], ['boolArray', false, true], ['optionalBoolArray', true, true]]),
+        callParserIfExistsQuery(parseNumberTypeQueryParams([['requiredNum', false, false], ['optionalNum', true, false], ['optionalNumArr', true, true], ['emptyNum', true, false], ['requiredNumArr', false, true]])),
+        callParserIfExistsQuery(parseBooleanTypeQueryParams([['bool', false, false], ['optionalBool', true, false], ['boolArray', false, true], ['optionalBoolArray', true, true]])),
         normalizeQuery,
         createValidateHandler(req => [
           Object.keys(req.query as any).length ? validateOrReject(Object.assign(new Validators.Query(), req.query as any), validatorOptions) : null
@@ -265,8 +266,8 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
       onRequest: [...hooks0.onRequest, ctrlHooks0.onRequest],
       preParsing: hooks0.preParsing,
       preValidation: [
-        parseNumberTypeQueryParams(() => [['requiredNum', false, false], ['optionalNum', true, false], ['optionalNumArr', true, true], ['emptyNum', true, false], ['requiredNumArr', false, true]]),
-        parseBooleanTypeQueryParams(() => [['bool', false, false], ['optionalBool', true, false], ['boolArray', false, true], ['optionalBoolArray', true, true]]),
+        parseNumberTypeQueryParams([['requiredNum', false, false], ['optionalNum', true, false], ['optionalNumArr', true, true], ['emptyNum', true, false], ['requiredNumArr', false, true]]),
+        parseBooleanTypeQueryParams([['bool', false, false], ['optionalBool', true, false], ['boolArray', false, true], ['optionalBoolArray', true, true]]),
         formatMultipartData([]),
         normalizeQuery,
         createValidateHandler(req => [
@@ -316,7 +317,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
     {
       onRequest: hooks0.onRequest,
       preParsing: hooks0.preParsing,
-      preValidation: parseNumberTypeQueryParams(query => !Object.keys(query).length ? [] : [['limit', true, false]])
+      preValidation: callParserIfExistsQuery(parseNumberTypeQueryParams([['limit', true, false]]))
     },
     methodToHandler(controller4.get)
   )

@@ -417,22 +417,22 @@ export default (appDir: string, project: string) => {
                   if (key === 'preValidation') {
                     const texts = [
                       numberTypeQueryParams?.length
-                        ? `parseNumberTypeQueryParams(${
-                            query?.declarations.some(
-                              d => d.getChildAt(1).kind === ts.SyntaxKind.QuestionToken
-                            )
-                              ? 'query => !Object.keys(query).length ? [] :'
-                              : '() =>'
-                          } [${numberTypeQueryParams.join(', ')}])`
+                        ? query?.declarations.some(
+                            d => d.getChildAt(1).kind === ts.SyntaxKind.QuestionToken
+                          )
+                          ? `callParserIfExistsQuery(parseNumberTypeQueryParams([${numberTypeQueryParams.join(
+                              ', '
+                            )}]))`
+                          : `parseNumberTypeQueryParams([${numberTypeQueryParams.join(', ')}])`
                         : '',
                       booleanTypeQueryParams?.length
-                        ? `parseBooleanTypeQueryParams(${
-                            query?.declarations.some(
-                              d => d.getChildAt(1).kind === ts.SyntaxKind.QuestionToken
-                            )
-                              ? 'query => !Object.keys(query).length ? [] :'
-                              : '() =>'
-                          } [${booleanTypeQueryParams.join(', ')}])`
+                        ? query?.declarations.some(
+                            d => d.getChildAt(1).kind === ts.SyntaxKind.QuestionToken
+                          )
+                          ? `callParserIfExistsQuery(parseBooleanTypeQueryParams([${booleanTypeQueryParams.join(
+                              ', '
+                            )}]))`
+                          : `parseBooleanTypeQueryParams([${booleanTypeQueryParams.join(', ')}])`
                         : '',
                       isFormData && reqBody
                         ? `formatMultipartData([${checker

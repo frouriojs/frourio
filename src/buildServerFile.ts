@@ -15,8 +15,9 @@ const ${isAsync ? 'asyncM' : 'm'}ethodToHandler = (
 
 export default (input: string, project?: string) => {
   const { imports, consts, controllers } = createControllersText(`${input}/api`, project ?? input)
-  const hasNumberTypeQuery = controllers.includes(' parseNumberTypeQueryParams(')
-  const hasBooleanTypeQuery = controllers.includes(' parseBooleanTypeQueryParams(')
+  const hasNumberTypeQuery = controllers.includes('parseNumberTypeQueryParams(')
+  const hasBooleanTypeQuery = controllers.includes('parseBooleanTypeQueryParams(')
+  const hasOptionalQuery = controllers.includes(' callParserIfExistsQuery(')
   const hasNormalizeQuery = controllers.includes(' normalizeQuery')
   const hasTypedParams = controllers.includes(' createTypedParamsHandler(')
   const hasValidator = controllers.includes(' validateOrReject(')
@@ -103,9 +104,8 @@ export type ServerMethods<T extends AspidaMethods, U extends Record<string, any>
 ${
   hasNumberTypeQuery
     ? `
-const parseNumberTypeQueryParams = (numberTypeParamsFn: (query: any) => ([string, boolean, boolean][])): preValidationHookHandler => (req, reply, done) => {
+const parseNumberTypeQueryParams = (numberTypeParams: [string, boolean, boolean][]): preValidationHookHandler => (req, reply, done) => {
   const query: any = req.query
-  const numberTypeParams = numberTypeParamsFn(query)
 
   for (const [key, isOptional, isArray] of numberTypeParams) {
     const param = isArray ? (query[\`\${key}[]\`] ?? query[key]) : query[key]
@@ -144,9 +144,8 @@ const parseNumberTypeQueryParams = (numberTypeParamsFn: (query: any) => ([string
 }${
       hasBooleanTypeQuery
         ? `
-const parseBooleanTypeQueryParams = (booleanTypeParamsFn: (query: any) => ([string, boolean, boolean][])): preValidationHookHandler => (req, reply, done) => {
+const parseBooleanTypeQueryParams = (booleanTypeParams: [string, boolean, boolean][]): preValidationHookHandler => (req, reply, done) => {
   const query: any = req.query
-  const booleanTypeParams = booleanTypeParamsFn(query)
 
   for (const [key, isOptional, isArray] of booleanTypeParams) {
     const param = isArray ? (query[\`\${key}[]\`] ?? query[key]) : query[key]
@@ -180,6 +179,13 @@ const parseBooleanTypeQueryParams = (booleanTypeParamsFn: (query: any) => ([stri
 
   done()
 }
+`
+        : ''
+    }${
+      hasOptionalQuery
+        ? `
+const callParserIfExistsQuery = (parser: preValidationHookHandler): preValidationHookHandler => (req, reply, done) =>
+  Object.keys(req.query as any).length ? parser(req, reply, done) : done()
 `
         : ''
     }${
