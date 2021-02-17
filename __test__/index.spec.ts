@@ -5,6 +5,7 @@ import fastify, { FastifyInstance } from 'fastify'
 import FormData from 'form-data'
 import axios from 'axios'
 import aspida from '@aspida/axios'
+import aspidaFetch from '@aspida/node-fetch'
 import api from '../servers/all/api/$api'
 import frourio from '../servers/all/$server'
 import controller from '../servers/all/api/controller'
@@ -12,6 +13,7 @@ import controller from '../servers/all/api/controller'
 const port = 11111
 const baseURL = `http://localhost:${port}`
 const client = api(aspida(undefined, { baseURL }))
+const fetchClient = api(aspidaFetch(undefined, { baseURL, throwHttpErrors: true }))
 let server: FastifyInstance
 
 beforeEach(cb => {
@@ -46,7 +48,12 @@ test('GET: 200', () =>
         boolArray: [],
         optionalBoolArray: [true, false, false]
       }
-    ].map(query => expect(client.$get({ query })).resolves.toEqual(query))
+    ].map(query =>
+      Promise.all([
+        expect(client.$get({ query })).resolves.toEqual(query),
+        expect(fetchClient.$get({ query })).resolves.toEqual(query)
+      ])
+    )
   ))
 
 test('GET: string', async () => {
@@ -98,8 +105,14 @@ test('GET: 400', () =>
         bool: false,
         boolArray: []
       }
-      // @ts-expect-error
-    ].map(query => expect(client.get({ query })).rejects.toHaveProperty('response.status', 400))
+    ].map(query =>
+      Promise.all([
+        // @ts-expect-error
+        expect(client.get({ query })).rejects.toHaveProperty('response.status', 400),
+        // @ts-expect-error
+        expect(fetchClient.get({ query })).rejects.toHaveProperty('response.status', 400)
+      ])
+    )
   ))
 
 test('GET: 500', async () => {

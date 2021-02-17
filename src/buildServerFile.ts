@@ -108,7 +108,7 @@ const parseNumberTypeQueryParams = (numberTypeParamsFn: (query: any) => ([string
   const numberTypeParams = numberTypeParamsFn(query)
 
   for (const [key, isOptional, isArray] of numberTypeParams) {
-    const param = query[isArray ? \`\${key}[]\` : key]
+    const param = isArray ? (query[\`\${key}[]\`] ?? query[key]) : query[key]
 
     if (isArray) {
       if (!isOptional && param === undefined) {
@@ -149,7 +149,7 @@ const parseBooleanTypeQueryParams = (booleanTypeParamsFn: (query: any) => ([stri
   const booleanTypeParams = booleanTypeParamsFn(query)
 
   for (const [key, isOptional, isArray] of booleanTypeParams) {
-    const param = query[isArray ? \`\${key}[]\` : key]
+    const param = isArray ? (query[\`\${key}[]\`] ?? query[key]) : query[key]
 
     if (isArray) {
       if (!isOptional && param === undefined) {
