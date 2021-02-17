@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.23.0](https://github.com/frouriojs/frourio/compare/v0.22.2...v0.23.0) (2021-02-17)
+
+
+### Features
+
+* parse boolean type query ([1593ea1](https://github.com/frouriojs/frourio/commit/1593ea1a21b3b0c47a2db9a1c3e9a358575bdd85))
+
+
+### Bug Fixes
+
+* optimize calling query parser ([bb48f2a](https://github.com/frouriojs/frourio/commit/bb48f2ac57e5adc692e770bd2480b81210bd06de))
+* update aspida@1.5.0 ([d57b2aa](https://github.com/frouriojs/frourio/commit/d57b2aa358a526f77183218355999408650ebcf1))
+
 ### [0.22.2](https://github.com/frouriojs/frourio/compare/v0.22.1...v0.22.2) (2021-01-22)
 
 

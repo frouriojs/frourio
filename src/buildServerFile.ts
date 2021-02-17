@@ -15,7 +15,10 @@ const ${isAsync ? 'asyncM' : 'm'}ethodToHandler = (
 
 export default (input: string, project?: string) => {
   const { imports, consts, controllers } = createControllersText(`${input}/api`, project ?? input)
-  const hasNumberTypeQuery = controllers.includes(' parseNumberTypeQueryParams(')
+  const hasNumberTypeQuery = controllers.includes('parseNumberTypeQueryParams(')
+  const hasBooleanTypeQuery = controllers.includes('parseBooleanTypeQueryParams(')
+  const hasOptionalQuery = controllers.includes(' callParserIfExistsQuery(')
+  const hasNormalizeQuery = controllers.includes(' normalizeQuery')
   const hasTypedParams = controllers.includes(' createTypedParamsHandler(')
   const hasValidator = controllers.includes(' validateOrReject(')
   const hasMultipart = controllers.includes(' formatMultipartData(')
@@ -33,7 +36,7 @@ ${
   hasValidator ? `import * as Validators from './validators'\n` : ''
 }${imports}import type { LowerHttpMethod, AspidaMethods, HttpStatusOk, AspidaMethodParams } from 'aspida'
 import type { FastifyInstance, RouteHandlerMethod${
-      hasNumberTypeQuery || hasTypedParams || hasValidator || hasMultipart
+      hasNumberTypeQuery || hasBooleanTypeQuery || hasTypedParams || hasValidator || hasMultipart
         ? ', preValidationHookHandler'
         : ''
     }${hasValidator ? ', FastifyRequest' : ''}${
@@ -101,23 +104,17 @@ export type ServerMethods<T extends AspidaMethods, U extends Record<string, any>
 ${
   hasNumberTypeQuery
     ? `
-const parseNumberTypeQueryParams = (numberTypeParamsFn: (query: any) => ([string, boolean, boolean][])): preValidationHookHandler => (req, reply, done) => {
+const parseNumberTypeQueryParams = (numberTypeParams: [string, boolean, boolean][]): preValidationHookHandler => (req, reply, done) => {
   const query: any = req.query
-  const numberTypeParams = numberTypeParamsFn(query)
 
   for (const [key, isOptional, isArray] of numberTypeParams) {
-    const param = query[key]
+    const param = isArray ? (query[\`\${key}[]\`] ?? query[key]) : query[key]
 
     if (isArray) {
       if (!isOptional && param === undefined) {
         query[key] = []
       } else if (!isOptional || param !== undefined) {
-        if (!Array.isArray(param)) {
-          reply.code(400).send()
-          return
-        }
-
-        const vals = (param as string[]).map(Number)
+        const vals = (Array.isArray(param) ? param : [param]).map(Number)
 
         if (vals.some(isNaN)) {
           reply.code(400).send()
@@ -126,6 +123,8 @@ const parseNumberTypeQueryParams = (numberTypeParamsFn: (query: any) => ([string
 
         query[key] = vals as any
       }
+
+      delete query[\`\${key}[]\`]
     } else if (!isOptional || param !== undefined) {
       const val = Number(param)
 
@@ -143,6 +142,62 @@ const parseNumberTypeQueryParams = (numberTypeParamsFn: (query: any) => ([string
 `
     : ''
 }${
+      hasBooleanTypeQuery
+        ? `
+const parseBooleanTypeQueryParams = (booleanTypeParams: [string, boolean, boolean][]): preValidationHookHandler => (req, reply, done) => {
+  const query: any = req.query
+
+  for (const [key, isOptional, isArray] of booleanTypeParams) {
+    const param = isArray ? (query[\`\${key}[]\`] ?? query[key]) : query[key]
+
+    if (isArray) {
+      if (!isOptional && param === undefined) {
+        query[key] = []
+      } else if (!isOptional || param !== undefined) {
+        const vals = (Array.isArray(param) ? param : [param]).map(p => p === 'true' ? true : p === 'false' ? false : null)
+
+        if (vals.some(v => v === null)) {
+          reply.code(400).send()
+          return
+        }
+
+        query[key] = vals as any
+      }
+
+      delete query[\`\${key}[]\`]
+    } else if (!isOptional || param !== undefined) {
+      const val = param === 'true' ? true : param === 'false' ? false : null
+
+      if (val === null) {
+        reply.code(400).send()
+        return
+      }
+
+      query[key] = val as any
+    }
+  }
+
+  done()
+}
+`
+        : ''
+    }${
+      hasOptionalQuery
+        ? `
+const callParserIfExistsQuery = (parser: preValidationHookHandler): preValidationHookHandler => (req, reply, done) =>
+  Object.keys(req.query as any).length ? parser(req, reply, done) : done()
+`
+        : ''
+    }${
+      hasNormalizeQuery
+        ? `
+const normalizeQuery: preValidationHookHandler = (req, _, done) => {
+  req.query = JSON.parse(JSON.stringify(req.query))
+  done()
+}
+`
+        : ''
+    }${
       hasTypedParams
         ? `
 const createTypedParamsHandler = (numberTypeParams: string[]): preValidationHookHandler => (req, reply, done) => {

@@ -14,7 +14,40 @@ const responseSchema = defineResponseSchema(() => ({
       type: 'object',
       properties: {
         id: {
+          type: 'string'
+        },
+        emptyNum: {
           type: 'number'
+        },
+        requiredNum: {
+          type: 'number'
+        },
+        requiredNumArr: {
+          type: 'array',
+          items: {
+            type: 'number'
+          }
+        },
+        bool: {
+          type: 'boolean'
+        },
+        optionalBool: {
+          type: 'boolean'
+        },
+        boolArray: {
+          type: 'array',
+          items: {
+            type: 'boolean'
+          }
+        },
+        optionalBoolArray: {
+          type: 'array',
+          items: {
+            type: 'boolean'
+          }
+        },
+        disable: {
+          type: 'string'
         }
       }
     }
@@ -23,14 +56,14 @@ const responseSchema = defineResponseSchema(() => ({
 
 export default defineController(
   {
-    log: (n: number) => {
+    log: (n: string) => {
       console.log(n)
       return Promise.resolve(n)
     }
   },
   ({ log }) => ({
     get: async v => {
-      return { status: 200, body: { id: await log(+(v.query?.id || 0)) } }
+      return { status: 200, body: v.query && { ...v.query, id: await log(v.query.id) } }
     },
     post: v => ({
       // @ts-expect-error

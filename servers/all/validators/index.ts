@@ -1,6 +1,7 @@
 import {
   IsNumberString,
   IsBooleanString,
+  IsBoolean,
   IsPort,
   IsInt,
   MaxLength,
@@ -16,6 +17,7 @@ export class Query {
   optionalNumArr?: Array<number>
 
   @IsOptional()
+  @IsInt()
   emptyNum?: number
 
   @IsInt({ each: true })
@@ -26,6 +28,20 @@ export class Query {
 
   @IsBooleanString()
   disable: string
+
+  @IsBoolean()
+  bool: boolean
+
+  @IsOptional()
+  @IsBoolean()
+  optionalBool?: boolean
+
+  @IsBoolean({ each: true })
+  boolArray: boolean[]
+
+  @IsOptional()
+  @IsBoolean({ each: true })
+  optionalBoolArray?: boolean[]
 }
 
 export class Body {
