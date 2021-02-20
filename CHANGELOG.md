@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.23.1](https://github.com/frouriojs/frourio/compare/v0.23.0...v0.23.1) (2021-02-20)
+
+
+### Bug Fixes
+
+* basePath of root endpoint ([d269d76](https://github.com/frouriojs/frourio/commit/d269d76f4038b382baa3ffbd815ac273b8840f33))
+
 ## [0.23.0](https://github.com/frouriojs/frourio/compare/v0.22.2...v0.23.0) (2021-02-17)
 
 
