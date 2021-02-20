@@ -145,7 +145,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   fastify.register(multipart, { attachFieldsToBody: true, limits: { fileSize: 1024 ** 3 }, ...options.multipart })
 
   fastify.get(
-    `${basePath}/`,
+    basePath || '/',
     {
       onRequest: [hooks0.onRequest, ctrlHooks0.onRequest]
     },
@@ -153,7 +153,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   )
 
   fastify.post(
-    `${basePath}/`,
+    basePath || '/',
     {
       onRequest: [hooks0.onRequest, ctrlHooks0.onRequest],
       preValidation: formatMultipartData([])

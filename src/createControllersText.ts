@@ -509,9 +509,13 @@ ${validateInfo
                 hooksTexts.length || resSchemaMethods?.includes(m.name as LowerHttpMethod)
                   ? '\n    '
                   : ''
-              }\`\${basePath}${`/${dirPath}`
-                .replace(/\/_/g, '/:')
-                .replace(/@.+?($|\/)/g, '$1')}\`,${
+              }${
+                dirPath
+                  ? `\`\${basePath}${`/${dirPath}`
+                      .replace(/\/_/g, '/:')
+                      .replace(/@.+?($|\/)/g, '$1')}\``
+                  : "basePath || '/'"
+              },${
                 hooksTexts.length || resSchemaMethods?.includes(m.name as LowerHttpMethod)
                   ? `\n    {\n      ${
                       resSchemaMethods?.includes(m.name as LowerHttpMethod)
