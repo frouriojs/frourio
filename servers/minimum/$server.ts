@@ -62,7 +62,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   const controller0 = controllerFn0(fastify)
 
   fastify.get(
-    `${basePath}/`,
+    basePath || '/',
     {
       schema: { response: responseSchema0.get }
     },

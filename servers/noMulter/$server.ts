@@ -111,7 +111,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   const controller5 = controllerFn5(fastify)
 
   fastify.get(
-    `${basePath}/`,
+    basePath || '/',
     {
       onRequest: [hooks0.onRequest, ctrlHooks0.onRequest],
       preValidation: createValidateHandler(req => [
@@ -122,7 +122,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   )
 
   fastify.post(
-    `${basePath}/`,
+    basePath || '/',
     {
       onRequest: [hooks0.onRequest, ctrlHooks0.onRequest],
       preValidation: createValidateHandler(req => [
