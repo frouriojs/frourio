@@ -11,19 +11,27 @@ import frourio from '../servers/all/$server'
 import controller from '../servers/all/api/controller'
 
 const port = 11111
+const subPort = 22222
 const baseURL = `http://localhost:${port}`
+const subBasePath = '/api'
+const subBaseURL = `http://localhost:${subPort}${subBasePath}`
 const client = api(aspida(undefined, { baseURL }))
-const fetchClient = api(aspidaFetch(undefined, { baseURL, throwHttpErrors: true }))
+const fetchClient = api(aspidaFetch(undefined, { baseURL: subBaseURL, throwHttpErrors: true }))
 let server: FastifyInstance
+let subServer: FastifyInstance
 
-beforeEach(cb => {
+beforeEach(() => {
   server = fastify()
-  return frourio(server).listen(port, cb)
+  subServer = fastify()
+  return Promise.all([
+    frourio(server).listen(port),
+    frourio(subServer, { basePath: subBasePath }).listen(subPort)
+  ])
 })
 
-afterEach(cb => {
+afterEach(() => {
   rimraf.sync('packages/frourio/servers/all/.upload')
-  server.close(cb)
+  return Promise.all([server.close(), subServer.close()])
 })
 
 test('GET: 200', () =>
