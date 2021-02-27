@@ -28,7 +28,8 @@ test('build', () => {
         input: `${input}/api`,
         baseURL: '',
         trailingSlash: false,
-        outputEachDir: false
+        outputEachDir: false,
+        outputMode: 'all'
       })
       expect(target.text).toBe(fs.readFileSync(target.filePath, 'utf8').replace(/\r/g, ''))
     })
