@@ -10,6 +10,7 @@ import {
   IsOptional,
   ArrayNotEmpty
 } from 'class-validator'
+import type { ReadStream } from 'fs'
 
 export class Query {
   requiredNum: number
@@ -48,7 +49,7 @@ export class Body {
   @IsPort()
   port: string
 
-  file: File
+  file: File | ReadStream
 }
 
 export class UserInfo {

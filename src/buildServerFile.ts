@@ -32,9 +32,9 @@ export default (input: string, project?: string) => {
         ? "\nimport multipart, { FastifyMultipartOptions, Multipart } from 'fastify-multipart'"
         : ''
     }${hasValidator ? "\nimport { validateOrReject, ValidatorOptions } from 'class-validator'" : ''}
-${
-  hasValidator ? `import * as Validators from './validators'\n` : ''
-}${imports}import type { LowerHttpMethod, AspidaMethods, HttpStatusOk, AspidaMethodParams } from 'aspida'
+${hasValidator ? "import * as Validators from './validators'\n" : ''}${imports}${
+      hasMultipart ? "import type { ReadStream } from 'fs'\n" : ''
+    }import type { LowerHttpMethod, AspidaMethods, HttpStatusOk, AspidaMethodParams } from 'aspida'
 import type { FastifyInstance, RouteHandlerMethod${
       hasNumberTypeQuery || hasBooleanTypeQuery || hasTypedParams || hasValidator || hasMultipart
         ? ', preValidationHookHandler'
@@ -76,9 +76,9 @@ ${
     ? `
 type BlobToFile<T extends AspidaMethodParams> = T['reqFormat'] extends FormData
   ? {
-      [P in keyof T['reqBody']]: Required<T['reqBody']>[P] extends Blob
+      [P in keyof T['reqBody']]: Required<T['reqBody']>[P] extends Blob | ReadStream
         ? Multipart
-        : Required<T['reqBody']>[P] extends Blob[]
+        : Required<T['reqBody']>[P] extends (Blob | ReadStream)[]
         ? Multipart[]
         : T['reqBody'][P]
     }
