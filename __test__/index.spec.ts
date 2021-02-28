@@ -136,22 +136,33 @@ test('PUT: JSON', async () => {
 test('POST: formdata', async () => {
   const port = '3000'
   const fileName = 'tsconfig.json'
-  const form = new FormData()
-  form.append('port', port)
-  form.append('file', fs.createReadStream(fileName))
-  const res = await axios.post(baseURL, form, {
-    headers: form.getHeaders(),
-    params: {
+  const res1 = await client.$post({
+    query: {
       requiredNum: 0,
       requiredNumArr: [],
-      id: 1,
-      disable: true,
+      id: '1',
+      disable: 'true',
       bool: false,
       boolArray: []
-    }
+    },
+    body: { port, file: fs.createReadStream(fileName) }
   })
-  expect(res.data.port).toBe(port)
-  expect(res.data.fileName).toBe(fileName)
+  expect(res1.port).toBe(port)
+  expect(res1.fileName).toBe(fileName)
+
+  const res2 = await fetchClient.$post({
+    query: {
+      requiredNum: 0,
+      requiredNumArr: [],
+      id: '1',
+      disable: 'true',
+      bool: false,
+      boolArray: []
+    },
+    body: { port, file: fs.createReadStream(fileName) }
+  })
+  expect(res2.port).toBe(port)
+  expect(res2.fileName).toBe(fileName)
 })
 
 test('POST: multi file upload', async () => {

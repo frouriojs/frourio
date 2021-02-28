@@ -1,6 +1,6 @@
 {
   "name": "frourio",
-  "version": "0.23.1",
+  "version": "0.24.0",
   "description": "Fast and type-safe full stack framework, for TypeScript",
   "author": "Solufa <solufa2020@gmail.com>",
   "license": "MIT",
@@ -47,8 +47,7 @@
       "plugin:@typescript-eslint/recommended",
       "plugin:jest/recommended",
       "plugin:prettier/recommended",
-      "prettier/@typescript-eslint",
-      "prettier/standard"
+      "prettier"
     ],
     "parserOptions": {
       "ecmaVersion": 2018,
@@ -84,22 +83,22 @@
     ]
   },
   "dependencies": {
-    "aspida": "^1.5.0",
+    "aspida": "^1.6.1",
     "velona": "^0.7.0"
   },
   "devDependencies": {
-    "@aspida/axios": "^1.5.0",
-    "@aspida/node-fetch": "^1.5.0",
+    "@aspida/axios": "^1.6.1",
+    "@aspida/node-fetch": "^1.6.1",
     "@types/busboy": "^0.2.3",
     "@types/jest": "^26.0.20",
     "@types/node-fetch": "^2.5.8",
     "@types/rimraf": "^3.0.0",
-    "@typescript-eslint/eslint-plugin": "^4.15.1",
-    "@typescript-eslint/parser": "^4.15.1",
+    "@typescript-eslint/eslint-plugin": "^4.15.2",
+    "@typescript-eslint/parser": "^4.15.2",
     "axios": "^0.21.1",
     "class-validator": "^0.13.1",
     "eslint": "^7.20.0",
-    "eslint-config-prettier": "^7.2.0",
+    "eslint-config-prettier": "^8.1.0",
     "eslint-config-standard": "^16.0.2",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-jest": "^24.1.5",
@@ -109,14 +108,13 @@
     "eslint-plugin-standard": "^5.0.0",
     "fastify": "^3.12.0",
     "fastify-multipart": "^4.0.0",
-    "form-data": "^4.0.0",
     "jest": "^26.6.3",
     "node-fetch": "^2.6.1",
     "prettier": "^2.2.1",
     "rimraf": "^3.0.2",
     "standard-version": "^9.1.1",
-    "ts-jest": "^26.5.1",
+    "ts-jest": "^26.5.2",
     "ts-node": "^9.1.1",
-    "typescript": "^4.1.5"
+    "typescript": "^4.2.2"
   }
 }
