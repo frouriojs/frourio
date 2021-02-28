@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.24.0](https://github.com/frouriojs/frourio/compare/v0.23.1...v0.24.0) (2021-02-28)
+
+
+### Features
+
+* support fs.ReadStream type for form-data ([508e5da](https://github.com/frouriojs/frourio/commit/508e5da1dc837af82816b595e044be425cef95d1))
+
+
+### Bug Fixes
+
+* update aspida@1.6.1 ([8557a58](https://github.com/frouriojs/frourio/commit/8557a586eb7d7ad841323750ec20a203e3ed7cdf))
+
 ### [0.23.1](https://github.com/frouriojs/frourio/compare/v0.23.0...v0.23.1) (2021-02-20)
 
 
