@@ -153,13 +153,13 @@ const createFiles = (
     ...getAdditionalResPath(input, 'hooks')
   ]
 
+  createDefaultFiles(input)
   createRelayFile(
     input,
     appText,
     [...additionalReqs, ...getAdditionalResPath(input, 'controller')],
     params
   )
-  createDefaultFiles(input)
 
   fs.readdirSync(input, { withFileTypes: true }).forEach(
     d =>

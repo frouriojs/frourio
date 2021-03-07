@@ -38,6 +38,12 @@ export default defineHooks(() => ({
 }))
 `
   )
+  rimraf.sync(dir)
+
+  fs.mkdirSync(dir)
+  fs.writeFileSync(`${dir}/$test.ts`, '// test file')
+  createDefaultFilesIfNotExists(dir)
+  expect(fs.readdirSync(dir)).toEqual(['$test.ts'])
 
   rimraf.sync(dir)
 })

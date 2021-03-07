@@ -2,9 +2,11 @@ import fs from 'fs'
 import path from 'path'
 
 export default (dir: string) => {
+  const isEmptyDir = fs.readdirSync(dir).length === 0
+
   const indexFilePath = path.join(dir, 'index.ts')
 
-  if (!fs.existsSync(indexFilePath)) {
+  if (isEmptyDir && !fs.existsSync(indexFilePath)) {
     fs.writeFileSync(
       indexFilePath,
       `export type Methods = {
@@ -19,7 +21,7 @@ export default (dir: string) => {
 
   const controllerFilePath = path.join(dir, 'controller.ts')
 
-  if (!fs.existsSync(controllerFilePath)) {
+  if (isEmptyDir && !fs.existsSync(controllerFilePath)) {
     fs.writeFileSync(
       controllerFilePath,
       `import { defineController } from './$relay'
