@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.24.1](https://github.com/frouriojs/frourio/compare/v0.24.0...v0.24.1) (2021-03-10)
+
+
+### Bug Fixes
+
+* update aspida@1.6.3 ([9ed518e](https://github.com/frouriojs/frourio/commit/9ed518eeb0ed44e282785ce2b42a4c2a1b44f738))
+
 ## [0.24.0](https://github.com/frouriojs/frourio/compare/v0.23.1...v0.24.0) (2021-02-28)
 
 
