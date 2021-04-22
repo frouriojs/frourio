@@ -1,4 +1,5 @@
 import path from 'path'
+import { addPrettierIgnore } from './addPrettierIgnore'
 import createControllersText from './createControllersText'
 
 const genHandlerText = (isAsync: boolean) => `
@@ -27,7 +28,7 @@ export default (input: string, project?: string) => {
   const hasRouteShorthandOptions = controllers.includes(' as RouteShorthandOptions,')
 
   return {
-    text: `/* eslint-disable */${
+    text: addPrettierIgnore(`/* eslint-disable */${
       hasMultipart
         ? "\nimport multipart, { FastifyMultipartAttactFieldsToBodyOptions, Multipart } from 'fastify-multipart'"
         : ''
@@ -271,7 +272,7 @@ ${
 }${controllers}
   return fastify
 }
-`,
+`),
     filePath: path.posix.join(input, '$server.ts')
   }
 }

@@ -1,8 +1,9 @@
 import path from 'path'
 import fs from 'fs'
 import ts from 'typescript'
-import { LowerHttpMethod } from 'aspida'
 import createDefaultFiles from './createDefaultFilesIfNotExists'
+import { addPrettierIgnore } from './addPrettierIgnore'
+import type { LowerHttpMethod } from 'aspida'
 
 type HooksEvent = 'onRequest' | 'preParsing' | 'preValidation' | 'preHandler'
 type Param = [string, string]
@@ -126,7 +127,7 @@ export function defineController<T extends Record<string, any>>(methods: (fastif
 
   fs.writeFileSync(
     path.join(input, '$relay.ts'),
-    text.replace(', {}', '').replace(' & {}', ''),
+    addPrettierIgnore(text.replace(', {}', '').replace(' & {}', '')),
     'utf8'
   )
 }
