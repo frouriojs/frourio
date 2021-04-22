@@ -1,4 +1,5 @@
 import path from 'path'
+import { addPrettierIgnore } from './addPrettierIgnore'
 import createControllersText from './createControllersText'
 
 const genHandlerText = (isAsync: boolean) => `
@@ -27,9 +28,9 @@ export default (input: string, project?: string) => {
   const hasRouteShorthandOptions = controllers.includes(' as RouteShorthandOptions,')
 
   return {
-    text: `/* eslint-disable */${
+    text: addPrettierIgnore(`/* eslint-disable */${
       hasMultipart
-        ? "\nimport multipart, { FastifyMultipartOptions, Multipart } from 'fastify-multipart'"
+        ? "\nimport multipart, { FastifyMultipartAttactFieldsToBodyOptions, Multipart } from 'fastify-multipart'"
         : ''
     }${hasValidator ? "\nimport { validateOrReject, ValidatorOptions } from 'class-validator'" : ''}
 ${hasValidator ? "import * as Validators from './validators'\n" : ''}${imports}${
@@ -46,7 +47,7 @@ import type { FastifyInstance, RouteHandlerMethod${
 export type FrourioOptions = {
   basePath?: string
 ${hasValidator ? '  validator?: ValidatorOptions\n' : ''}${
-      hasMultipart ? '  multipart?: FastifyMultipartOptions\n' : ''
+      hasMultipart ? '  multipart?: FastifyMultipartAttactFieldsToBodyOptions\n' : ''
     }}
 
 type HttpStatusNoOk = 301 | 302 | 400 | 401 | 402 | 403 | 404 | 405 | 406 | 409 | 500 | 501 | 502 | 503 | 504 | 505
@@ -271,7 +272,7 @@ ${
 }${controllers}
   return fastify
 }
-`,
+`),
     filePath: path.posix.join(input, '$server.ts')
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "frourio",
-  "version": "0.24.1",
+  "version": "0.25.0",
   "description": "Fast and type-safe full stack framework, for TypeScript",
   "author": "Solufa <solufa2020@gmail.com>",
   "license": "MIT",
@@ -31,7 +31,7 @@
     "release:major": "npm run release -- --release-as major",
     "release:minor": "npm run release -- --release-as minor",
     "release:patch": "npm run release -- --release-as patch",
-    "lint": "eslint --ext .js,.ts --ignore-path .gitignore .",
+    "lint": "eslint --ext .js,.ts --ignore-path .gitignore . && prettier --check \"./**/*.ts\"",
     "lint:fix": "npm run lint -- --fix",
     "test": "jest",
     "typecheck": "tsc --noEmit"
@@ -46,7 +46,6 @@
       "standard",
       "plugin:@typescript-eslint/recommended",
       "plugin:jest/recommended",
-      "plugin:prettier/recommended",
       "prettier"
     ],
     "parserOptions": {
@@ -83,38 +82,37 @@
     ]
   },
   "dependencies": {
-    "aspida": "^1.6.3",
+    "aspida": "^1.7.0",
     "velona": "^0.7.0"
   },
   "devDependencies": {
-    "@aspida/axios": "^1.6.3",
-    "@aspida/node-fetch": "^1.6.3",
+    "@aspida/axios": "^1.7.0",
+    "@aspida/node-fetch": "^1.7.0",
     "@types/busboy": "^0.2.3",
-    "@types/jest": "^26.0.20",
-    "@types/node-fetch": "^2.5.8",
+    "@types/jest": "^26.0.22",
+    "@types/node-fetch": "^2.5.10",
     "@types/rimraf": "^3.0.0",
-    "@typescript-eslint/eslint-plugin": "^4.17.0",
-    "@typescript-eslint/parser": "^4.17.0",
+    "@typescript-eslint/eslint-plugin": "^4.22.0",
+    "@typescript-eslint/parser": "^4.22.0",
     "axios": "^0.21.1",
     "class-validator": "^0.13.1",
-    "eslint": "^7.21.0",
-    "eslint-config-prettier": "^8.1.0",
+    "eslint": "^7.24.0",
+    "eslint-config-prettier": "^8.2.0",
     "eslint-config-standard": "^16.0.2",
     "eslint-plugin-import": "^2.22.1",
-    "eslint-plugin-jest": "^24.2.0",
+    "eslint-plugin-jest": "^24.3.5",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-prettier": "^3.3.1",
-    "eslint-plugin-promise": "^4.3.1",
+    "eslint-plugin-promise": "^5.1.0",
     "eslint-plugin-standard": "^5.0.0",
-    "fastify": "^3.13.0",
-    "fastify-multipart": "^4.0.0",
+    "fastify": "^3.15.0",
+    "fastify-multipart": "^4.0.5",
     "jest": "^26.6.3",
     "node-fetch": "^2.6.1",
     "prettier": "^2.2.1",
     "rimraf": "^3.0.2",
-    "standard-version": "^9.1.1",
-    "ts-jest": "^26.5.3",
+    "standard-version": "^9.2.0",
+    "ts-jest": "^26.5.5",
     "ts-node": "^9.1.1",
-    "typescript": "^4.2.3"
+    "typescript": "^4.2.4"
   }
 }
