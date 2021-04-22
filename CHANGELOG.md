@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.25.0](https://github.com/frouriojs/frourio/compare/v0.24.1...v0.25.0) (2021-04-22)
+
+
+### Features
+
+* add prettier-ignore comments ([0711e62](https://github.com/frouriojs/frourio/commit/0711e62c6f050f2a93ef07119ce478d4ba3d3e18))
+
+
+### Bug Fixes
+
+* type of fastify-multipart ([f807e09](https://github.com/frouriojs/frourio/commit/f807e09afa5c5ec5979e2ce6e37f94bcfc8cdc23))
+
 ### [0.24.1](https://github.com/frouriojs/frourio/compare/v0.24.0...v0.24.1) (2021-03-10)
 
 
