@@ -1,5 +1,5 @@
 /* eslint-disable */
-import multipart, { FastifyMultipartOptions, Multipart } from 'fastify-multipart'
+import multipart, { FastifyMultipartAttactFieldsToBodyOptions, Multipart } from 'fastify-multipart'
 import { validateOrReject, ValidatorOptions } from 'class-validator'
 import * as Validators from './validators'
 import hooksFn0 from './api/hooks'
@@ -23,7 +23,7 @@ import type { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, Fas
 export type FrourioOptions = {
   basePath?: string
   validator?: ValidatorOptions
-  multipart?: FastifyMultipartOptions
+  multipart?: FastifyMultipartAttactFieldsToBodyOptions
 }
 
 type HttpStatusNoOk = 301 | 302 | 400 | 401 | 402 | 403 | 404 | 405 | 406 | 409 | 500 | 501 | 502 | 503 | 504 | 505
