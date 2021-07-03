@@ -178,8 +178,8 @@ const parseBooleanTypeQueryParams = (booleanTypeParams: [string, boolean, boolea
 }
 
 // prettier-ignore
-const callParserIfExistsQuery = (parser: preValidationHookHandler): preValidationHookHandler => (req, reply, done) =>
-  Object.keys(req.query as any).length ? parser(req, reply, done) : done()
+const callParserIfExistsQuery = (fastify: FastifyInstance, parser: preValidationHookHandler): preValidationHookHandler => (req, reply, done) =>
+  Object.keys(req.query as any).length ? parser.bind(fastify)(req, reply, done) : done()
 
 // prettier-ignore
 const normalizeQuery: preValidationHookHandler = (req, _, done) => {
@@ -288,8 +288,8 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
       onRequest: [...hooks0.onRequest, ctrlHooks0.onRequest],
       preParsing: hooks0.preParsing,
       preValidation: [
-        callParserIfExistsQuery(parseNumberTypeQueryParams([['requiredNum', false, false], ['optionalNum', true, false], ['optionalNumArr', true, true], ['emptyNum', true, false], ['requiredNumArr', false, true]])),
-        callParserIfExistsQuery(parseBooleanTypeQueryParams([['bool', false, false], ['optionalBool', true, false], ['boolArray', false, true], ['optionalBoolArray', true, true]])),
+        callParserIfExistsQuery(fastify, parseNumberTypeQueryParams([['requiredNum', false, false], ['optionalNum', true, false], ['optionalNumArr', true, true], ['emptyNum', true, false], ['requiredNumArr', false, true]])),
+        callParserIfExistsQuery(fastify, parseBooleanTypeQueryParams([['bool', false, false], ['optionalBool', true, false], ['boolArray', false, true], ['optionalBoolArray', true, true]])),
         normalizeQuery,
         createValidateHandler(req => [
           Object.keys(req.query as any).length ? validateOrReject(Object.assign(new Validators.Query(), req.query as any), validatorOptions) : null
@@ -356,7 +356,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
     {
       onRequest: hooks0.onRequest,
       preParsing: hooks0.preParsing,
-      preValidation: callParserIfExistsQuery(parseNumberTypeQueryParams([['limit', true, false]]))
+      preValidation: callParserIfExistsQuery(fastify, parseNumberTypeQueryParams([['limit', true, false]]))
     },
     methodToHandler(controller4.get)
   )

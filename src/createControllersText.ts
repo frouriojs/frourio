@@ -421,7 +421,7 @@ export default (appDir: string, project: string) => {
                         ? query?.declarations.some(
                             d => d.getChildAt(1).kind === ts.SyntaxKind.QuestionToken
                           )
-                          ? `callParserIfExistsQuery(parseNumberTypeQueryParams([${numberTypeQueryParams.join(
+                          ? `callParserIfExistsQuery(fastify, parseNumberTypeQueryParams([${numberTypeQueryParams.join(
                               ', '
                             )}]))`
                           : `parseNumberTypeQueryParams([${numberTypeQueryParams.join(', ')}])`
@@ -430,7 +430,7 @@ export default (appDir: string, project: string) => {
                         ? query?.declarations.some(
                             d => d.getChildAt(1).kind === ts.SyntaxKind.QuestionToken
                           )
-                          ? `callParserIfExistsQuery(parseBooleanTypeQueryParams([${booleanTypeQueryParams.join(
+                          ? `callParserIfExistsQuery(fastify, parseBooleanTypeQueryParams([${booleanTypeQueryParams.join(
                               ', '
                             )}]))`
                           : `parseBooleanTypeQueryParams([${booleanTypeQueryParams.join(', ')}])`
