@@ -221,11 +221,13 @@ export default (appDir: string, project: string) => {
                         .getTypeAtLocation(node.body)
                         .getProperties()
                         .map(p => {
-                          const typeNode = checker.typeToTypeNode(
-                            checker.getTypeOfSymbolAtLocation(p, p.valueDeclaration),
-                            undefined,
-                            undefined
-                          )
+                          const typeNode =
+                            p.valueDeclaration &&
+                            checker.typeToTypeNode(
+                              checker.getTypeOfSymbolAtLocation(p, p.valueDeclaration),
+                              undefined,
+                              undefined
+                            )
 
                           return {
                             type: p.name as HooksEvent,
@@ -271,6 +273,7 @@ export default (appDir: string, project: string) => {
                       .getProperties()
                       .map(
                         t =>
+                          t.valueDeclaration &&
                           checker
                             .getSignaturesOfType(
                               checker.getTypeOfSymbolAtLocation(t, t.valueDeclaration),
@@ -278,7 +281,8 @@ export default (appDir: string, project: string) => {
                             )[0]
                             .getReturnType()
                             .getSymbol()
-                            ?.getEscapedName() === 'Promise' && t.name
+                            ?.getEscapedName() === 'Promise' &&
+                          t.name
                       )
                       .filter((n): n is string => !!n)
                 )
@@ -330,11 +334,13 @@ export default (appDir: string, project: string) => {
           ?.getReturnType()
           .getProperties()
           .map(p => {
-            const typeNode = checker.typeToTypeNode(
-              checker.getTypeOfSymbolAtLocation(p, p.valueDeclaration),
-              undefined,
-              undefined
-            )
+            const typeNode =
+              p.valueDeclaration &&
+              checker.typeToTypeNode(
+                checker.getTypeOfSymbolAtLocation(p, p.valueDeclaration),
+                undefined,
+                undefined
+              )
 
             return {
               type: p.name as HooksEvent,
@@ -364,15 +370,16 @@ export default (appDir: string, project: string) => {
         const genResSchemaText = (method: LowerHttpMethod) =>
           `schema: { response: responseSchema${controllers.filter(c => c[2]).length}.${method} }`
         const getSomeTypeQueryParams = (typeName: string, query: ts.Symbol) =>
+          query.valueDeclaration &&
           checker
             .getTypeOfSymbolAtLocation(query, query.valueDeclaration)
             .getProperties()
             .map(p => {
-              const typeString = checker.typeToString(
-                checker.getTypeOfSymbolAtLocation(p, p.valueDeclaration)
-              )
+              const typeString =
+                p.valueDeclaration &&
+                checker.typeToString(checker.getTypeOfSymbolAtLocation(p, p.valueDeclaration))
               return typeString === typeName || typeString === `${typeName}[]`
-                ? `['${p.name}', ${p.declarations.some(d =>
+                ? `['${p.name}', ${!!p.declarations?.some(d =>
                     d.getChildren().some(c => c.kind === ts.SyntaxKind.QuestionToken)
                   )}, ${typeString === `${typeName}[]`}]`
                 : null
@@ -382,7 +389,9 @@ export default (appDir: string, project: string) => {
         results.push(
           methods
             .map(m => {
-              const props = checker.getTypeOfSymbolAtLocation(m, m.valueDeclaration).getProperties()
+              const props = m.valueDeclaration
+                ? checker.getTypeOfSymbolAtLocation(m, m.valueDeclaration).getProperties()
+                : []
               const query = props.find(p => p.name === 'query')
               const numberTypeQueryParams = query && getSomeTypeQueryParams('number', query)
               const booleanTypeQueryParams = query && getSomeTypeQueryParams('boolean', query)
@@ -394,31 +403,30 @@ export default (appDir: string, project: string) => {
                 .filter((prop): prop is { name: string; val: ts.Symbol } => !!prop.val)
                 .map(({ name, val }) => ({
                   name,
-                  type: checker.getTypeOfSymbolAtLocation(val, val.valueDeclaration),
-                  hasQuestion: val.declarations.some(
+                  type:
+                    val.valueDeclaration &&
+                    checker.getTypeOfSymbolAtLocation(val, val.valueDeclaration),
+                  hasQuestion: !!val.declarations?.some(
                     d => d.getChildAt(1).kind === ts.SyntaxKind.QuestionToken
                   )
                 }))
-                .filter(({ type }) => type.isClass())
+                .filter(({ type }) => type?.isClass())
 
               const reqFormat = props.find(p => p.name === 'reqFormat')
               const isFormData =
-                (reqFormat &&
+                (reqFormat?.valueDeclaration &&
                   checker.typeToString(
                     checker.getTypeOfSymbolAtLocation(reqFormat, reqFormat.valueDeclaration)
                   )) === 'FormData'
               const reqBody = props.find(p => p.name === 'reqBody')
-              const hooksTexts = ([
-                'onRequest',
-                'preParsing',
-                'preValidation',
-                'preHandler'
-              ] as const)
+              const hooksTexts = (
+                ['onRequest', 'preParsing', 'preValidation', 'preHandler'] as const
+              )
                 .map(key => {
                   if (key === 'preValidation') {
                     const texts = [
                       numberTypeQueryParams?.length
-                        ? query?.declarations.some(
+                        ? query?.declarations?.some(
                             d => d.getChildAt(1).kind === ts.SyntaxKind.QuestionToken
                           )
                           ? `callParserIfExistsQuery(parseNumberTypeQueryParams([${numberTypeQueryParams.join(
@@ -427,7 +435,7 @@ export default (appDir: string, project: string) => {
                           : `parseNumberTypeQueryParams([${numberTypeQueryParams.join(', ')}])`
                         : '',
                       booleanTypeQueryParams?.length
-                        ? query?.declarations.some(
+                        ? query?.declarations?.some(
                             d => d.getChildAt(1).kind === ts.SyntaxKind.QuestionToken
                           )
                           ? `callParserIfExistsQuery(parseBooleanTypeQueryParams([${booleanTypeQueryParams.join(
@@ -435,19 +443,21 @@ export default (appDir: string, project: string) => {
                             )}]))`
                           : `parseBooleanTypeQueryParams([${booleanTypeQueryParams.join(', ')}])`
                         : '',
-                      isFormData && reqBody
+                      isFormData && reqBody?.valueDeclaration
                         ? `formatMultipartData([${checker
                             .getTypeOfSymbolAtLocation(reqBody, reqBody.valueDeclaration)
                             .getProperties()
                             .map(p => {
-                              const node = checker.typeToTypeNode(
-                                checker.getTypeOfSymbolAtLocation(p, p.valueDeclaration),
-                                undefined,
-                                undefined
-                              )
+                              const node =
+                                p.valueDeclaration &&
+                                checker.typeToTypeNode(
+                                  checker.getTypeOfSymbolAtLocation(p, p.valueDeclaration),
+                                  undefined,
+                                  undefined
+                                )
 
                               return node && (ts.isArrayTypeNode(node) || ts.isTupleTypeNode(node))
-                                ? `['${p.name}', ${p.declarations.some(d =>
+                                ? `['${p.name}', ${!!p.declarations?.some(d =>
                                     d
                                       .getChildren()
                                       .some(c => c.kind === ts.SyntaxKind.QuestionToken)
@@ -459,23 +469,23 @@ export default (appDir: string, project: string) => {
                         : '',
                       ...genHookTexts('preValidation'),
                       ...(query &&
-                      [
-                        ...(numberTypeQueryParams ?? []),
-                        ...(booleanTypeQueryParams ?? [])
-                      ].some(t => t?.endsWith('true]')) &&
+                      [...(numberTypeQueryParams ?? []), ...(booleanTypeQueryParams ?? [])].some(
+                        t => t?.endsWith('true]')
+                      ) &&
                       validateInfo.length
                         ? ['normalizeQuery']
                         : []),
                       validateInfo.length
                         ? `createValidateHandler(req => [
 ${validateInfo
-  .map(
-    v =>
-      `          ${
-        v.hasQuestion ? `Object.keys(req.${v.name} as any).length ? ` : ''
-      }validateOrReject(Object.assign(new Validators.${checker.typeToString(v.type)}(), req.${
-        v.name
-      } as any), validatorOptions)${v.hasQuestion ? ' : null' : ''}`
+  .map(v =>
+    v.type
+      ? `          ${
+          v.hasQuestion ? `Object.keys(req.${v.name} as any).length ? ` : ''
+        }validateOrReject(Object.assign(new Validators.${checker.typeToString(v.type)}(), req.${
+          v.name
+        } as any), validatorOptions)${v.hasQuestion ? ' : null' : ''}`
+      : ''
   )
   .join(',\n')}\n        ])`
                         : '',
