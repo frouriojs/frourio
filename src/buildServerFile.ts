@@ -185,7 +185,7 @@ const parseBooleanTypeQueryParams = (booleanTypeParams: [string, boolean, boolea
     }${
       hasOptionalQuery
         ? `
-const callParserIfExistsQuery = (parser: preValidationHookHandler): preValidationHookHandler => (req, reply, done) =>
+const callParserIfExistsQuery = (parser: OmitThisParameter<preValidationHookHandler>): preValidationHookHandler => (req, reply, done) =>
   Object.keys(req.query as any).length ? parser(req, reply, done) : done()
 `
         : ''
