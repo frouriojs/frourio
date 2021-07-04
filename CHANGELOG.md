@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### [0.25.1](https://github.com/frouriojs/frourio/compare/v0.25.0...v0.25.1) (2021-07-04)
 
+
+### Bug Fixes
+
+* preValidationHookHandler type ([941ccd3](https://github.com/frouriojs/frourio/commit/941ccd3356a40785f660535713550ca5de422da1))
+
 ## [0.25.0](https://github.com/frouriojs/frourio/compare/v0.24.1...v0.25.0) (2021-04-22)
 
 
