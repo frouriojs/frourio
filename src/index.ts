@@ -12,16 +12,17 @@ export const run = (args: string[]) => {
   })
   const dir = '.'
 
-  cleanAll(dir)
-
-  // eslint-disable-next-line no-unused-expressions
-  argv.version !== undefined
-    ? console.log(`v${require('../package.json').version}`)
-    : argv.watch !== undefined
-    ? (write(build(dir, argv.project)),
-      watch(dir, (event, file) => {
-        clean(dir, event, file)
-        write(build(dir, argv.project))
-      }))
-    : write(build(dir, argv.project))
+  if (argv.version !== undefined) {
+    console.log(`v${require('../package.json').version}`)
+  } else if (argv.watch !== undefined) {
+    cleanAll(dir)
+    write(build(dir, argv.project))
+    watch(dir, (event, file) => {
+      clean(dir, event, file)
+      write(build(dir, argv.project))
+    })
+  } else {
+    cleanAll(dir)
+    write(build(dir, argv.project))
+  }
 }
