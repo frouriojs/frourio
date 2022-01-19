@@ -3,6 +3,7 @@ import write from 'aspida/dist/writeRouteFile'
 import watch from 'aspida/dist/watchInputDir'
 import build from './buildServerFile'
 import clean from './cleanStaleRoutes'
+import cleanAll from './cleanAllStaleRoutes'
 
 export const run = (args: string[]) => {
   const argv = minimist(args, {
@@ -10,6 +11,8 @@ export const run = (args: string[]) => {
     alias: { v: 'version', w: 'watch', p: 'project' }
   })
   const dir = '.'
+
+  cleanAll(dir)
 
   // eslint-disable-next-line no-unused-expressions
   argv.version !== undefined

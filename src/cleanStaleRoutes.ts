@@ -5,7 +5,7 @@ const isManagedJSTSFile = (filepath: string): boolean => {
   return Boolean(filepath.match(/^\$.*\.[mc]?[jt]s$/))
 }
 
-const isStale = (routeDir: string): boolean => {
+export const isStaleRouteDir = (routeDir: string): boolean => {
   try {
     const entries = fs.readdirSync(routeDir, { withFileTypes: true })
     if (entries.length === 0) return false
@@ -19,7 +19,7 @@ const isStale = (routeDir: string): boolean => {
   }
 }
 
-const cleanStaleRouteDir = (routeDir: string) => {
+export const cleanStaleRouteDir = (routeDir: string) => {
   try {
     const entries = fs.readdirSync(routeDir, { withFileTypes: true })
     if (entries.length === 0) return
@@ -36,7 +36,7 @@ export default (dir: string, event: string, file: string): void => {
   if (event !== 'unlink' && event !== 'unlinkDir') return
   const routeDir = path.dirname(path.resolve(dir, file))
 
-  if (isStale(routeDir)) {
+  if (isStaleRouteDir(routeDir)) {
     cleanStaleRouteDir(routeDir)
   }
 }
