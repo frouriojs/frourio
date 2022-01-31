@@ -482,9 +482,9 @@ ${validateInfo
     v.type
       ? `          ${
           v.hasQuestion ? `Object.keys(req.${v.name} as any).length ? ` : ''
-        }validateOrReject(Object.assign(new Validators.${checker.typeToString(v.type)}(), req.${
+        }validateOrReject(plainToInstance(Validators.${checker.typeToString(v.type)}, req.${
           v.name
-        } as any), validatorOptions)${v.hasQuestion ? ' : null' : ''}`
+        } as any, transformerOptions), validatorOptions)${v.hasQuestion ? ' : null' : ''}`
       : ''
   )
   .join(',\n')}\n        ])`

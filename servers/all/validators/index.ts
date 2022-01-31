@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer'
 import {
   IsNumberString,
   IsBooleanString,
@@ -8,7 +9,10 @@ import {
   IsString,
   Allow,
   IsOptional,
-  ArrayNotEmpty
+  ArrayNotEmpty,
+  IsISO31661Alpha2,
+  ValidateNested,
+  IsObject
 } from 'class-validator'
 import type { ReadStream } from 'fs'
 
@@ -52,12 +56,27 @@ export class Body {
   file: File | ReadStream
 }
 
+export class UserInfoLocation {
+  @IsISO31661Alpha2()
+  country: string
+
+  @IsString()
+  stateProvince: string
+}
+
 export class UserInfo {
   @IsInt()
   id: number
 
   @MaxLength(20)
   name: string
+
+  // @Type decorator is required to validate nested object properly
+  // @IsObject decorator is required or class-validator will not throw an error when the property is missing
+  @ValidateNested()
+  @IsObject()
+  @Type(() => UserInfoLocation)
+  location: UserInfoLocation
 }
 
 export class MultiForm {

@@ -29,10 +29,16 @@ export default (input: string, project?: string) => {
 
   return {
     text: addPrettierIgnore(`/* eslint-disable */${
+      hasValidator
+        ? "\nimport 'reflect-metadata'" +
+          "\nimport { ClassTransformOptions, plainToInstance } from 'class-transformer'" +
+          "\nimport { validateOrReject, ValidatorOptions } from 'class-validator'"
+        : ''
+    }${
       hasMultipart
         ? "\nimport multipart, { FastifyMultipartAttactFieldsToBodyOptions, Multipart } from 'fastify-multipart'"
         : ''
-    }${hasValidator ? "\nimport { validateOrReject, ValidatorOptions } from 'class-validator'" : ''}
+    }
 ${hasValidator ? "import * as Validators from './validators'\n" : ''}${imports}${
       hasMultipart ? "import type { ReadStream } from 'fs'\n" : ''
     }import type { LowerHttpMethod, AspidaMethods, HttpStatusOk, AspidaMethodParams } from 'aspida'
@@ -46,7 +52,7 @@ import type { FastifyInstance, RouteHandlerMethod${
 
 export type FrourioOptions = {
   basePath?: string
-${hasValidator ? '  validator?: ValidatorOptions\n' : ''}${
+${hasValidator ? '  transformer?: ClassTransformOptions\n  validator?: ValidatorOptions\n' : ''}${
       hasMultipart ? '  multipart?: FastifyMultipartAttactFieldsToBodyOptions\n' : ''
     }}
 
@@ -262,7 +268,8 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   const basePath = options.basePath ?? ''
 ${
   hasValidator
-    ? '  const validatorOptions: ValidatorOptions = { validationError: { target: false }, ...options.validator }\n'
+    ? '  const transformerOptions: ClassTransformOptions = { enableCircularCheck: true, ...options.transformer }\n' +
+      '  const validatorOptions: ValidatorOptions = { validationError: { target: false }, ...options.validator }\n'
     : ''
 }${consts}
 ${
