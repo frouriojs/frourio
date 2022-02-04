@@ -1,6 +1,7 @@
 import path from 'path'
 import { addPrettierIgnore } from './addPrettierIgnore'
 import createControllersText from './createControllersText'
+import checkRequisites from './checkRequisites'
 
 const genHandlerText = (isAsync: boolean) => `
 const ${isAsync ? 'asyncM' : 'm'}ethodToHandler = (
@@ -26,6 +27,8 @@ export default (input: string, project?: string) => {
   const hasMethodToHandler = controllers.includes(' methodToHandler(')
   const hasAsyncMethodToHandler = controllers.includes(' asyncMethodToHandler(')
   const hasRouteShorthandOptions = controllers.includes(' as RouteShorthandOptions,')
+
+  checkRequisites({ hasValidator })
 
   return {
     text: addPrettierIgnore(`/* eslint-disable */${
