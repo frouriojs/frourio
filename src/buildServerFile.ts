@@ -34,8 +34,8 @@ export default (input: string, project?: string) => {
     text: addPrettierIgnore(`/* eslint-disable */${
       hasValidator
         ? "\nimport 'reflect-metadata'" +
-          "\nimport { ClassTransformOptions, plainToInstance } from 'class-transformer'" +
-          "\nimport { validateOrReject, ValidatorOptions } from 'class-validator'"
+          "\nimport { ClassTransformOptions, plainToInstance as defaultPlainToInstance } from 'class-transformer'" +
+          "\nimport { validateOrReject as defaultValidateOrReject, ValidatorOptions } from 'class-validator'"
         : ''
     }${
       hasMultipart
@@ -55,9 +55,14 @@ import type { FastifyInstance, RouteHandlerMethod${
 
 export type FrourioOptions = {
   basePath?: string
-${hasValidator ? '  transformer?: ClassTransformOptions\n  validator?: ValidatorOptions\n' : ''}${
-      hasMultipart ? '  multipart?: FastifyMultipartAttactFieldsToBodyOptions\n' : ''
-    }}
+${
+  hasValidator
+    ? '  transformer?: ClassTransformOptions\n' +
+      '  validator?: ValidatorOptions\n' +
+      '  plainToInstance?: (cls: new (...args: any[]) => object, object: unknown, options: ClassTransformOptions) => object\n' +
+      '  validateOrReject?: (instance: object, options: ValidatorOptions) => Promise<void>\n'
+    : ''
+}${hasMultipart ? '  multipart?: FastifyMultipartAttactFieldsToBodyOptions\n' : ''}}
 
 type HttpStatusNoOk = 301 | 302 | 400 | 401 | 402 | 403 | 404 | 405 | 406 | 409 | 500 | 501 | 502 | 503 | 504 | 505
 
@@ -272,7 +277,8 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
 ${
   hasValidator
     ? '  const transformerOptions: ClassTransformOptions = { enableCircularCheck: true, ...options.transformer }\n' +
-      '  const validatorOptions: ValidatorOptions = { validationError: { target: false }, ...options.validator }\n'
+      '  const validatorOptions: ValidatorOptions = { validationError: { target: false }, ...options.validator }\n' +
+      '  const { plainToInstance = defaultPlainToInstance as NonNullable<FrourioOptions["plainToInstance"]>, validateOrReject = defaultValidateOrReject as NonNullable<FrourioOptions["validateOrReject"]> } = options\n'
     : ''
 }${consts}
 ${

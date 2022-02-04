@@ -2,9 +2,9 @@
 // prettier-ignore
 import 'reflect-metadata'
 // prettier-ignore
-import { ClassTransformOptions, plainToInstance } from 'class-transformer'
+import { ClassTransformOptions, plainToInstance as defaultPlainToInstance } from 'class-transformer'
 // prettier-ignore
-import { validateOrReject, ValidatorOptions } from 'class-validator'
+import { validateOrReject as defaultValidateOrReject, ValidatorOptions } from 'class-validator'
 // prettier-ignore
 import * as Validators from './validators'
 // prettier-ignore
@@ -33,6 +33,8 @@ export type FrourioOptions = {
   basePath?: string
   transformer?: ClassTransformOptions
   validator?: ValidatorOptions
+  plainToInstance?: (cls: new (...args: any[]) => object, object: unknown, options: ClassTransformOptions) => object
+  validateOrReject?: (instance: object, options: ValidatorOptions) => Promise<void>
 }
 
 // prettier-ignore
@@ -129,6 +131,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   const basePath = options.basePath ?? ''
   const transformerOptions: ClassTransformOptions = { enableCircularCheck: true, ...options.transformer }
   const validatorOptions: ValidatorOptions = { validationError: { target: false }, ...options.validator }
+  const { plainToInstance = defaultPlainToInstance as NonNullable<FrourioOptions["plainToInstance"]>, validateOrReject = defaultValidateOrReject as NonNullable<FrourioOptions["validateOrReject"]> } = options
   const hooks0 = hooksFn0(fastify)
   const hooks1 = hooksFn1(fastify)
   const ctrlHooks0 = ctrlHooksFn0(fastify)

@@ -4,6 +4,8 @@ import rimraf from 'rimraf'
 import fastify, { FastifyInstance } from 'fastify'
 import FormData from 'form-data'
 import axios from 'axios'
+import { plainToInstance } from 'class-transformer'
+import { validateOrReject } from 'class-validator'
 import aspida from '@aspida/axios'
 import aspidaFetch from '@aspida/node-fetch'
 import api from '../servers/all/api/$api'
@@ -19,13 +21,27 @@ const client = api(aspida(undefined, { baseURL }))
 const fetchClient = api(aspidaFetch(undefined, { baseURL: subBaseURL, throwHttpErrors: true }))
 let server: FastifyInstance
 let subServer: FastifyInstance
+let subServerPlainToInstanceCallCount = 0
+let subServerValidateOrRejectCallCount = 0
 
 beforeEach(() => {
   server = fastify()
   subServer = fastify()
+  subServerPlainToInstanceCallCount = 0
+  subServerValidateOrRejectCallCount = 0
   return Promise.all([
     frourio(server).listen(port),
-    frourio(subServer, { basePath: subBasePath }).listen(subPort)
+    frourio(subServer, {
+      basePath: subBasePath,
+      plainToInstance: (cls, object, options): object => {
+        subServerPlainToInstanceCallCount++
+        return plainToInstance(cls, object, options)
+      },
+      validateOrReject: (instance, options): Promise<void> => {
+        subServerValidateOrRejectCallCount++
+        return validateOrReject(instance, options)
+      }
+    }).listen(subPort)
   ])
 })
 
@@ -134,6 +150,9 @@ test('PUT: JSON', async () => {
 })
 
 test('POST: formdata', async () => {
+  expect(subServerPlainToInstanceCallCount).toBe(0)
+  expect(subServerValidateOrRejectCallCount).toBe(0)
+
   const port = '3000'
   const fileName = 'tsconfig.json'
   const res1 = await client.$post({
@@ -150,6 +169,9 @@ test('POST: formdata', async () => {
   expect(res1.port).toBe(port)
   expect(res1.fileName).toBe(fileName)
 
+  expect(subServerPlainToInstanceCallCount).toBe(0)
+  expect(subServerValidateOrRejectCallCount).toBe(0)
+
   const res2 = await fetchClient.$post({
     query: {
       requiredNum: 0,
@@ -163,6 +185,10 @@ test('POST: formdata', async () => {
   })
   expect(res2.port).toBe(port)
   expect(res2.fileName).toBe(fileName)
+
+  // 2 = query + body
+  expect(subServerPlainToInstanceCallCount).toBe(2)
+  expect(subServerValidateOrRejectCallCount).toBe(2)
 })
 
 test('POST: multi file upload', async () => {
