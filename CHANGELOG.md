@@ -2,7 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.26.0](https://github.com/frouriojs/frourio/compare/v0.25.1...v0.26.0) (2022-02-07)
+
+### Features
+
+* **validation:** use class-transformer to support validation of nested objects ([7c19ac5](https://github.com/frouriojs/frourio/commit/7c19ac5363305b81b1c6b5232620228763d427af))
+* prevent removing api/ folder iself even if there's no route ([0f89a89](https://github.com/frouriojs/frourio/commit/0f89a8985931b62ad4d71b4579aacc6aca2d7455))
+* remove all stale route dirs at start up moment ([1d9aced](https://github.com/frouriojs/frourio/commit/1d9aced1fdff59ae726809a9233067e7284448de))
+* remove managed files when the routed path is removed ([42227d6](https://github.com/frouriojs/frourio/commit/42227d6f7cc643a3c493fe0f0076c481451a2ebe))
+
 ### [0.25.1](https://github.com/frouriojs/frourio/compare/v0.25.0...v0.25.1) (2021-07-04)
+
+
+### Bug Fixes
+
+* preValidationHookHandler type ([941ccd3](https://github.com/frouriojs/frourio/commit/941ccd3356a40785f660535713550ca5de422da1))
 
 ## [0.25.0](https://github.com/frouriojs/frourio/compare/v0.24.1...v0.25.0) (2021-04-22)
 

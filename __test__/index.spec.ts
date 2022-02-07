@@ -204,6 +204,89 @@ test('POST: 400', async () => {
   ).rejects.toHaveProperty('response.status', 400)
 })
 
+test('POST: nested validation', async () => {
+  const res1 = await client.users.post({
+    body: {
+      id: 123,
+      name: 'foo',
+      location: {
+        country: 'JP',
+        stateProvince: 'Tokyo'
+      }
+    }
+  })
+  expect(res1.status).toBe(204)
+
+  // Note that extraneous properties are allowed by default
+  const res2 = await client.users.post({
+    body: {
+      id: 123,
+      name: 'foo',
+      location: {
+        country: 'JP',
+        stateProvince: 'Tokyo',
+        extra1: {
+          extra1a: 'bar',
+          extra1b: 'baz'
+        }
+      },
+      extra2: 'qux'
+    } as any
+  })
+  expect(res2.status).toBe(204)
+})
+
+test('POST: 400 (nested validation)', async () => {
+  // id is not a number
+  await expect(
+    client.users.post({
+      body: {
+        id: '123',
+        name: 'foo',
+        location: {
+          country: 'JP',
+          stateProvince: 'Tokyo'
+        }
+      } as any
+    })
+  ).rejects.toHaveProperty('response.status', 400)
+
+  // location is missing
+  await expect(
+    client.users.post({
+      body: { id: 123, name: 'foo' } as any
+    })
+  ).rejects.toHaveProperty('response.status', 400)
+
+  // country is not a valid 2-letter country code
+  await expect(
+    client.users.post({
+      body: {
+        id: 123,
+        name: 'foo',
+        location: {
+          country: 'XX',
+          stateProvince: 'Tokyo'
+        }
+      } as any
+    })
+  ).rejects.toHaveProperty('response.status', 400)
+
+  // stateProvince is not a string
+  await expect(
+    client.users.post({
+      body: {
+        id: 123,
+        name: 'foo',
+        location: {
+          country: 'JP',
+          stateProvince: 1234
+        }
+      } as any
+    })
+  ).rejects.toHaveProperty('response.status', 400)
+})
+
 test('controller dependency injection', async () => {
   let val = 0
   const id = '5'
