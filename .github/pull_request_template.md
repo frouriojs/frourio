@@ -1,6 +1,6 @@
 <!--
 
-Thank you for your contirubtion! 👍
+Thank you for your contriubtion! 👍
 
 -->
 
@@ -25,4 +25,4 @@ Thank you for your contirubtion! 👍
 
 <!-- Please keep this section. -->
 
-Please upvode with reacting as :+1: to express your agreement.
+Please upvote with reacting as :+1: to express your agreement.
