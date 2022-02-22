@@ -1,6 +1,6 @@
 <!--
 
-Thank you for your contriubtion! 👍
+Thank you for your contribution! 👍
 
 -->
 
