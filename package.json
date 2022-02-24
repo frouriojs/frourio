@@ -78,12 +78,12 @@
     ]
   },
   "dependencies": {
-    "aspida": "^1.7.1",
+    "aspida": "^1.8.0",
     "velona": "^0.7.0"
   },
   "devDependencies": {
-    "@aspida/axios": "^1.7.1",
-    "@aspida/node-fetch": "^1.7.1",
+    "@aspida/axios": "^1.8.0",
+    "@aspida/node-fetch": "^1.8.0",
     "@types/busboy": "^0.2.3",
     "@types/jest": "^26.0.23",
     "@types/node-fetch": "^2.5.10",

@@ -1,18 +1,20 @@
 /* eslint-disable */
 // prettier-ignore
-import { AspidaClient, BasicHeaders, dataToURLString } from 'aspida'
+import type { AspidaClient, BasicHeaders } from 'aspida'
 // prettier-ignore
-import { Methods as Methods0 } from '.'
+import { dataToURLString } from 'aspida'
 // prettier-ignore
-import { Methods as Methods1 } from './empty/noEmpty'
+import type { Methods as Methods0 } from '.'
 // prettier-ignore
-import { Methods as Methods2 } from './texts'
+import type { Methods as Methods1 } from './empty/noEmpty'
 // prettier-ignore
-import { Methods as Methods3 } from './texts/sample'
+import type { Methods as Methods2 } from './texts'
 // prettier-ignore
-import { Methods as Methods4 } from './users'
+import type { Methods as Methods3 } from './texts/sample'
 // prettier-ignore
-import { Methods as Methods5 } from './users/_userId@number'
+import type { Methods as Methods4 } from './users'
+// prettier-ignore
+import type { Methods as Methods5 } from './users/_userId@number'
 
 // prettier-ignore
 const api = <T>({ baseURL, fetch }: AspidaClient<T>) => {
