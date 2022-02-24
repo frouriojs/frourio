@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.27.0](https://github.com/aspida/aspida/compare/v0.26.0...v0.27.0) (2022-02-24)
+
+
+### Features
+
+* use type-only imports for types (https://github.com/frouriojs/frourio/pull/213)
+
 ## [0.26.0](https://github.com/frouriojs/frourio/compare/v0.25.1...v0.26.0) (2022-02-07)
 
 ### Features
