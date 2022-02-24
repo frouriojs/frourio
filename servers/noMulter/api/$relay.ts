@@ -1,6 +1,8 @@
 /* eslint-disable */
 // prettier-ignore
-import { Injectable, depend } from 'velona'
+import type { Injectable } from 'velona'
+// prettier-ignore
+import { depend } from 'velona'
 // prettier-ignore
 import type { FastifyInstance, onRequestHookHandler, preParsingHookHandler, preValidationHookHandler, preHandlerHookHandler } from 'fastify'
 // prettier-ignore

@@ -12,3 +12,6 @@ jobs:
       - uses: release-drafter/release-drafter@v5
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
+        with:
+          disable-releaser: false
+          disable-autolabeler: true
