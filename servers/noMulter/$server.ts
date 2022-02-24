@@ -2,9 +2,13 @@
 // prettier-ignore
 import 'reflect-metadata'
 // prettier-ignore
-import { ClassTransformOptions, plainToInstance } from 'class-transformer'
+import type { ClassTransformOptions } from 'class-transformer'
 // prettier-ignore
-import { validateOrReject, ValidatorOptions } from 'class-validator'
+import { plainToInstance } from 'class-transformer'
+// prettier-ignore
+import type { ValidatorOptions } from 'class-validator'
+// prettier-ignore
+import { validateOrReject } from 'class-validator'
 // prettier-ignore
 import * as Validators from './validators'
 // prettier-ignore

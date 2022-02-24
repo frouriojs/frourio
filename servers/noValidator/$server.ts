@@ -1,6 +1,8 @@
 /* eslint-disable */
 // prettier-ignore
-import multipart, { FastifyMultipartAttactFieldsToBodyOptions, Multipart } from 'fastify-multipart'
+import type { FastifyMultipartAttactFieldsToBodyOptions, Multipart } from 'fastify-multipart'
+// prettier-ignore
+import multipart from 'fastify-multipart'
 // prettier-ignore
 import hooksFn0 from './api/hooks'
 // prettier-ignore
