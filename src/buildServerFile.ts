@@ -30,24 +30,41 @@ export default (input: string, project?: string) => {
 
   checkRequisites({ hasValidator })
 
+  const headIpmorts: string[] = []
+
+  if (hasValidator) {
+    headIpmorts.push(
+      "import 'reflect-metadata'",
+      "import type { ClassTransformOptions } from 'class-transformer'",
+      "import { plainToInstance } from 'class-transformer'",
+      "import type { ValidatorOptions } from 'class-validator'",
+      "import { validateOrReject } from 'class-validator'"
+    )
+  }
+
+  if (hasMultipart) {
+    headIpmorts.push(
+      "import type { FastifyMultipartAttactFieldsToBodyOptions, Multipart } from 'fastify-multipart'"
+    )
+    headIpmorts.push("import multipart from 'fastify-multipart'")
+  }
+
+  if (hasValidator) {
+    headIpmorts.push("import * as Validators from './validators'")
+  }
+
+  if (hasMultipart) {
+    headIpmorts.push("import type { ReadStream } from 'fs'")
+  }
+
+  headIpmorts.push(
+    "import type { LowerHttpMethod, AspidaMethods, HttpStatusOk, AspidaMethodParams } from 'aspida'"
+  )
+
   return {
-    text: addPrettierIgnore(`/* eslint-disable */${
-      hasValidator
-        ? "\nimport 'reflect-metadata'" +
-          "\nimport type { ClassTransformOptions } from 'class-transformer'" +
-          "\nimport { plainToInstance } from 'class-transformer'" +
-          "\nimport type { ValidatorOptions } from 'class-validator'" +
-          "\nimport { validateOrReject } from 'class-validator'"
-        : ''
-    }${
-      hasMultipart
-        ? "\nimport type { FastifyMultipartAttactFieldsToBodyOptions, Multipart } from 'fastify-multipart'" +
-          "\nimport multipart from 'fastify-multipart'"
-        : ''
-    }
-${hasValidator ? "import * as Validators from './validators'\n" : ''}${imports}${
-      hasMultipart ? "import type { ReadStream } from 'fs'\n" : ''
-    }import type { LowerHttpMethod, AspidaMethods, HttpStatusOk, AspidaMethodParams } from 'aspida'
+    text: addPrettierIgnore(`/* eslint-disable */
+${headIpmorts.join('\n')}
+${imports}
 import type { FastifyInstance, RouteHandlerMethod${
       hasNumberTypeQuery || hasBooleanTypeQuery || hasTypedParams || hasValidator || hasMultipart
         ? ', preValidationHookHandler'

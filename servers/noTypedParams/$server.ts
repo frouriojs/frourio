@@ -16,6 +16,10 @@ import multipart from 'fastify-multipart'
 // prettier-ignore
 import * as Validators from './validators'
 // prettier-ignore
+import type { ReadStream } from 'fs'
+// prettier-ignore
+import type { LowerHttpMethod, AspidaMethods, HttpStatusOk, AspidaMethodParams } from 'aspida'
+// prettier-ignore
 import hooksFn0 from './api/hooks'
 // prettier-ignore
 import hooksFn1 from './api/users/hooks'
@@ -31,10 +35,7 @@ import controllerFn3 from './api/texts/controller'
 import controllerFn4 from './api/texts/sample/controller'
 // prettier-ignore
 import controllerFn5, { hooks as ctrlHooksFn1 } from './api/users/controller'
-// prettier-ignore
-import type { ReadStream } from 'fs'
-// prettier-ignore
-import type { LowerHttpMethod, AspidaMethods, HttpStatusOk, AspidaMethodParams } from 'aspida'
+
 // prettier-ignore
 import type { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, FastifyRequest, RouteShorthandOptions } from 'fastify'
 

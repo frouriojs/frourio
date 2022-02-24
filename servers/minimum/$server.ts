@@ -1,8 +1,9 @@
 /* eslint-disable */
 // prettier-ignore
-import controllerFn0, { responseSchema as responseSchemaFn0 } from './api/controller'
-// prettier-ignore
 import type { LowerHttpMethod, AspidaMethods, HttpStatusOk, AspidaMethodParams } from 'aspida'
+// prettier-ignore
+import controllerFn0, { responseSchema as responseSchemaFn0 } from './api/controller'
+
 // prettier-ignore
 import type { FastifyInstance, RouteHandlerMethod } from 'fastify'
 
