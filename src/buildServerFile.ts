@@ -1,5 +1,4 @@
 import path from 'path'
-import { addPrettierIgnore } from './addPrettierIgnore'
 import createControllersText from './createControllersText'
 import checkRequisites from './checkRequisites'
 
@@ -62,8 +61,7 @@ export default (input: string, project?: string) => {
   )
 
   return {
-    text: addPrettierIgnore(`/* eslint-disable */
-${headIpmorts.join('\n')}
+    text: `${headIpmorts.join('\n')}
 ${imports}
 import type { FastifyInstance, RouteHandlerMethod${
       hasNumberTypeQuery || hasBooleanTypeQuery || hasTypedParams || hasValidator || hasMultipart
@@ -302,7 +300,7 @@ ${
 }${controllers}
   return fastify
 }
-`),
+`,
     filePath: path.posix.join(input, '$server.ts')
   }
 }

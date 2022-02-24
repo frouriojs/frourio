@@ -1,59 +1,37 @@
-/* eslint-disable */
-// prettier-ignore
 import 'reflect-metadata'
-// prettier-ignore
 import type { ClassTransformOptions } from 'class-transformer'
-// prettier-ignore
 import { plainToInstance } from 'class-transformer'
-// prettier-ignore
 import type { ValidatorOptions } from 'class-validator'
-// prettier-ignore
 import { validateOrReject } from 'class-validator'
-// prettier-ignore
 import * as Validators from './validators'
-// prettier-ignore
 import type { LowerHttpMethod, AspidaMethods, HttpStatusOk, AspidaMethodParams } from 'aspida'
-// prettier-ignore
 import hooksFn0 from './api/hooks'
-// prettier-ignore
 import hooksFn1 from './api/users/hooks'
-// prettier-ignore
 import controllerFn0, { hooks as ctrlHooksFn0 } from './api/controller'
-// prettier-ignore
 import controllerFn1 from './api/empty/noEmpty/controller'
-// prettier-ignore
 import controllerFn2 from './api/texts/controller'
-// prettier-ignore
 import controllerFn3 from './api/texts/sample/controller'
-// prettier-ignore
 import controllerFn4, { hooks as ctrlHooksFn1 } from './api/users/controller'
-// prettier-ignore
 import controllerFn5 from './api/users/_userId@number/controller'
 
-// prettier-ignore
 import type { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, FastifyRequest, RouteShorthandOptions } from 'fastify'
 
-// prettier-ignore
 export type FrourioOptions = {
   basePath?: string
   transformer?: ClassTransformOptions
   validator?: ValidatorOptions
 }
 
-// prettier-ignore
 type HttpStatusNoOk = 301 | 302 | 400 | 401 | 402 | 403 | 404 | 405 | 406 | 409 | 500 | 501 | 502 | 503 | 504 | 505
 
-// prettier-ignore
 type PartiallyPartial<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>
 
-// prettier-ignore
 type BaseResponse<T, U, V> = {
   status: V extends number ? V : HttpStatusOk
   body: T
   headers: U
 }
 
-// prettier-ignore
 type ServerResponse<K extends AspidaMethodParams> =
   | (K extends { resBody: K['resBody']; resHeaders: K['resHeaders'] }
   ? BaseResponse<K['resBody'], K['resHeaders'], K['status']>
@@ -67,7 +45,6 @@ type ServerResponse<K extends AspidaMethodParams> =
     >)
   | PartiallyPartial<BaseResponse<any, any, HttpStatusNoOk>, 'body' | 'headers'>
 
-// prettier-ignore
 type RequestParams<T extends AspidaMethodParams> = Pick<{
   query: T['query']
   body: T['reqBody']
@@ -78,14 +55,12 @@ type RequestParams<T extends AspidaMethodParams> = Pick<{
   headers: Required<T>['reqHeaders'] extends {} | null ? 'headers' : never
 }['query' | 'body' | 'headers']>
 
-// prettier-ignore
 export type ServerMethods<T extends AspidaMethods, U extends Record<string, any> = {}> = {
   [K in keyof T]: (
     req: RequestParams<T[K]> & U
   ) => ServerResponse<T[K]> | Promise<ServerResponse<T[K]>>
 }
 
-// prettier-ignore
 const createTypedParamsHandler = (numberTypeParams: string[]): preValidationHookHandler => (req, reply, done) => {
   const params = req.params as Record<string, string | number>
 
@@ -103,11 +78,9 @@ const createTypedParamsHandler = (numberTypeParams: string[]): preValidationHook
   done()
 }
 
-// prettier-ignore
 const createValidateHandler = (validators: (req: FastifyRequest) => (Promise<void> | null)[]): preValidationHookHandler =>
   (req, reply) => Promise.all(validators(req)).catch(err => reply.code(400).send(err))
 
-// prettier-ignore
 const methodToHandler = (
   methodCallback: ServerMethods<any, any>[LowerHttpMethod]
 ): RouteHandlerMethod => (req, reply) => {
@@ -118,7 +91,6 @@ const methodToHandler = (
   reply.code(data.status).send(data.body)
 }
 
-// prettier-ignore
 const asyncMethodToHandler = (
   methodCallback: ServerMethods<any, any>[LowerHttpMethod]
 ): RouteHandlerMethod => async (req, reply) => {
@@ -129,7 +101,6 @@ const asyncMethodToHandler = (
   reply.code(data.status).send(data.body)
 }
 
-// prettier-ignore
 export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   const basePath = options.basePath ?? ''
   const transformerOptions: ClassTransformOptions = { enableCircularCheck: true, ...options.transformer }
