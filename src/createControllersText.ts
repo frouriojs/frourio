@@ -58,7 +58,8 @@ const createRelayFile = (
   const hasAdditionals = !!additionalReqs.length
   const hasMultiAdditionals = additionalReqs.length > 1
   const text = `/* eslint-disable */
-import { Injectable, depend } from 'velona'
+import type { Injectable } from 'velona'
+import { depend } from 'velona'
 import type { FastifyInstance, onRequestHookHandler, preParsingHookHandler, preValidationHookHandler, preHandlerHookHandler } from 'fastify'
 import type { Schema } from 'fast-json-stringify'
 import type { HttpStatusOk } from 'aspida'

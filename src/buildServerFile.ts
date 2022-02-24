@@ -34,12 +34,15 @@ export default (input: string, project?: string) => {
     text: addPrettierIgnore(`/* eslint-disable */${
       hasValidator
         ? "\nimport 'reflect-metadata'" +
-          "\nimport { ClassTransformOptions, plainToInstance } from 'class-transformer'" +
-          "\nimport { validateOrReject, ValidatorOptions } from 'class-validator'"
+          "\nimport type { ClassTransformOptions } from 'class-transformer'" +
+          "\nimport { plainToInstance } from 'class-transformer'" +
+          "\nimport type { ValidatorOptions } from 'class-validator'" +
+          "\nimport { validateOrReject } from 'class-validator'"
         : ''
     }${
       hasMultipart
-        ? "\nimport multipart, { FastifyMultipartAttactFieldsToBodyOptions, Multipart } from 'fastify-multipart'"
+        ? "\nimport type { FastifyMultipartAttactFieldsToBodyOptions, Multipart } from 'fastify-multipart'" +
+          "\nimport multipart from 'fastify-multipart'"
         : ''
     }
 ${hasValidator ? "import * as Validators from './validators'\n" : ''}${imports}${
