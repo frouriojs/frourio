@@ -14,5 +14,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          disable-releaser: false
-          disable-autolabeler: true
+          disable-releaser: true
+          disable-autolabeler: false

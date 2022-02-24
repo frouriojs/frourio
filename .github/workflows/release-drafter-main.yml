@@ -13,5 +13,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
         with:
-          disable-releaser: true
-          disable-autolabeler: false
+          disable-releaser: false
+          disable-autolabeler: true
