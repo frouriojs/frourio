@@ -13,3 +13,6 @@ jobs:
       - uses: release-drafter/release-drafter@v5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          disable-releaser: false
+          disable-autolabeler: true
