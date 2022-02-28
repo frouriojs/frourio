@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.27.1](https://github.com/frouriojs/frourio/compare/v0.27.0...v0.27.1) (2022-02-28)
+
+
+### Bug Fixes
+
+* **frourio-express**: fix type-imports forgotten (https://github.com/frouriojs/frourio-express/pull/79)
+
+
 ## [0.27.0](https://github.com/frouriojs/frourio/compare/v0.26.0...v0.27.0) (2022-02-24)
 
 
