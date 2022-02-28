@@ -9,7 +9,7 @@
     <img src="https://img.shields.io/npm/dm/frourio" alt="npm download" />
   </a>
   <a href="https://github.com/frouriojs/frourio/actions?query=workflow%3A%22Node.js+CI%22">
-    <img src="https://github.com/frouriojs/frourio/workflows/Node.js%20CI/badge.svg?branch=master" alt="Node.js CI" />
+    <img src="https://github.com/frouriojs/frourio/workflows/Node.js%20CI/badge.svg?branch=main" alt="Node.js CI" />
   </a>
   <a href="https://codecov.io/gh/frouriojs/frourio">
     <img src="https://img.shields.io/codecov/c/github/frouriojs/frourio.svg" alt="Codecov" />
@@ -52,4 +52,4 @@ https://frourio.com/docs
 
 ## License
 
-Frourio is licensed under a [MIT License](https://github.com/frouriojs/frourio/blob/master/LICENSE).
+Frourio is licensed under a [MIT License](./LICENSE).
