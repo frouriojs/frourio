@@ -47,7 +47,7 @@ Frourio is a framework for developing web apps quickly and safely in **"One Type
 
 ## Documents
 
-https://frourio.io/docs
+https://frourio.com/docs
 
 
 ## License
