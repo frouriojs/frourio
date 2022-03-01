@@ -85,7 +85,7 @@
     "@aspida/axios": "^1.8.0",
     "@aspida/node-fetch": "^1.8.0",
     "@types/busboy": "^0.2.3",
-    "@types/jest": "^26.0.23",
+    "@types/jest": "^27.4.1",
     "@types/node-fetch": "^2.5.10",
     "@types/rimraf": "^3.0.2",
     "@typescript-eslint/eslint-plugin": "^4.28.1",
