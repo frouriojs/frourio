@@ -1,8 +1,8 @@
 import 'reflect-metadata'
 import type { ClassTransformOptions } from 'class-transformer'
-import { plainToInstance } from 'class-transformer'
+import { plainToInstance as defaultPlainToInstance } from 'class-transformer'
 import type { ValidatorOptions } from 'class-validator'
-import { validateOrReject } from 'class-validator'
+import { validateOrReject as defaultValidateOrReject } from 'class-validator'
 import type { FastifyMultipartAttactFieldsToBodyOptions, Multipart } from 'fastify-multipart'
 import multipart from 'fastify-multipart'
 import * as Validators from './validators'
@@ -23,6 +23,8 @@ export type FrourioOptions = {
   basePath?: string
   transformer?: ClassTransformOptions
   validator?: ValidatorOptions
+  plainToInstance?: (cls: new (...args: any[]) => object, object: unknown, options: ClassTransformOptions) => object
+  validateOrReject?: (instance: object, options: ValidatorOptions) => Promise<void>
   multipart?: FastifyMultipartAttactFieldsToBodyOptions
 }
 
@@ -127,6 +129,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   const basePath = options.basePath ?? ''
   const transformerOptions: ClassTransformOptions = { enableCircularCheck: true, ...options.transformer }
   const validatorOptions: ValidatorOptions = { validationError: { target: false }, ...options.validator }
+  const { plainToInstance = defaultPlainToInstance as NonNullable<FrourioOptions["plainToInstance"]>, validateOrReject = defaultValidateOrReject as NonNullable<FrourioOptions["validateOrReject"]> } = options
   const hooks0 = hooksFn0(fastify)
   const hooks1 = hooksFn1(fastify)
   const ctrlHooks0 = ctrlHooksFn0(fastify)
