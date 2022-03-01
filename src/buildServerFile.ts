@@ -1,5 +1,4 @@
 import path from 'path'
-import { addPrettierIgnore } from './addPrettierIgnore'
 import createControllersText from './createControllersText'
 import checkRequisites from './checkRequisites'
 
@@ -30,21 +29,40 @@ export default (input: string, project?: string) => {
 
   checkRequisites({ hasValidator })
 
+  const headIpmorts: string[] = []
+
+  if (hasValidator) {
+    headIpmorts.push(
+      "import 'reflect-metadata'",
+      "import type { ClassTransformOptions } from 'class-transformer'",
+      "import { plainToInstance as defaultPlainToInstance } from 'class-transformer'",
+      "import type { ValidatorOptions } from 'class-validator'",
+      "import { validateOrReject as defaultValidateOrReject } from 'class-validator'"
+    )
+  }
+
+  if (hasMultipart) {
+    headIpmorts.push(
+      "import type { FastifyMultipartAttactFieldsToBodyOptions, Multipart } from 'fastify-multipart'"
+    )
+    headIpmorts.push("import multipart from 'fastify-multipart'")
+  }
+
+  if (hasValidator) {
+    headIpmorts.push("import * as Validators from './validators'")
+  }
+
+  if (hasMultipart) {
+    headIpmorts.push("import type { ReadStream } from 'fs'")
+  }
+
+  headIpmorts.push(
+    "import type { LowerHttpMethod, AspidaMethods, HttpStatusOk, AspidaMethodParams } from 'aspida'"
+  )
+
   return {
-    text: addPrettierIgnore(`/* eslint-disable */${
-      hasValidator
-        ? "\nimport 'reflect-metadata'" +
-          "\nimport { ClassTransformOptions, plainToInstance as defaultPlainToInstance } from 'class-transformer'" +
-          "\nimport { validateOrReject as defaultValidateOrReject, ValidatorOptions } from 'class-validator'"
-        : ''
-    }${
-      hasMultipart
-        ? "\nimport multipart, { FastifyMultipartAttactFieldsToBodyOptions, Multipart } from 'fastify-multipart'"
-        : ''
-    }
-${hasValidator ? "import * as Validators from './validators'\n" : ''}${imports}${
-      hasMultipart ? "import type { ReadStream } from 'fs'\n" : ''
-    }import type { LowerHttpMethod, AspidaMethods, HttpStatusOk, AspidaMethodParams } from 'aspida'
+    text: `${headIpmorts.join('\n')}
+${imports}
 import type { FastifyInstance, RouteHandlerMethod${
       hasNumberTypeQuery || hasBooleanTypeQuery || hasTypedParams || hasValidator || hasMultipart
         ? ', preValidationHookHandler'
@@ -288,7 +306,7 @@ ${
 }${controllers}
   return fastify
 }
-`),
+`,
     filePath: path.posix.join(input, '$server.ts')
   }
 }

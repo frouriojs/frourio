@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.27.1](https://github.com/frouriojs/frourio/compare/v0.27.0...v0.27.1) (2022-02-28)
+
+
+### Bug Fixes
+
+* **frourio-express**: fix type-imports forgotten (https://github.com/frouriojs/frourio-express/pull/79)
+
+
+## [0.27.0](https://github.com/frouriojs/frourio/compare/v0.26.0...v0.27.0) (2022-02-24)
+
+
+### Features
+
+* use type-only imports for types (https://github.com/frouriojs/frourio/pull/213)
+
+### Refactoring
+
+* remove eslint-disable and prettier-ignore directives. please add `$*.ts` pattern to your `.prettierignore` and `.eslintignore` by yourself. (https://github.com/frouriojs/frourio/pull/216)
+
+## [0.26.0](https://github.com/frouriojs/frourio/compare/v0.25.1...v0.26.0) (2022-02-07)
+
+### Features
+
+* **validation:** use class-transformer to support validation of nested objects ([7c19ac5](https://github.com/frouriojs/frourio/commit/7c19ac5363305b81b1c6b5232620228763d427af))
+* prevent removing api/ folder iself even if there's no route ([0f89a89](https://github.com/frouriojs/frourio/commit/0f89a8985931b62ad4d71b4579aacc6aca2d7455))
+* remove all stale route dirs at start up moment ([1d9aced](https://github.com/frouriojs/frourio/commit/1d9aced1fdff59ae726809a9233067e7284448de))
+* remove managed files when the routed path is removed ([42227d6](https://github.com/frouriojs/frourio/commit/42227d6f7cc643a3c493fe0f0076c481451a2ebe))
+
 ### [0.25.1](https://github.com/frouriojs/frourio/compare/v0.25.0...v0.25.1) (2021-07-04)
 
 
