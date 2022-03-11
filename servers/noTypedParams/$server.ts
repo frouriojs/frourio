@@ -20,12 +20,12 @@ import controllerFn5, { hooks as ctrlHooksFn1 } from './api/users/controller'
 import type { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, FastifyRequest, RouteShorthandOptions } from 'fastify'
 
 export type FrourioOptions = {
-  basePath?: string
-  transformer?: ClassTransformOptions
-  validator?: ValidatorOptions
-  plainToInstance?: (cls: new (...args: any[]) => object, object: unknown, options: ClassTransformOptions) => object
-  validateOrReject?: (instance: object, options: ValidatorOptions) => Promise<void>
-  multipart?: FastifyMultipartAttactFieldsToBodyOptions
+  basePath?: string | undefined
+  transformer?: ClassTransformOptions | undefined
+  validator?: ValidatorOptions | undefined
+  plainToInstance?: ((cls: new (...args: any[]) => object, object: unknown, options: ClassTransformOptions) => object) | undefined
+  validateOrReject?: ((instance: object, options: ValidatorOptions) => Promise<void>) | undefined
+  multipart?: FastifyMultipartAttactFieldsToBodyOptions | undefined
 }
 
 type HttpStatusNoOk = 301 | 302 | 400 | 401 | 402 | 403 | 404 | 405 | 406 | 409 | 500 | 501 | 502 | 503 | 504 | 505
