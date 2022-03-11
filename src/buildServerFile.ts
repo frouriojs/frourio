@@ -72,15 +72,15 @@ import type { FastifyInstance, RouteHandlerMethod${
     } } from 'fastify'
 
 export type FrourioOptions = {
-  basePath?: string
+  basePath?: string | undefined
 ${
   hasValidator
-    ? '  transformer?: ClassTransformOptions\n' +
-      '  validator?: ValidatorOptions\n' +
-      '  plainToInstance?: (cls: new (...args: any[]) => object, object: unknown, options: ClassTransformOptions) => object\n' +
-      '  validateOrReject?: (instance: object, options: ValidatorOptions) => Promise<void>\n'
+    ? '  transformer?: ClassTransformOptions | undefined\n' +
+      '  validator?: ValidatorOptions | undefined\n' +
+      '  plainToInstance?: ((cls: new (...args: any[]) => object, object: unknown, options: ClassTransformOptions) => object) | undefined\n' +
+      '  validateOrReject?: ((instance: object, options: ValidatorOptions) => Promise<void>) | undefined\n'
     : ''
-}${hasMultipart ? '  multipart?: FastifyMultipartAttactFieldsToBodyOptions\n' : ''}}
+}${hasMultipart ? '  multipart?: FastifyMultipartAttactFieldsToBodyOptions | undefined\n' : ''}}
 
 type HttpStatusNoOk = 301 | 302 | 400 | 401 | 402 | 403 | 404 | 405 | 406 | 409 | 500 | 501 | 502 | 503 | 504 | 505
 

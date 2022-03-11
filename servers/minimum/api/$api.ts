@@ -11,9 +11,9 @@ const api = <T>({ baseURL, fetch }: AspidaClient<T>) => {
   const GET = 'GET'
 
   return {
-    get: (option?: { config?: T }) =>
+    get: (option?: { config?: T | undefined } | undefined) =>
       fetch<Methods0['get']['resBody']>(prefix, '', GET, option).json(),
-    $get: (option?: { config?: T }) =>
+    $get: (option?: { config?: T | undefined } | undefined) =>
       fetch<Methods0['get']['resBody']>(prefix, '', GET, option).json().then(r => r.body),
     $path: () => `${prefix}`
   }

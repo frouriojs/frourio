@@ -1031,10 +1031,10 @@ aspida@^1.7.1:
     form-data "^4.0.0"
     minimist "^1.2.5"
 
-aspida@^1.8.0:
-  version "1.8.0"
-  resolved "https://registry.yarnpkg.com/aspida/-/aspida-1.8.0.tgz#05a4419efd728c08b4fae1c80ae9688653c4b51a"
-  integrity sha512-7LKdtVtsOnYxFdxRy/RKZ9ujVPSFo1XmpEm6kJhDm6Ea5aDuAwd3SZOXBOYFn/Giq61Xk/DxK5Z/CmoL/VUPvg==
+aspida@^1.9.0:
+  version "1.9.0"
+  resolved "https://registry.yarnpkg.com/aspida/-/aspida-1.9.0.tgz#af74dd2b3d57b42ea42794fe3713317ada0e7795"
+  integrity sha512-R5NAejLGVwnoGTfiY0VQfkoHjPvI+3QRP+kYsGDVTu1epy07cryB/QKaaiWyc/ILh6AaIBQroafBTO371r6K2g==
   dependencies:
     "@types/minimist" "^1.2.2"
     chokidar "^3.5.1"
