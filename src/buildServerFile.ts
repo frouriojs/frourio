@@ -21,7 +21,7 @@ export default (input: string, project?: string) => {
   const hasOptionalQuery = controllers.includes(' callParserIfExistsQuery(')
   const hasNormalizeQuery = controllers.includes(' normalizeQuery')
   const hasTypedParams = controllers.includes(' createTypedParamsHandler(')
-  const hasValidator = controllers.includes(' validateOrReject(')
+  const hasValidator = controllers.includes(' transformAndValidate(')
   const hasMultipart = controllers.includes(' formatMultipartData(')
   const hasMethodToHandler = controllers.includes(' methodToHandler(')
   const hasAsyncMethodToHandler = controllers.includes(' asyncMethodToHandler(')
@@ -78,7 +78,8 @@ ${
     ? '  transformer?: ClassTransformOptions | undefined\n' +
       '  validator?: ValidatorOptions | undefined\n' +
       '  plainToInstance?: ((cls: new (...args: any[]) => object, object: unknown, options: ClassTransformOptions) => object) | undefined\n' +
-      '  validateOrReject?: ((instance: object, options: ValidatorOptions) => Promise<void>) | undefined\n'
+      '  validateOrReject?: ((instance: object, options: ValidatorOptions) => Promise<void>) | undefined\n' +
+      '  replaceWithInstance?: boolean | undefined\n'
     : ''
 }${hasMultipart ? '  multipart?: FastifyMultipartAttactFieldsToBodyOptions | undefined\n' : ''}}
 
@@ -291,14 +292,26 @@ const formatMultipartData = (arrayTypeKeys: [string, boolean][]): preValidationH
       hasAsyncMethodToHandler ? genHandlerText(true) : ''
     }
 export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
-  const basePath = options.basePath ?? ''
-${
-  hasValidator
-    ? '  const transformerOptions: ClassTransformOptions = { enableCircularCheck: true, ...options.transformer }\n' +
-      '  const validatorOptions: ValidatorOptions = { validationError: { target: false }, ...options.validator }\n' +
-      '  const { plainToInstance = defaultPlainToInstance as NonNullable<FrourioOptions["plainToInstance"]>, validateOrReject = defaultValidateOrReject as NonNullable<FrourioOptions["validateOrReject"]> } = options\n'
-    : ''
-}${consts}
+  const basePath = options.basePath ?? ''${
+    hasValidator
+      ? `
+  const transformerOptions: ClassTransformOptions = { enableCircularCheck: true, ...options.transformer }
+  const validatorOptions: ValidatorOptions = { validationError: { target: false }, ...options.validator }
+  const {
+    plainToInstance = defaultPlainToInstance as NonNullable<FrourioOptions["plainToInstance"]>,
+    validateOrReject = defaultValidateOrReject as NonNullable<FrourioOptions["validateOrReject"]>,
+    replaceWithInstance = false
+  } = options
+  const transformAndValidate = async (cls: new (...args: any[]) => object, object: unknown, setter: ((instance: unknown) => void)): Promise<void> => {
+    const instance = plainToInstance(cls, object, transformerOptions)
+    await validateOrReject(instance as any, validatorOptions)
+    if (replaceWithInstance) {
+      setter(instance)
+    }
+  }`
+      : ''
+  }
+${consts}
 ${
   hasMultipart
     ? '  fastify.register(multipart, { attachFieldsToBody: true, limits: { fileSize: 1024 ** 3 }, ...options.multipart })\n\n'

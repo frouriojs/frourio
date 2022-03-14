@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer'
+import { Transform, Type } from 'class-transformer'
 import {
   IsNumberString,
   IsBooleanString,
@@ -52,6 +52,12 @@ export class Query {
 export class Body {
   @IsPort()
   port: string
+
+  // `@Type` decorator is required to cast `title` to a string so that the `trim()` method is not called on a non-string value
+  @IsString()
+  @Type(() => String)
+  @Transform(({ value }) => value.trim(), { toClassOnly: true })
+  title: string
 
   file: File | ReadStream
 }

@@ -40,7 +40,8 @@ beforeEach(() => {
       validateOrReject: (instance, options): Promise<void> => {
         subServerValidateOrRejectCallCount++
         return validateOrReject(instance, options)
-      }
+      },
+      replaceWithInstance: true
     }).listen(subPort)
   ])
 })
@@ -150,11 +151,15 @@ test('PUT: JSON', async () => {
 })
 
 test('POST: formdata', async () => {
+  const port = '3000'
+  const title = 'tsconfig \n'
+  const fileName = 'tsconfig.json'
+
+  const titleTrimmed = title.trim()
+
+  // server (via axios)
   expect(subServerPlainToInstanceCallCount).toBe(0)
   expect(subServerValidateOrRejectCallCount).toBe(0)
-
-  const port = '3000'
-  const fileName = 'tsconfig.json'
   const res1 = await client.$post({
     query: {
       requiredNum: 0,
@@ -164,14 +169,19 @@ test('POST: formdata', async () => {
       bool: false,
       boolArray: []
     },
-    body: { port, file: fs.createReadStream(fileName) }
+    body: { port, title, file: fs.createReadStream(fileName) }
   })
   expect(res1.port).toBe(port)
   expect(res1.fileName).toBe(fileName)
-
+  // replaceWithInstance = false -> plain object
+  expect(res1.title).toBe(title)
+  expect(res1._bodyType).toBe('[object Object]')
   expect(subServerPlainToInstanceCallCount).toBe(0)
   expect(subServerValidateOrRejectCallCount).toBe(0)
 
+  // subServer (via fetch)
+  expect(subServerPlainToInstanceCallCount).toBe(0)
+  expect(subServerValidateOrRejectCallCount).toBe(0)
   const res2 = await fetchClient.$post({
     query: {
       requiredNum: 0,
@@ -181,11 +191,13 @@ test('POST: formdata', async () => {
       bool: false,
       boolArray: []
     },
-    body: { port, file: fs.createReadStream(fileName) }
+    body: { port, title, file: fs.createReadStream(fileName) }
   })
   expect(res2.port).toBe(port)
   expect(res2.fileName).toBe(fileName)
-
+  // replaceWithInstance = true -> instance
+  expect(res2.title).toBe(titleTrimmed)
+  expect(res2._bodyType).toBe('[object Object]')
   // 2 = query + body
   expect(subServerPlainToInstanceCallCount).toBe(2)
   expect(subServerValidateOrRejectCallCount).toBe(2)

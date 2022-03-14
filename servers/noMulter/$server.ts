@@ -22,6 +22,7 @@ export type FrourioOptions = {
   validator?: ValidatorOptions | undefined
   plainToInstance?: ((cls: new (...args: any[]) => object, object: unknown, options: ClassTransformOptions) => object) | undefined
   validateOrReject?: ((instance: object, options: ValidatorOptions) => Promise<void>) | undefined
+  replaceWithInstance?: boolean | undefined
 }
 
 type HttpStatusNoOk = 301 | 302 | 400 | 401 | 402 | 403 | 404 | 405 | 406 | 409 | 500 | 501 | 502 | 503 | 504 | 505
@@ -107,7 +108,18 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   const basePath = options.basePath ?? ''
   const transformerOptions: ClassTransformOptions = { enableCircularCheck: true, ...options.transformer }
   const validatorOptions: ValidatorOptions = { validationError: { target: false }, ...options.validator }
-  const { plainToInstance = defaultPlainToInstance as NonNullable<FrourioOptions["plainToInstance"]>, validateOrReject = defaultValidateOrReject as NonNullable<FrourioOptions["validateOrReject"]> } = options
+  const {
+    plainToInstance = defaultPlainToInstance as NonNullable<FrourioOptions["plainToInstance"]>,
+    validateOrReject = defaultValidateOrReject as NonNullable<FrourioOptions["validateOrReject"]>,
+    replaceWithInstance = false
+  } = options
+  const transformAndValidate = async (cls: new (...args: any[]) => object, object: unknown, setter: ((instance: unknown) => void)): Promise<void> => {
+    const instance = plainToInstance(cls, object, transformerOptions)
+    await validateOrReject(instance as any, validatorOptions)
+    if (replaceWithInstance) {
+      setter(instance)
+    }
+  }
   const hooks0 = hooksFn0(fastify)
   const hooks1 = hooksFn1(fastify)
   const ctrlHooks0 = ctrlHooksFn0(fastify)
@@ -124,7 +136,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
     {
       onRequest: [hooks0.onRequest, ctrlHooks0.onRequest],
       preValidation: createValidateHandler(req => [
-          Object.keys(req.query as any).length ? validateOrReject(plainToInstance(Validators.Query, req.query as any, transformerOptions), validatorOptions) : null
+          Object.keys(req.query as any).length ? transformAndValidate(Validators.Query, req.query as any, (instance) => { req.query = instance }) : null
         ])
     },
     asyncMethodToHandler(controller0.get)
@@ -135,8 +147,8 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
     {
       onRequest: [hooks0.onRequest, ctrlHooks0.onRequest],
       preValidation: createValidateHandler(req => [
-          validateOrReject(plainToInstance(Validators.Query, req.query as any, transformerOptions), validatorOptions),
-          validateOrReject(plainToInstance(Validators.Body, req.body as any, transformerOptions), validatorOptions)
+          transformAndValidate(Validators.Query, req.query as any, (instance) => { req.query = instance }),
+          transformAndValidate(Validators.Body, req.body as any, (instance) => { req.body = instance })
         ])
     },
     methodToHandler(controller0.post)
@@ -188,7 +200,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
     {
       onRequest: [hooks0.onRequest, hooks1.onRequest],
       preValidation: createValidateHandler(req => [
-          validateOrReject(plainToInstance(Validators.UserInfo, req.body as any, transformerOptions), validatorOptions)
+          transformAndValidate(Validators.UserInfo, req.body as any, (instance) => { req.body = instance })
         ]),
       preHandler: ctrlHooks1.preHandler
     } as RouteShorthandOptions,

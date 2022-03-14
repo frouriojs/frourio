@@ -15,7 +15,10 @@ export type Methods = {
     resBody: {
       id: number
       port: string
+      title: string
       fileName: string
+      /** only for testing purpose */
+      _bodyType: string
     }
   }
 }

@@ -481,9 +481,9 @@ ${validateInfo
     v.type
       ? `          ${
           v.hasQuestion ? `Object.keys(req.${v.name} as any).length ? ` : ''
-        }validateOrReject(plainToInstance(Validators.${checker.typeToString(v.type)}, req.${
+        }transformAndValidate(Validators.${checker.typeToString(v.type)}, req.${
           v.name
-        } as any, transformerOptions), validatorOptions)${v.hasQuestion ? ' : null' : ''}`
+        } as any, (instance) => { req.${v.name} = instance })${v.hasQuestion ? ' : null' : ''}`
       : ''
   )
   .join(',\n')}\n        ])`

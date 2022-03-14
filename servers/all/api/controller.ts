@@ -68,7 +68,13 @@ export default defineController(
     post: v => ({
       // @ts-expect-error
       status: 200,
-      body: { id: +v.query.id, port: v.body.port, fileName: v.body.file.filename }
+      body: {
+        id: +v.query.id,
+        port: v.body.port,
+        title: v.body.title,
+        fileName: v.body.file.filename,
+        _bodyType: String(v.body)
+      }
     })
   })
 )
