@@ -2,11 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-## [0.28.0](https://github.com/frouriojs/frourio/compare/v0.27.1...v0.28.0) (2022-03-11)
+## [0.28.0](https://github.com/frouriojs/frourio/compare/v0.27.1...v0.28.0) (2022-03-14)
 
 ### Features
 
 * add "or undefined" explicitly to support exactOptionalPropertyTypes (https://github.com/frouriojs/frourio/pull/228)
+* feat(validation): allow user to specify custom plainToInstance and validateOrReject (https://github.com/frouriojs/frourio/pull/190)
 
 ## [0.27.1](https://github.com/frouriojs/frourio/compare/v0.27.0...v0.27.1) (2022-02-28)
 
