@@ -161,18 +161,21 @@ const createFiles = (
     params
   )
 
-  fs.readdirSync(input, { withFileTypes: true }).forEach(
-    d =>
-      d.isDirectory() &&
-      createFiles(
-        appDir,
-        path.posix.join(dirPath, d.name),
-        d.name.startsWith('_')
-          ? [...params, [d.name.slice(1).split('@')[0], d.name.split('@')[1] ?? 'string']]
-          : params,
-        appText,
-        additionalReqs
-      )
+  const dirs = fs.readdirSync(input, { withFileTypes: true }).filter(d => d.isDirectory())
+  if (dirs.filter(d => d.name.startsWith('_')).length >= 2) {
+    throw new Error('There are two ore more path param folders.')
+  }
+
+  dirs.forEach(d =>
+    createFiles(
+      appDir,
+      path.posix.join(dirPath, d.name),
+      d.name.startsWith('_')
+        ? [...params, [d.name.slice(1).split('@')[0], d.name.split('@')[1] ?? 'string']]
+        : params,
+      appText,
+      additionalReqs
+    )
   )
 }
 

@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.29.0](https://github.com/frouriojs/frourio/compare/v0.28.0...v0.29.0) (2022-03-16)
+
+### Features
+
+* feat: show the error when multiple path param folders made (https://github.com/frouriojs/frourio/pull/233)
+
 ## [0.28.0](https://github.com/frouriojs/frourio/compare/v0.27.1...v0.28.0) (2022-03-14)
 
 ### Features
