@@ -9,17 +9,17 @@
   dependencies:
     "@jridgewell/trace-mapping" "^0.3.0"
 
-"@aspida/axios@^1.8.0":
-  version "1.8.0"
-  resolved "https://registry.yarnpkg.com/@aspida/axios/-/axios-1.8.0.tgz#89645a724d533a88a17a177aa7af380e2c3ee328"
-  integrity sha512-FHv6wqmRWLutj98tmJPw3wmOBQN4qP6euhhoCWLwoopAv0clk8L7ZQLcFi3abtI6dSzGArKQBgT4Y/us5Ibn4A==
+"@aspida/axios@^1.10.0":
+  version "1.10.0"
+  resolved "https://registry.yarnpkg.com/@aspida/axios/-/axios-1.10.0.tgz#6acaa452e81a0dc0de96a1cbdeaa5dacbeb15e79"
+  integrity sha512-ILKktboJrPz+MCOGjN/tQYxbVKiLqlPyxX/D9ivGjUNlXYvh2kiuW8trHv95JgrsZObNqwGNNQ0DUGQMK0UEQA==
   dependencies:
     aspida "^1.7.1"
 
-"@aspida/node-fetch@^1.8.0":
-  version "1.8.0"
-  resolved "https://registry.yarnpkg.com/@aspida/node-fetch/-/node-fetch-1.8.0.tgz#77a7d53fa64e3e0854ebb7c95d80b9a3aaf52d30"
-  integrity sha512-+GhFu09SIydq8fKAZPt3n2bmudbwnPiIobr2wzC9emJ7jRGWuRB+b/q8BMC6NxNuhYBRb4H7xn2PedKzcPh5lw==
+"@aspida/node-fetch@^1.10.0":
+  version "1.10.0"
+  resolved "https://registry.yarnpkg.com/@aspida/node-fetch/-/node-fetch-1.10.0.tgz#8ea556946819e4bb4d32a45b3b3f2c3ecdb34ff4"
+  integrity sha512-XgmlfSRTRITS5Ni94ivXaLxNt7bzT/rPk1UG+RNiVoUKI1WlRGUXb2KnfZJIrYXHlrY8g8dnaIG/olhobFJxJg==
   dependencies:
     aspida "^1.7.1"
 
@@ -1049,22 +1049,22 @@ array.prototype.flat@^1.2.5:
     define-properties "^1.1.3"
     es-abstract "^1.19.0"
 
+aspida@^1.10.0:
+  version "1.10.0"
+  resolved "https://registry.yarnpkg.com/aspida/-/aspida-1.10.0.tgz#b94a1af7290e4ad2f41a17417890fad82e7d3dee"
+  integrity sha512-kEbHYF7/fTK3jF/hJ+YeTg0/EV23Riel67/EvE405ITvISzEfd2Jg+7fWCl3O7E5OVaqftP1mIucgk8PdYQGZQ==
+  dependencies:
+    "@types/minimist" "^1.2.2"
+    chokidar "^3.5.1"
+    form-data "^4.0.0"
+    minimist "^1.2.5"
+
 aspida@^1.7.1:
   version "1.7.1"
   resolved "https://registry.yarnpkg.com/aspida/-/aspida-1.7.1.tgz#b021e1766991b3b9a7b85f297f5ac05af4b42b60"
   integrity sha512-YIfSeLHPAtIkWnu8QFfKvlPB0/S6sRjD2WgmHuiTbhvTdINqK0KMPNK8WepUORXmUcraSaeHN1xO5MMKTREiTA==
   dependencies:
     "@types/minimist" "^1.2.1"
-    chokidar "^3.5.1"
-    form-data "^4.0.0"
-    minimist "^1.2.5"
-
-aspida@^1.9.0:
-  version "1.9.0"
-  resolved "https://registry.yarnpkg.com/aspida/-/aspida-1.9.0.tgz#af74dd2b3d57b42ea42794fe3713317ada0e7795"
-  integrity sha512-R5NAejLGVwnoGTfiY0VQfkoHjPvI+3QRP+kYsGDVTu1epy07cryB/QKaaiWyc/ILh6AaIBQroafBTO371r6K2g==
-  dependencies:
-    "@types/minimist" "^1.2.2"
     chokidar "^3.5.1"
     form-data "^4.0.0"
     minimist "^1.2.5"

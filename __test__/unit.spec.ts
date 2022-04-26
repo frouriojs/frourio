@@ -7,7 +7,10 @@ test('createDefaultFilesIfNotExists', () => {
   fs.mkdirSync(dir)
   createDefaultFilesIfNotExists(dir)
 
-  expect(fs.readFileSync(`${dir}/index.ts`, 'utf8')).toBe(`export type Methods = {
+  expect(fs.readFileSync(`${dir}/index.ts`, 'utf8'))
+    .toBe(`import type { DefineMethods } from 'aspida'
+
+export type Methods = {
   get: {
     resBody: string
   }

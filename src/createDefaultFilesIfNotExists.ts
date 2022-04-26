@@ -9,11 +9,13 @@ export default (dir: string) => {
   if (isEmptyDir && !fs.existsSync(indexFilePath)) {
     fs.writeFileSync(
       indexFilePath,
-      `export type Methods = {
+      `import type { DefineMethods } from 'aspida'
+
+export type Methods = DefineMethods<{
   get: {
     resBody: string
   }
-}
+}>
 `,
       'utf8'
     )

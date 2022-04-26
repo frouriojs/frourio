@@ -1,6 +1,7 @@
+import type { DefineMethods } from 'aspida'
 import { Query, Body } from '../validators'
 
-export type Methods = {
+export type Methods = DefineMethods<{
   get: {
     query?: Query
     status: 200
@@ -16,4 +17,4 @@ export type Methods = {
       port: string
     }
   }
-}
+}>
