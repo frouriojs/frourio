@@ -43,9 +43,9 @@ export default (input: string, project?: string) => {
 
   if (hasMultipart) {
     headIpmorts.push(
-      "import type { FastifyMultipartAttactFieldsToBodyOptions, Multipart } from 'fastify-multipart'"
+      "import type { FastifyMultipartAttactFieldsToBodyOptions, Multipart } from '@fastify/multipart'"
     )
-    headIpmorts.push("import multipart from 'fastify-multipart'")
+    headIpmorts.push("import multipart from '@fastify/multipart'")
   }
 
   if (hasValidator) {
