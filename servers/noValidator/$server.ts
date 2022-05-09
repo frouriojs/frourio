@@ -1,5 +1,5 @@
-import type { FastifyMultipartAttactFieldsToBodyOptions, Multipart } from 'fastify-multipart'
-import multipart from 'fastify-multipart'
+import type { FastifyMultipartAttactFieldsToBodyOptions, Multipart } from '@fastify/multipart'
+import multipart from '@fastify/multipart'
 import type { ReadStream } from 'fs'
 import type { LowerHttpMethod, AspidaMethods, HttpStatusOk, AspidaMethodParams } from 'aspida'
 import hooksFn0 from './api/hooks'
