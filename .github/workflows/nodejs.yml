@@ -8,11 +8,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        node-version: [12, 14, 16]
+        node-version: [14, 16, 18]
         os: [ubuntu-latest]
         include:
           - os: windows-latest
-            node-version: 14
+            node-version: 18
     steps:
       - uses: actions/checkout@v2
       - name: setup Node.js ${{ matrix.node-version }}
