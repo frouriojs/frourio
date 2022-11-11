@@ -59,8 +59,8 @@ type RequestParams<T extends AspidaMethodParams> = Pick<{
 
 export type ServerMethods<T extends AspidaMethods, U extends Record<string, any> = {}> = {
   [K in keyof T]: (
-    req: RequestParams<T[K]> & U
-  ) => ServerResponse<T[K]> | Promise<ServerResponse<T[K]>>
+    req: RequestParams<NonNullable<T[K]>> & U
+  ) => ServerResponse<NonNullable<T[K]>> | Promise<ServerResponse<NonNullable<T[K]>>>
 }
 
 const createTypedParamsHandler = (numberTypeParams: string[]): preValidationHookHandler => (req, reply, done) => {
