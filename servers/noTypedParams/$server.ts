@@ -8,7 +8,7 @@ import multipart from '@fastify/multipart'
 import * as Validators from './validators'
 import type { ReadStream } from 'fs'
 import type { HttpStatusOk, AspidaMethodParams } from 'aspida'
-import { z } from 'zod'
+import type { z } from 'zod'
 import hooksFn0 from './api/hooks'
 import hooksFn1 from './api/users/hooks'
 import controllerFn0, { hooks as ctrlHooksFn0 } from './api/controller'
@@ -18,7 +18,7 @@ import controllerFn3 from './api/texts/controller'
 import controllerFn4 from './api/texts/sample/controller'
 import controllerFn5, { hooks as ctrlHooksFn1 } from './api/users/controller'
 
-import type { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, FastifyRequest } from 'fastify'
+import type { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, FastifyRequest, RouteShorthandOptions } from 'fastify'
 
 export type FrourioOptions = {
   basePath?: string | undefined
@@ -232,7 +232,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
     {
       onRequest: [hooks0.onRequest, hooks1.onRequest],
       preHandler: ctrlHooks1.preHandler
-    },
+    } as RouteShorthandOptions,
     asyncMethodToHandler(controller5.get)
   )
 
@@ -244,7 +244,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
           validateOrReject(plainToInstance(Validators.UserInfo, req.body as any, transformerOptions), validatorOptions)
         ]),
       preHandler: ctrlHooks1.preHandler
-    },
+    } as RouteShorthandOptions,
     methodToHandler(controller5.post)
   )
 

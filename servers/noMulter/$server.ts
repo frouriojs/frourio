@@ -5,7 +5,7 @@ import type { ValidatorOptions } from 'class-validator'
 import { validateOrReject as defaultValidateOrReject } from 'class-validator'
 import * as Validators from './validators'
 import type { HttpStatusOk, AspidaMethodParams } from 'aspida'
-import { z } from 'zod'
+import type { z } from 'zod'
 import hooksFn0 from './api/hooks'
 import hooksFn1 from './api/users/hooks'
 import validatorsFn0 from './api/users/_userId@number/validators'
@@ -16,7 +16,7 @@ import controllerFn3 from './api/texts/sample/controller'
 import controllerFn4, { hooks as ctrlHooksFn1 } from './api/users/controller'
 import controllerFn5 from './api/users/_userId@number/controller'
 
-import type { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, FastifyRequest, FastifySchema } from 'fastify'
+import type { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, FastifyRequest, FastifySchema, FastifySchemaCompiler, RouteShorthandOptions } from 'fastify'
 
 export type FrourioOptions = {
   basePath?: string | undefined
@@ -92,7 +92,7 @@ const createTypedParamsHandler = (numberTypeParams: string[]): preValidationHook
 const createValidateHandler = (validators: (req: FastifyRequest) => (Promise<void> | null)[]): preValidationHookHandler =>
   (req, reply) => Promise.all(validators(req)).catch(err => reply.code(400).send(err))
 
-const validatorCompiler = ({ schema }: { schema: z.ZodType<any> }) => (data: any) => schema.parse(data)
+const validatorCompiler: FastifySchemaCompiler<FastifySchema> = ({ schema }) => (data: any) => (schema as z.ZodType<any>).parse(data)
 
 const methodToHandler = (
   methodCallback: ServerHandler<any, any>
@@ -195,7 +195,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
     {
       onRequest: [hooks0.onRequest, hooks1.onRequest],
       preHandler: ctrlHooks1.preHandler
-    },
+    } as RouteShorthandOptions,
     asyncMethodToHandler(controller4.get)
   )
 
@@ -207,7 +207,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
           validateOrReject(plainToInstance(Validators.UserInfo, req.body as any, transformerOptions), validatorOptions)
         ]),
       preHandler: ctrlHooks1.preHandler
-    },
+    } as RouteShorthandOptions,
     methodToHandler(controller4.post)
   )
 
@@ -220,7 +220,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
       validatorCompiler,
       onRequest: [hooks0.onRequest, hooks1.onRequest],
       preValidation: createTypedParamsHandler(['userId'])
-    },
+    } as RouteShorthandOptions,
     methodToHandler(controller5.get)
   )
 
