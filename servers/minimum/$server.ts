@@ -1,8 +1,8 @@
 import type { HttpStatusOk, AspidaMethodParams } from 'aspida'
-import { z } from 'zod'
+import type { z } from 'zod'
 import controllerFn0, { responseSchema as responseSchemaFn0 } from './api/controller'
 
-import type { FastifyInstance, RouteHandlerMethod, FastifySchema } from 'fastify'
+import type { FastifyInstance, RouteHandlerMethod, FastifySchema, FastifySchemaCompiler } from 'fastify'
 
 export type FrourioOptions = {
   basePath?: string | undefined
@@ -54,7 +54,7 @@ export type ServerMethodHandler<T extends AspidaMethodParams,  U extends Record<
   handler: ServerHandler<T, U> | ServerHandlerPromise<T, U>
 }
 
-const validatorCompiler = ({ schema }: { schema: z.ZodType<any> }) => (data: any) => schema.parse(data)
+const validatorCompiler: FastifySchemaCompiler<FastifySchema> = ({ schema }) => (data: any) => (schema as z.ZodType<any>).parse(data)
 
 const methodToHandler = (
   methodCallback: ServerHandler<any, any>

@@ -25,6 +25,7 @@ export default (input: string, project?: string) => {
   const hasMultipart = controllers.includes(' formatMultipartData(')
   const hasMethodToHandler = controllers.includes(' methodToHandler(')
   const hasAsyncMethodToHandler = controllers.includes(' asyncMethodToHandler(')
+  const hasRouteShorthandOptions = controllers.includes(' as RouteShorthandOptions,')
   const hasValidatorCompiler = controllers.includes(' validatorCompiler')
   const hasValidatorsToSchema = controllers.includes('validatorsToSchema(')
   const headImports: string[] = []
@@ -62,15 +63,15 @@ export default (input: string, project?: string) => {
 
   return {
     text: `${headImports.join('\n')}
-import { z } from 'zod'
+import type { z } from 'zod'
 ${imports}
 import type { FastifyInstance, RouteHandlerMethod${
       hasNumberTypeQuery || hasBooleanTypeQuery || hasTypedParams || hasValidator || hasMultipart
         ? ', preValidationHookHandler'
         : ''
     }${hasValidator ? ', FastifyRequest' : ''}${
-      hasValidatorCompiler ? ', FastifySchema' : ''
-    } } from 'fastify'
+      hasValidatorCompiler ? ', FastifySchema, FastifySchemaCompiler' : ''
+    }${hasRouteShorthandOptions ? ', RouteShorthandOptions' : ''} } from 'fastify'
 
 export type FrourioOptions = {
   basePath?: string | undefined
@@ -298,7 +299,7 @@ const formatMultipartData = (arrayTypeKeys: [string, boolean][]): preValidationH
     }${
       hasValidatorCompiler
         ? `
-const validatorCompiler = ({ schema }: { schema: z.ZodType<any> }) => (data: any) => schema.parse(data)${
+const validatorCompiler: FastifySchemaCompiler<FastifySchema> = ({ schema }) => (data: any) => (schema as z.ZodType<any>).parse(data)${
             hasValidatorsToSchema
               ? `
 

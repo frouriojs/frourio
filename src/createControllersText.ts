@@ -633,7 +633,13 @@ ${validateInfo
                     : []),
                   ...hooksTexts
                 ]
-                return vals.length > 0 ? `\n    {\n      ${vals.join(',\n      ')}\n    },` : ''
+                return vals.length > 0
+                  ? `\n    {\n      ${vals.join(',\n      ')}\n    }${
+                      fs.readFileSync(`${input}/$relay.ts`, 'utf8').includes('AdditionalRequest')
+                        ? ' as RouteShorthandOptions'
+                        : ''
+                    },`
+                  : ''
               })()}
     ${
       isPromiseMethods.includes(m.name) ? 'asyncMethodToHandler' : 'methodToHandler'
