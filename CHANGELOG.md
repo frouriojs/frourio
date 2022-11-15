@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.30.0](https://github.com/frouriojs/frourio/compare/v0.29.1...v0.30.0) (2022-11-16)
+
+### Features
+
+- Add zod validators to controller (https://github.com/frouriojs/frourio/pull/257)
+
 ## [0.29.1](https://github.com/frouriojs/frourio/compare/v0.29.0...v0.29.1) (2022-11-11)
 
 ### Bug Fixes
