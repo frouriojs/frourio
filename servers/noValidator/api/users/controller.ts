@@ -13,5 +13,5 @@ export { hooks }
 
 export default defineController(() => ({
   get: async () => ({ status: 200, body: [{ id: 1, name: 'aa' }] }),
-  post: () => ({ status: 204 })
+  post: { handler: () => ({ status: 204 }) }
 }))

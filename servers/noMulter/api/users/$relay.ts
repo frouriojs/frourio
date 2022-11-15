@@ -1,9 +1,10 @@
+import { z } from 'zod'
 import type { Injectable } from 'velona'
 import { depend } from 'velona'
 import type { FastifyInstance, onRequestHookHandler, preParsingHookHandler, preValidationHookHandler, preHandlerHookHandler } from 'fastify'
 import type { Schema } from 'fast-json-stringify'
 import type { HttpStatusOk } from 'aspida'
-import type { ServerMethods } from '../../$server'
+import type { ServerMethodHandler } from '../../$server'
 import type { AdditionalRequest } from './hooks'
 import type { Methods } from './'
 
@@ -14,9 +15,16 @@ type Hooks = {
   preValidation?: AddedHandler<preValidationHookHandler> | AddedHandler<preValidationHookHandler>[] | undefined
   preHandler?: AddedHandler<preHandlerHookHandler> | AddedHandler<preHandlerHookHandler>[] | undefined
 }
-type ControllerMethods = ServerMethods<Methods, AdditionalRequest>
 
-export function defineResponseSchema<T extends { [U in keyof ControllerMethods]?: { [V in HttpStatusOk]?: Schema | undefined } | undefined}>(methods: () => T) {
+export function defineValidators(validator: (fastify: FastifyInstance) => {
+  body?: z.ZodType,
+  query?: z.ZodType<Record<string, unknown>>,
+  headers?: z.ZodType<Record<string, string>>
+}) {
+  return validator
+}
+
+export function defineResponseSchema<T extends { [U in keyof Methods]?: { [V in HttpStatusOk]?: Schema | undefined } | undefined}>(methods: () => T) {
   return methods
 }
 
@@ -26,8 +34,12 @@ export function defineHooks<T extends Record<string, any>>(hooks: (fastify: Fast
   return cb && typeof hooks !== 'function' ? depend(hooks, cb) : hooks
 }
 
-export function defineController(methods: (fastify: FastifyInstance) => ControllerMethods): (fastify: FastifyInstance) => ControllerMethods
-export function defineController<T extends Record<string, any>>(deps: T, cb: (d: T, fastify: FastifyInstance) => ControllerMethods): Injectable<T, [FastifyInstance], ControllerMethods>
-export function defineController<T extends Record<string, any>>(methods: (fastify: FastifyInstance) => ControllerMethods | T, cb?: ((deps: T, fastify: FastifyInstance) => ControllerMethods) | undefined) {
+type ServerMethods = {
+  [Key in keyof Methods]: ServerMethodHandler<Methods[Key], AdditionalRequest>
+}
+
+export function defineController<M extends ServerMethods>(methods: (fastify: FastifyInstance) => M): (fastify: FastifyInstance) => M
+export function defineController<M extends ServerMethods, T extends Record<string, any>>(deps: T, cb: (d: T, fastify: FastifyInstance) => M): Injectable<T, [FastifyInstance], M>
+export function defineController<M extends ServerMethods, T extends Record<string, any>>(methods: ((fastify: FastifyInstance) => M) | T, cb?: ((deps: T, fastify: FastifyInstance) => M) | undefined) {
   return cb && typeof methods !== 'function' ? depend(methods, cb) : methods
 }

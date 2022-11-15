@@ -22,7 +22,12 @@ test('build', () => {
     .map(d => `${inputDir}/${d.name}`)
     .forEach(input => {
       const result = build(input)
-      expect(result.text).toBe(fs.readFileSync(result.filePath, 'utf8').replace(/\r/g, ''))
+      expect(result.text).toBe(
+        fs
+          .readFileSync(result.filePath, 'utf8')
+          .replace(/\r/g, '')
+          .replace(/\n +\/\/ @ts-expect-error/g, '')
+      )
 
       const [target] = aspidaBuild({
         input: `${input}/api`,

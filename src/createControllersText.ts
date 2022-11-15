@@ -56,12 +56,13 @@ const createRelayFile = (
 ) => {
   const hasAdditionals = !!additionalReqs.length
   const hasMultiAdditionals = additionalReqs.length > 1
-  const text = `import type { Injectable } from 'velona'
+  const text = `import { z } from 'zod'
+import type { Injectable } from 'velona'
 import { depend } from 'velona'
 import type { FastifyInstance, onRequestHookHandler, preParsingHookHandler, preValidationHookHandler, preHandlerHookHandler } from 'fastify'
 import type { Schema } from 'fast-json-stringify'
 import type { HttpStatusOk } from 'aspida'
-import type { ServerMethods } from '${appText}'
+import type { ServerMethodHandler } from '${appText}'
 ${
   hasMultiAdditionals
     ? additionalReqs
@@ -100,14 +101,19 @@ ${[
       ? `  ${key}?: AddedHandler<${val}> | AddedHandler<${val}>[] | undefined\n`
       : `  ${key}?: ${val} | ${val}[] | undefined\n`
   )
-  .join('')}}
-type ControllerMethods = ServerMethods<Methods, ${hasAdditionals ? 'AdditionalRequest & ' : ''}{${
-    params.length
-      ? `\n  params: {\n${params.map(v => `    ${v[0]}: ${v[1]}`).join('\n')}\n  }\n`
-      : ''
-  }}>
+  .join('')}}${
+    params.length ? `\ntype Params = {\n${params.map(v => `  ${v[0]}: ${v[1]}`).join('\n')}\n}` : ''
+  }
 
-export function defineResponseSchema<T extends { [U in keyof ControllerMethods]?: { [V in HttpStatusOk]?: Schema | undefined } | undefined}>(methods: () => T) {
+export function defineValidators(validator: (fastify: FastifyInstance) => {
+  body?: z.ZodType,${params.length ? '\n  params?: z.ZodType<Params>,' : ''}
+  query?: z.ZodType<Record<string, unknown>>,
+  headers?: z.ZodType<Record<string, string>>
+}) {
+  return validator
+}
+
+export function defineResponseSchema<T extends { [U in keyof Methods]?: { [V in HttpStatusOk]?: Schema | undefined } | undefined}>(methods: () => T) {
   return methods
 }
 
@@ -117,9 +123,17 @@ export function defineHooks<T extends Record<string, any>>(hooks: (fastify: Fast
   return cb && typeof hooks !== 'function' ? depend(hooks, cb) : hooks
 }
 
-export function defineController(methods: (fastify: FastifyInstance) => ControllerMethods): (fastify: FastifyInstance) => ControllerMethods
-export function defineController<T extends Record<string, any>>(deps: T, cb: (d: T, fastify: FastifyInstance) => ControllerMethods): Injectable<T, [FastifyInstance], ControllerMethods>
-export function defineController<T extends Record<string, any>>(methods: (fastify: FastifyInstance) => ControllerMethods | T, cb?: ((deps: T, fastify: FastifyInstance) => ControllerMethods) | undefined) {
+type ServerMethods = {
+  [Key in keyof Methods]: ServerMethodHandler<Methods[Key]${
+    hasAdditionals || params.length ? ', ' : ''
+  }${hasAdditionals ? `AdditionalRequest${params.length ? ' & ' : ''}` : ''}${
+    params.length ? '{ params: Params }' : ''
+  }>
+}
+
+export function defineController<M extends ServerMethods>(methods: (fastify: FastifyInstance) => M): (fastify: FastifyInstance) => M
+export function defineController<M extends ServerMethods, T extends Record<string, any>>(deps: T, cb: (d: T, fastify: FastifyInstance) => M): Injectable<T, [FastifyInstance], M>
+export function defineController<M extends ServerMethods, T extends Record<string, any>>(methods: ((fastify: FastifyInstance) => M) | T, cb?: ((deps: T, fastify: FastifyInstance) => M) | undefined) {
   return cb && typeof methods !== 'function' ? depend(methods, cb) : methods
 }
 `
@@ -253,12 +267,16 @@ export default (appDir: string, project: string) => {
 
       if (methods?.length) {
         const controllerSource = program.getSourceFile(path.join(input, 'controller.ts'))
-        let isPromiseMethods: string[] = []
+        const isPromiseMethods: string[] = []
+        const hasHandlerMethods: string[] = []
+        const hasValidatorMethods: string[] = []
         let ctrlHooksSignature: ts.Signature | undefined
         let resSchemaSignature: ts.Signature | undefined
 
         if (controllerSource) {
-          isPromiseMethods =
+          const getMethodTypeNodes = (
+            cb: (symbol: ts.Symbol, typeNode: ts.TypeNode, type: ts.Type) => string | null
+          ): string[] =>
             ts.forEachChild(
               controllerSource,
               node =>
@@ -273,22 +291,58 @@ export default (appDir: string, project: string) => {
                       )[0]
                       .getReturnType()
                       .getProperties()
-                      .map(
-                        t =>
+                      .map(t => {
+                        const type =
                           t.valueDeclaration &&
-                          checker
-                            .getSignaturesOfType(
-                              checker.getTypeOfSymbolAtLocation(t, t.valueDeclaration),
-                              ts.SignatureKind.Call
-                            )[0]
-                            .getReturnType()
-                            .getSymbol()
-                            ?.getEscapedName() === 'Promise' &&
-                          t.name
-                      )
+                          checker.getTypeOfSymbolAtLocation(t, t.valueDeclaration)
+                        if (!type) return undefined
+
+                        const typeNode =
+                          t.valueDeclaration && checker.typeToTypeNode(type, undefined, undefined)
+                        if (!typeNode) return undefined
+
+                        return cb(t, typeNode, type)
+                      })
                       .filter((n): n is string => !!n)
                 )
             ) || []
+
+          isPromiseMethods.push(
+            ...getMethodTypeNodes((symbol, typeNode, type) => {
+              const handler = ts.isFunctionTypeNode(typeNode)
+                ? symbol
+                : type.getProperties().find(p => p.name === 'handler')
+
+              if (!handler) return null
+
+              return handler.valueDeclaration &&
+                checker
+                  .getSignaturesOfType(
+                    checker.getTypeOfSymbolAtLocation(handler, handler.valueDeclaration),
+                    ts.SignatureKind.Call
+                  )[0]
+                  .getReturnType()
+                  .getSymbol()
+                  ?.getEscapedName() === 'Promise'
+                ? symbol.name
+                : null
+            })
+          )
+
+          hasHandlerMethods.push(
+            ...getMethodTypeNodes((symbol, typeNode) =>
+              ts.isFunctionTypeNode(typeNode) ? null : symbol.name
+            )
+          )
+
+          hasValidatorMethods.push(
+            ...getMethodTypeNodes((symbol, typeNode, type) =>
+              !ts.isFunctionTypeNode(typeNode) &&
+              type.getProperties().find(p => p.name === 'validators')
+                ? symbol.name
+                : null
+            )
+          )
 
           let ctrlHooksNode: ts.VariableDeclaration | ts.ExportSpecifier | undefined
           let resSchemaNode: ts.VariableDeclaration | ts.ExportSpecifier | undefined
@@ -370,7 +424,7 @@ export default (appDir: string, project: string) => {
           .map(p => p.name as LowerHttpMethod)
 
         const genResSchemaText = (method: LowerHttpMethod) =>
-          `schema: { response: responseSchema${controllers.filter(c => c[2]).length}.${method} }`
+          `response: responseSchema${controllers.filter(c => c[2]).length}.${method}`
         const getSomeTypeQueryParams = (typeName: string, query: ts.Symbol) =>
           query.valueDeclaration &&
           checker
@@ -528,23 +582,33 @@ ${validateInfo
                       .replace(/\/_/g, '/:')
                       .replace(/@.+?($|\/)/g, '$1')}\``
                   : "basePath || '/'"
-              },${
-                hooksTexts.length || resSchemaMethods?.includes(m.name as LowerHttpMethod)
-                  ? `\n    {\n      ${
-                      resSchemaMethods?.includes(m.name as LowerHttpMethod)
-                        ? `${genResSchemaText(m.name as LowerHttpMethod)}${
-                            hooksTexts.length ? ',\n      ' : ''
-                          }`
-                        : ''
-                    }${hooksTexts.join(',\n      ')}\n    }${
-                      fs.readFileSync(`${input}/$relay.ts`, 'utf8').includes('AdditionalRequest')
-                        ? ' as RouteShorthandOptions'
-                        : ''
-                    },\n    `
-                  : ' '
-              }${
-                isPromiseMethods.includes(m.name) ? 'asyncMethodToHandler' : 'methodToHandler'
-              }(controller${controllers.length}.${m.name})${
+              },${(() => {
+                const validatorsText = hasValidatorMethods.includes(m.name)
+                  ? `...validatorsToSchema(controller${controllers.length}.${m.name}.validators)`
+                  : null
+                const resSchemaText = resSchemaMethods?.includes(m.name as LowerHttpMethod)
+                  ? genResSchemaText(m.name as LowerHttpMethod)
+                  : null
+                const vals = [
+                  ...(validatorsText && !resSchemaText
+                    ? [`schema: ${validatorsText.slice(3)}`, 'validatorCompiler']
+                    : validatorsText || resSchemaText
+                    ? [
+                        `schema: {\n        ${[validatorsText, resSchemaText]
+                          .filter(Boolean)
+                          .join(',\n        ')}\n      }`,
+                        'validatorCompiler'
+                      ]
+                    : []),
+                  ...hooksTexts
+                ]
+                return vals.length > 0 ? `\n    {\n      ${vals.join(',\n      ')}\n    },` : ''
+              })()}
+    ${
+      isPromiseMethods.includes(m.name) ? 'asyncMethodToHandler' : 'methodToHandler'
+    }(${`controller${controllers.length}.${m.name}${
+                hasHandlerMethods.includes(m.name) ? '.handler' : ''
+              }`})${
                 hooksTexts.length || resSchemaMethods?.includes(m.name as LowerHttpMethod)
                   ? '\n  '
                   : ''

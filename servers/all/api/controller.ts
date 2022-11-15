@@ -66,8 +66,7 @@ export default defineController(
       return { status: 200, body: v.query && { ...v.query, id: await log(v.query.id) } }
     },
     post: v => ({
-      // @ts-expect-error
-      status: 200,
+      status: 201,
       body: { id: +v.query.id, port: v.body.port, fileName: v.body.file.filename }
     })
   })

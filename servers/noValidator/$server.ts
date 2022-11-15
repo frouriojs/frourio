@@ -1,7 +1,8 @@
 import type { FastifyMultipartAttactFieldsToBodyOptions, Multipart } from '@fastify/multipart'
 import multipart from '@fastify/multipart'
 import type { ReadStream } from 'fs'
-import type { LowerHttpMethod, AspidaMethods, HttpStatusOk, AspidaMethodParams } from 'aspida'
+import type { HttpStatusOk, AspidaMethodParams } from 'aspida'
+import { z } from 'zod'
 import hooksFn0 from './api/hooks'
 import hooksFn1 from './api/users/hooks'
 import controllerFn0, { hooks as ctrlHooksFn0 } from './api/controller'
@@ -12,7 +13,7 @@ import controllerFn4 from './api/texts/sample/controller'
 import controllerFn5, { hooks as ctrlHooksFn1 } from './api/users/controller'
 import controllerFn6 from './api/users/_userId@number/controller'
 
-import type { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, RouteShorthandOptions } from 'fastify'
+import type { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, FastifySchema } from 'fastify'
 
 export type FrourioOptions = {
   basePath?: string | undefined
@@ -62,10 +63,17 @@ type RequestParams<T extends AspidaMethodParams> = Pick<{
   headers: Required<T>['reqHeaders'] extends {} | null ? 'headers' : never
 }['query' | 'body' | 'headers']>
 
-export type ServerMethods<T extends AspidaMethods, U extends Record<string, any> = {}> = {
-  [K in keyof T]: (
-    req: RequestParams<NonNullable<T[K]>> & U
-  ) => ServerResponse<NonNullable<T[K]>> | Promise<ServerResponse<NonNullable<T[K]>>>
+type ServerHandler<T extends AspidaMethodParams, U extends Record<string, any> = {}> = (
+  req: RequestParams<T> & U
+) => ServerResponse<T>
+
+type ServerHandlerPromise<T extends AspidaMethodParams, U extends Record<string, any> = {}> = (
+  req: RequestParams<T> & U
+) => Promise<ServerResponse<T>>
+
+export type ServerMethodHandler<T extends AspidaMethodParams,  U extends Record<string, any> = {}> = ServerHandler<T, U> | ServerHandlerPromise<T, U> | {
+  validators?: Partial<{ [Key in keyof RequestParams<T>]?: z.ZodType<RequestParams<T>[Key]>}>
+  handler: ServerHandler<T, U> | ServerHandlerPromise<T, U>
 }
 
 const createTypedParamsHandler = (numberTypeParams: string[]): preValidationHookHandler => (req, reply, done) => {
@@ -110,8 +118,16 @@ const formatMultipartData = (arrayTypeKeys: [string, boolean][]): preValidationH
   done()
 }
 
+const validatorCompiler = ({ schema, httpPart }: { schema: FastifySchema, httpPart?: string }) => (data: any) => httpPart && (schema[httpPart as keyof FastifySchema] as z.ZodType<any>).parse(data)
+
+const validatorsToSchema = (validator?: { query?: unknown; body?: unknown; headers?: unknown }): FastifySchema => ({
+  querystring: validator?.query,
+  body: validator?.body,
+  headers: validator?.headers
+})
+
 const methodToHandler = (
-  methodCallback: ServerMethods<any, any>[LowerHttpMethod]
+  methodCallback: ServerHandler<any, any>
 ): RouteHandlerMethod => (req, reply) => {
   const data = methodCallback(req as any) as any
 
@@ -121,7 +137,7 @@ const methodToHandler = (
 }
 
 const asyncMethodToHandler = (
-  methodCallback: ServerMethods<any, any>[LowerHttpMethod]
+  methodCallback: ServerHandlerPromise<any, any>
 ): RouteHandlerMethod => async (req, reply) => {
   const data = await methodCallback(req as any) as any
 
@@ -149,9 +165,13 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   fastify.get(
     basePath || '/',
     {
+      // @ts-expect-error
+      schema: validatorsToSchema(controller0.get.validators),
+      validatorCompiler,
       onRequest: [hooks0.onRequest, ctrlHooks0.onRequest]
     },
-    asyncMethodToHandler(controller0.get)
+    // @ts-expect-error
+    asyncMethodToHandler(controller0.get.handler)
   )
 
   fastify.post(
@@ -160,6 +180,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
       onRequest: [hooks0.onRequest, ctrlHooks0.onRequest],
       preValidation: formatMultipartData([])
     },
+    // @ts-expect-error
     methodToHandler(controller0.post)
   )
 
@@ -185,6 +206,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
     {
       onRequest: hooks0.onRequest
     },
+    // @ts-expect-error
     methodToHandler(controller3.get)
   )
 
@@ -193,6 +215,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
     {
       onRequest: hooks0.onRequest
     },
+    // @ts-expect-error
     methodToHandler(controller3.put)
   )
 
@@ -209,7 +232,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
     {
       onRequest: [hooks0.onRequest, hooks1.onRequest],
       preHandler: ctrlHooks1.preHandler
-    } as RouteShorthandOptions,
+    },
     asyncMethodToHandler(controller5.get)
   )
 
@@ -218,8 +241,8 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
     {
       onRequest: [hooks0.onRequest, hooks1.onRequest],
       preHandler: ctrlHooks1.preHandler
-    } as RouteShorthandOptions,
-    methodToHandler(controller5.post)
+    },
+    methodToHandler(controller5.post.handler)
   )
 
   fastify.get(
@@ -227,7 +250,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
     {
       onRequest: [hooks0.onRequest, hooks1.onRequest],
       preValidation: createTypedParamsHandler(['userId'])
-    } as RouteShorthandOptions,
+    },
     methodToHandler(controller6.get)
   )
 
