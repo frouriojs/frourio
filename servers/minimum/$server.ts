@@ -54,7 +54,7 @@ export type ServerMethodHandler<T extends AspidaMethodParams,  U extends Record<
   handler: ServerHandler<T, U> | ServerHandlerPromise<T, U>
 }
 
-const validatorCompiler = ({ schema, httpPart }: { schema: FastifySchema, httpPart?: string }) => (data: any) => httpPart && (schema[httpPart as keyof FastifySchema] as z.ZodType<any>).parse(data)
+const validatorCompiler = ({ schema }: { schema: z.ZodType<any> }) => (data: any) => schema.parse(data)
 
 const methodToHandler = (
   methodCallback: ServerHandler<any, any>

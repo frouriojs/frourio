@@ -5,6 +5,7 @@ import type { HttpStatusOk, AspidaMethodParams } from 'aspida'
 import { z } from 'zod'
 import hooksFn0 from './api/hooks'
 import hooksFn1 from './api/users/hooks'
+import validatorsFn0 from './api/users/_userId@number/validators'
 import controllerFn0, { hooks as ctrlHooksFn0 } from './api/controller'
 import controllerFn1 from './api/empty/noEmpty/controller'
 import controllerFn2 from './api/multiForm/controller'
@@ -118,7 +119,7 @@ const formatMultipartData = (arrayTypeKeys: [string, boolean][]): preValidationH
   done()
 }
 
-const validatorCompiler = ({ schema, httpPart }: { schema: FastifySchema, httpPart?: string }) => (data: any) => httpPart && (schema[httpPart as keyof FastifySchema] as z.ZodType<any>).parse(data)
+const validatorCompiler = ({ schema }: { schema: z.ZodType<any> }) => (data: any) => schema.parse(data)
 
 const validatorsToSchema = (validator?: { query?: unknown; body?: unknown; headers?: unknown }): FastifySchema => ({
   querystring: validator?.query,
@@ -152,6 +153,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   const hooks1 = hooksFn1(fastify)
   const ctrlHooks0 = ctrlHooksFn0(fastify)
   const ctrlHooks1 = ctrlHooksFn1(fastify)
+  const validators0 = validatorsFn0(fastify)
   const controller0 = controllerFn0(fastify)
   const controller1 = controllerFn1(fastify)
   const controller2 = controllerFn2(fastify)
@@ -248,6 +250,10 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   fastify.get(
     `${basePath}/users/:userId`,
     {
+      schema: {
+        params: validators0.params
+      },
+      validatorCompiler,
       onRequest: [hooks0.onRequest, hooks1.onRequest],
       preValidation: createTypedParamsHandler(['userId'])
     },

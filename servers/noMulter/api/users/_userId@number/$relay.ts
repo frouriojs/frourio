@@ -20,10 +20,7 @@ type Params = {
 }
 
 export function defineValidators(validator: (fastify: FastifyInstance) => {
-  body?: z.ZodType,
-  params?: z.ZodType<Params>,
-  query?: z.ZodType<Record<string, unknown>>,
-  headers?: z.ZodType<Record<string, string>>
+  params: z.ZodType<{ userId: number }>
 }) {
   return validator
 }

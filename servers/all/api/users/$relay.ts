@@ -1,4 +1,3 @@
-import { z } from 'zod'
 import type { Injectable } from 'velona'
 import { depend } from 'velona'
 import type { FastifyInstance, onRequestHookHandler, preParsingHookHandler, preValidationHookHandler, preHandlerHookHandler } from 'fastify'
@@ -16,14 +15,6 @@ type Hooks = {
   preParsing?: AddedHandler<preParsingHookHandler> | AddedHandler<preParsingHookHandler>[] | undefined
   preValidation?: AddedHandler<preValidationHookHandler> | AddedHandler<preValidationHookHandler>[] | undefined
   preHandler?: AddedHandler<preHandlerHookHandler> | AddedHandler<preHandlerHookHandler>[] | undefined
-}
-
-export function defineValidators(validator: (fastify: FastifyInstance) => {
-  body?: z.ZodType,
-  query?: z.ZodType<Record<string, unknown>>,
-  headers?: z.ZodType<Record<string, string>>
-}) {
-  return validator
 }
 
 export function defineResponseSchema<T extends { [U in keyof Methods]?: { [V in HttpStatusOk]?: Schema | undefined } | undefined}>(methods: () => T) {

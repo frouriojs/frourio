@@ -1,5 +1,6 @@
 import { defineController, defineHooks, defineResponseSchema } from '~/$relay'
 import { depend } from 'velona'
+import { z } from 'zod'
 
 const hooks = defineHooks({ print: (...args: string[]) => console.log(...args) }, ({ print }) => ({
   onRequest: depend({}, (_deps, req, _reply, done) => {
@@ -68,7 +69,29 @@ export default defineController(
     post: v => ({
       status: 201,
       body: { id: +v.query.id, port: v.body.port, fileName: v.body.file.filename }
-    })
+    }),
+    put: {
+      validators: {
+        query: z.object({
+          requiredNum: z.number(),
+          optionalNum: z.number().optional(),
+          optionalNumArr: z.array(z.number()).optional(),
+          emptyNum: z.number().optional(),
+          requiredNumArr: z.array(z.number()),
+          id: z.string(),
+          disable: z.string(),
+          bool: z.boolean(),
+          optionalBool: z.boolean().optional(),
+          boolArray: z.array(z.boolean()),
+          optionalBoolArray: z.array(z.boolean()).optional()
+        }),
+        body: z.object({ port: z.string() })
+      },
+      handler: v => ({
+        status: 201,
+        body: { id: +v.query.id, port: v.body.port }
+      })
+    }
   })
 )
 

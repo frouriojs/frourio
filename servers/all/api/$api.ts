@@ -118,7 +118,11 @@ const api = <T>({ baseURL, fetch }: AspidaClient<T>) => {
       fetch<Methods0['post']['resBody'], BasicHeaders, Methods0['post']['status']>(prefix, '', POST, option, 'FormData').json(),
     $post: (option: { body: Methods0['post']['reqBody'], query: Methods0['post']['query'], config?: T | undefined }) =>
       fetch<Methods0['post']['resBody'], BasicHeaders, Methods0['post']['status']>(prefix, '', POST, option, 'FormData').json().then(r => r.body),
-    $path: (option?: { method?: 'get' | undefined; query: Methods0['get']['query'] } | { method: 'post'; query: Methods0['post']['query'] } | undefined) =>
+    put: (option: { body: Methods0['put']['reqBody'], query: Methods0['put']['query'], config?: T | undefined }) =>
+      fetch<Methods0['put']['resBody'], BasicHeaders, Methods0['put']['status']>(prefix, '', PUT, option).json(),
+    $put: (option: { body: Methods0['put']['reqBody'], query: Methods0['put']['query'], config?: T | undefined }) =>
+      fetch<Methods0['put']['resBody'], BasicHeaders, Methods0['put']['status']>(prefix, '', PUT, option).json().then(r => r.body),
+    $path: (option?: { method?: 'get' | undefined; query: Methods0['get']['query'] } | { method: 'post'; query: Methods0['post']['query'] } | { method: 'put'; query: Methods0['put']['query'] } | undefined) =>
       `${prefix}${option && option.query ? `?${dataToURLString(option.query)}` : ''}`
   }
 }

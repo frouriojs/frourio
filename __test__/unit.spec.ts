@@ -1,11 +1,11 @@
 import fs from 'fs'
 import rimraf from 'rimraf'
-import createDefaultFilesIfNotExists from '../src/createDefaultFilesIfNotExists'
+import { createDefaultFilesIfNotExists } from '../src/createDefaultFilesIfNotExists'
 
 test('createDefaultFilesIfNotExists', () => {
   const dir = 'tmp'
   fs.mkdirSync(dir)
-  createDefaultFilesIfNotExists(dir)
+  createDefaultFilesIfNotExists(dir, null)
 
   expect(fs.readFileSync(`${dir}/index.ts`, 'utf8')).toBe(`export type Methods = {
   get: {
@@ -25,7 +25,7 @@ export default defineController(() => ({
   expect(fs.existsSync(`${dir}/hooks.ts`)).toBeFalsy()
 
   fs.writeFileSync(`${dir}/hooks.ts`, '', 'utf8')
-  createDefaultFilesIfNotExists(dir)
+  createDefaultFilesIfNotExists(dir, null)
 
   expect(fs.readFileSync(`${dir}/hooks.ts`, 'utf8')).toBe(
     `import { defineHooks } from './$relay'
@@ -42,7 +42,7 @@ export default defineHooks(() => ({
 
   fs.mkdirSync(dir)
   fs.writeFileSync(`${dir}/$test.ts`, '// test file')
-  createDefaultFilesIfNotExists(dir)
+  createDefaultFilesIfNotExists(dir, null)
   expect(fs.readdirSync(dir)).toEqual(['$test.ts'])
 
   rimraf.sync(dir)

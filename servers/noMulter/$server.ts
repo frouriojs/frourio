@@ -8,6 +8,7 @@ import type { HttpStatusOk, AspidaMethodParams } from 'aspida'
 import { z } from 'zod'
 import hooksFn0 from './api/hooks'
 import hooksFn1 from './api/users/hooks'
+import validatorsFn0 from './api/users/_userId@number/validators'
 import controllerFn0, { hooks as ctrlHooksFn0 } from './api/controller'
 import controllerFn1 from './api/empty/noEmpty/controller'
 import controllerFn2 from './api/texts/controller'
@@ -15,7 +16,7 @@ import controllerFn3 from './api/texts/sample/controller'
 import controllerFn4, { hooks as ctrlHooksFn1 } from './api/users/controller'
 import controllerFn5 from './api/users/_userId@number/controller'
 
-import type { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, FastifyRequest } from 'fastify'
+import type { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, FastifyRequest, FastifySchema } from 'fastify'
 
 export type FrourioOptions = {
   basePath?: string | undefined
@@ -91,6 +92,8 @@ const createTypedParamsHandler = (numberTypeParams: string[]): preValidationHook
 const createValidateHandler = (validators: (req: FastifyRequest) => (Promise<void> | null)[]): preValidationHookHandler =>
   (req, reply) => Promise.all(validators(req)).catch(err => reply.code(400).send(err))
 
+const validatorCompiler = ({ schema }: { schema: z.ZodType<any> }) => (data: any) => schema.parse(data)
+
 const methodToHandler = (
   methodCallback: ServerHandler<any, any>
 ): RouteHandlerMethod => (req, reply) => {
@@ -120,6 +123,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   const hooks1 = hooksFn1(fastify)
   const ctrlHooks0 = ctrlHooksFn0(fastify)
   const ctrlHooks1 = ctrlHooksFn1(fastify)
+  const validators0 = validatorsFn0(fastify)
   const controller0 = controllerFn0(fastify)
   const controller1 = controllerFn1(fastify)
   const controller2 = controllerFn2(fastify)
@@ -210,6 +214,10 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   fastify.get(
     `${basePath}/users/:userId`,
     {
+      schema: {
+        params: validators0.params
+      },
+      validatorCompiler,
       onRequest: [hooks0.onRequest, hooks1.onRequest],
       preValidation: createTypedParamsHandler(['userId'])
     },

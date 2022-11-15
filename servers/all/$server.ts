@@ -13,6 +13,9 @@ import hooksFn0 from './api/hooks'
 import hooksFn1 from './api/empty/hooks'
 import hooksFn2 from './api/users/hooks'
 import hooksFn3 from './api/users/_userId@number/_name/hooks'
+import validatorsFn0 from './api/texts/_label@string/validators'
+import validatorsFn1 from './api/users/_userId@number/validators'
+import validatorsFn2 from './api/users/_userId@number/_name/validators'
 import controllerFn0, { hooks as ctrlHooksFn0, responseSchema as responseSchemaFn0 } from './api/controller'
 import controllerFn1 from './api/500/controller'
 import controllerFn2 from './api/empty/noEmpty/controller'
@@ -216,7 +219,13 @@ const formatMultipartData = (arrayTypeKeys: [string, boolean][]): preValidationH
   done()
 }
 
-const validatorCompiler = ({ schema, httpPart }: { schema: FastifySchema, httpPart?: string }) => (data: any) => httpPart && (schema[httpPart as keyof FastifySchema] as z.ZodType<any>).parse(data)
+const validatorCompiler = ({ schema }: { schema: z.ZodType<any> }) => (data: any) => schema.parse(data)
+
+const validatorsToSchema = (validator?: { query?: unknown; body?: unknown; headers?: unknown }): FastifySchema => ({
+  querystring: validator?.query,
+  body: validator?.body,
+  headers: validator?.headers
+})
 
 const methodToHandler = (
   methodCallback: ServerHandler<any, any>
@@ -249,6 +258,9 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   const hooks3 = hooksFn3(fastify)
   const ctrlHooks0 = ctrlHooksFn0(fastify)
   const ctrlHooks1 = ctrlHooksFn1(fastify)
+  const validators0 = validatorsFn0(fastify)
+  const validators1 = validatorsFn1(fastify)
+  const validators2 = validatorsFn2(fastify)
   const responseSchema0 = responseSchemaFn0()
   const controller0 = controllerFn0(fastify)
   const controller1 = controllerFn1(fastify)
@@ -301,6 +313,21 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
       ]
     },
     methodToHandler(controller0.post)
+  )
+
+  fastify.put(
+    basePath || '/',
+    {
+      schema: validatorsToSchema(controller0.put.validators),
+      validatorCompiler,
+      onRequest: [...hooks0.onRequest, ctrlHooks0.onRequest],
+      preParsing: hooks0.preParsing,
+      preValidation: [
+        parseNumberTypeQueryParams([['requiredNum', false, false], ['optionalNum', true, false], ['optionalNumArr', true, true], ['emptyNum', true, false], ['requiredNumArr', false, true]]),
+        parseBooleanTypeQueryParams([['bool', false, false], ['optionalBool', true, false], ['boolArray', false, true], ['optionalBoolArray', true, true]])
+      ]
+    },
+    methodToHandler(controller0.put.handler)
   )
 
   fastify.get(
@@ -369,6 +396,10 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   fastify.get(
     `${basePath}/texts/:label`,
     {
+      schema: {
+        params: validators0.params
+      },
+      validatorCompiler,
       onRequest: hooks0.onRequest,
       preParsing: hooks0.preParsing
     },
@@ -401,6 +432,10 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   fastify.get(
     `${basePath}/users/:userId`,
     {
+      schema: {
+        params: validators1.params
+      },
+      validatorCompiler,
       onRequest: [...hooks0.onRequest, hooks2.onRequest],
       preParsing: hooks0.preParsing,
       preValidation: createTypedParamsHandler(['userId'])
@@ -411,6 +446,10 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   fastify.get(
     `${basePath}/users/:userId/:name`,
     {
+      schema: {
+        params: validators1.params.and(validators2.params)
+      },
+      validatorCompiler,
       onRequest: [...hooks0.onRequest, hooks2.onRequest, hooks3.onRequest],
       preParsing: hooks0.preParsing,
       preValidation: createTypedParamsHandler(['userId'])
