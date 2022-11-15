@@ -87,11 +87,25 @@ test('GET: string', async () => {
   expect(res.headers['content-type']).toBe('text/plain; charset=utf-8')
 })
 
-test('GET: params.userId', async () => {
+test('GET: params.userId and name', async () => {
   const userId = 1
+  const name = 'aaa'
   const res = await client.users._userId(userId).get()
   expect(res.body.id).toBe(userId)
   expect(res.headers['content-type']).toBe('application/json; charset=utf-8')
+
+  const res2 = await client.users._userId(userId)._name(name).get()
+  expect(res2.body).toBe(name)
+  expect(res2.headers['content-type']).toBe('text/plain; charset=utf-8')
+})
+
+test('GET: 400 params.userId and name', async () => {
+  await expect(
+    client.users
+      ._userId('aaa' as any)
+      ._name(111)
+      .get()
+  ).rejects.toHaveProperty('response.status', 400)
 })
 
 test('GET: 400', () =>
@@ -189,6 +203,51 @@ test('POST: formdata', async () => {
   // 2 = query + body
   expect(subServerPlainToInstanceCallCount).toBe(2)
   expect(subServerValidateOrRejectCallCount).toBe(2)
+})
+
+test('PUT: zod validations', async () => {
+  const port = '3000'
+  const res1 = await fetchClient.$put({
+    query: {
+      requiredNum: 0,
+      requiredNumArr: [],
+      id: '1',
+      disable: 'true',
+      bool: false,
+      boolArray: []
+    },
+    body: { port }
+  })
+  expect(res1.port).toBe(port)
+
+  await Promise.all([
+    expect(
+      fetchClient.put({
+        query: {
+          requiredNum: 0,
+          requiredNumArr: [],
+          id: '1',
+          disable: 'true',
+          bool: false,
+          boolArray: []
+        },
+        body: { port: 3000 as any }
+      })
+    ).rejects.toHaveProperty('response.status', 500),
+    expect(
+      fetchClient.put({
+        query: {
+          requiredNum: 0,
+          requiredNumArr: [],
+          id: '1',
+          disable: 'true',
+          bool: 1 as any,
+          boolArray: []
+        },
+        body: { port }
+      })
+    ).rejects.toHaveProperty('response.status', 400)
+  ])
 })
 
 test('POST: multi file upload', async () => {

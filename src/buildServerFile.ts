@@ -4,7 +4,7 @@ import checkRequisites from './checkRequisites'
 
 const genHandlerText = (isAsync: boolean) => `
 const ${isAsync ? 'asyncM' : 'm'}ethodToHandler = (
-  methodCallback: ServerMethods<any, any>[LowerHttpMethod]
+  methodCallback: ServerHandler${isAsync ? 'Promise' : ''}<any, any>
 ): RouteHandlerMethod => ${isAsync ? 'async ' : ''}(req, reply) => {
   const data = ${isAsync ? 'await ' : ''}methodCallback(req as any) as any
 
@@ -25,14 +25,16 @@ export default (input: string, project?: string) => {
   const hasMultipart = controllers.includes(' formatMultipartData(')
   const hasMethodToHandler = controllers.includes(' methodToHandler(')
   const hasAsyncMethodToHandler = controllers.includes(' asyncMethodToHandler(')
-  const hasRouteShorthandOptions = controllers.includes(' as RouteShorthandOptions,')
+  const hasValidatorCompiler = controllers.includes(' validatorCompiler')
+  const hasValidatorsToSchema = controllers.includes('validatorsToSchema(')
+  const headImports: string[] = []
 
   checkRequisites({ hasValidator })
 
-  const headIpmorts: string[] = []
-
   if (hasValidator) {
-    headIpmorts.push(
+    console.warn(`'class-validator' is deprecated. Specify validators in controller instead.`)
+
+    headImports.push(
       "import 'reflect-metadata'",
       "import type { ClassTransformOptions } from 'class-transformer'",
       "import { plainToInstance as defaultPlainToInstance } from 'class-transformer'",
@@ -42,33 +44,32 @@ export default (input: string, project?: string) => {
   }
 
   if (hasMultipart) {
-    headIpmorts.push(
-      "import type { FastifyMultipartAttactFieldsToBodyOptions, Multipart } from '@fastify/multipart'"
+    headImports.push(
+      "import type { FastifyMultipartAttactFieldsToBodyOptions, Multipart } from '@fastify/multipart'",
+      "import multipart from '@fastify/multipart'"
     )
-    headIpmorts.push("import multipart from '@fastify/multipart'")
   }
 
   if (hasValidator) {
-    headIpmorts.push("import * as Validators from './validators'")
+    headImports.push("import * as Validators from './validators'")
   }
 
   if (hasMultipart) {
-    headIpmorts.push("import type { ReadStream } from 'fs'")
+    headImports.push("import type { ReadStream } from 'fs'")
   }
 
-  headIpmorts.push(
-    "import type { LowerHttpMethod, AspidaMethods, HttpStatusOk, AspidaMethodParams } from 'aspida'"
-  )
+  headImports.push("import type { HttpStatusOk, AspidaMethodParams } from 'aspida'")
 
   return {
-    text: `${headIpmorts.join('\n')}
+    text: `${headImports.join('\n')}
+import { z } from 'zod'
 ${imports}
 import type { FastifyInstance, RouteHandlerMethod${
       hasNumberTypeQuery || hasBooleanTypeQuery || hasTypedParams || hasValidator || hasMultipart
         ? ', preValidationHookHandler'
         : ''
     }${hasValidator ? ', FastifyRequest' : ''}${
-      hasRouteShorthandOptions ? ', RouteShorthandOptions' : ''
+      hasValidatorCompiler ? ', FastifySchema' : ''
     } } from 'fastify'
 
 export type FrourioOptions = {
@@ -129,10 +130,17 @@ type RequestParams<T extends AspidaMethodParams> = Pick<{
   headers: Required<T>['reqHeaders'] extends {} | null ? 'headers' : never
 }['query' | 'body' | 'headers']>
 
-export type ServerMethods<T extends AspidaMethods, U extends Record<string, any> = {}> = {
-  [K in keyof T]: (
-    req: RequestParams<NonNullable<T[K]>> & U
-  ) => ServerResponse<NonNullable<T[K]>> | Promise<ServerResponse<NonNullable<T[K]>>>
+type ServerHandler<T extends AspidaMethodParams, U extends Record<string, any> = {}> = (
+  req: RequestParams<T> & U
+) => ServerResponse<T>
+
+type ServerHandlerPromise<T extends AspidaMethodParams, U extends Record<string, any> = {}> = (
+  req: RequestParams<T> & U
+) => Promise<ServerResponse<T>>
+
+export type ServerMethodHandler<T extends AspidaMethodParams,  U extends Record<string, any> = {}> = ServerHandler<T, U> | ServerHandlerPromise<T, U> | {
+  validators?: Partial<{ [Key in keyof RequestParams<T>]?: z.ZodType<RequestParams<T>[Key]>}>
+  handler: ServerHandler<T, U> | ServerHandlerPromise<T, U>
 }
 ${
   hasNumberTypeQuery
@@ -285,6 +293,22 @@ const formatMultipartData = (arrayTypeKeys: [string, boolean][]): preValidationH
 
   done()
 }
+`
+        : ''
+    }${
+      hasValidatorCompiler
+        ? `
+const validatorCompiler = ({ schema }: { schema: z.ZodType<any> }) => (data: any) => schema.parse(data)${
+            hasValidatorsToSchema
+              ? `
+
+const validatorsToSchema = (validator?: { query?: unknown; body?: unknown; headers?: unknown }): FastifySchema => ({
+  querystring: validator?.query,
+  body: validator?.body,
+  headers: validator?.headers
+})`
+              : ''
+          }
 `
         : ''
     }${hasMethodToHandler ? genHandlerText(false) : ''}${

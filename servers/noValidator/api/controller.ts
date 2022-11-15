@@ -1,3 +1,4 @@
+import { z } from 'zod'
 import { defineController, defineHooks } from './$relay'
 
 export const hooks = defineHooks(() => ({
@@ -8,11 +9,14 @@ export const hooks = defineHooks(() => ({
 }))
 
 export default defineController(() => ({
-  get: async v => {
-    return await { status: 200, body: { id: +(v.query?.id || 0) } }
+  get: {
+    validators: { query: z.object({ id: z.string(), disable: z.string() }) },
+    handler: async v => {
+      return await { status: 200, body: { id: +(v.query?.id || 0) } }
+    }
   },
+  // @ts-expect-error
   post: v => ({
-    // @ts-expect-error
     status: 200,
     body: { id: +v.query.id, port: v.body.port, fileName: v.body.file.filename }
   })

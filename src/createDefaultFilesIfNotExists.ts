@@ -1,7 +1,9 @@
 import fs from 'fs'
 import path from 'path'
 
-export default (dir: string) => {
+export type Param = [string, string]
+
+export const createDefaultFilesIfNotExists = (dir: string, currentParam: Param | null) => {
   const isEmptyDir = fs.readdirSync(dir).length === 0
 
   const indexFilePath = path.join(dir, 'index.ts')
@@ -46,6 +48,22 @@ export default defineHooks(() => ({
     console.log('Directory level onRequest hook:', req.url)
     done()
   }
+}))
+`,
+      'utf8'
+    )
+  }
+
+  const validatorsFilePath = path.join(dir, 'validators.ts')
+
+  if (currentParam && !fs.existsSync(validatorsFilePath)) {
+    fs.writeFileSync(
+      validatorsFilePath,
+      `import { z } from 'zod'
+import { defineValidators } from './$relay'
+
+export default defineValidators(() => ({
+  params: z.object({ ${currentParam[0]}: z.${currentParam[1]}() })
 }))
 `,
       'utf8'

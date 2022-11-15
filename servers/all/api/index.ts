@@ -18,4 +18,27 @@ export type Methods = {
       fileName: string
     }
   }
+  put: {
+    query: {
+      requiredNum: number
+      optionalNum?: number
+      optionalNumArr?: Array<number>
+      emptyNum?: number
+      requiredNumArr: number[]
+      id: string
+      disable: string
+      bool: boolean
+      optionalBool?: boolean
+      boolArray: boolean[]
+      optionalBoolArray?: boolean[]
+    }
+    reqBody: {
+      port: string
+    }
+    status: 201
+    resBody: {
+      id: number
+      port: string
+    }
+  }
 }

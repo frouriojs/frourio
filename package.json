@@ -79,7 +79,8 @@
   },
   "dependencies": {
     "aspida": "^1.11.0",
-    "velona": "^0.7.0"
+    "velona": "^0.7.0",
+    "zod": "^3.19.1"
   },
   "devDependencies": {
     "@aspida/axios": "^1.11.0",

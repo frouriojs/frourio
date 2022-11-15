@@ -1,11 +1,11 @@
 import path from 'path'
 import fs from 'fs'
 import ts from 'typescript'
-import createDefaultFiles from './createDefaultFilesIfNotExists'
+import { createDefaultFilesIfNotExists } from './createDefaultFilesIfNotExists'
+import type { Param } from './createDefaultFilesIfNotExists'
 import type { LowerHttpMethod } from 'aspida'
 
 type HooksEvent = 'onRequest' | 'preParsing' | 'preValidation' | 'preHandler'
-type Param = [string, string]
 
 const findRootFiles = (dir: string): string[] =>
   fs
@@ -52,16 +52,19 @@ const createRelayFile = (
   input: string,
   appText: string,
   additionalReqs: string[],
-  params: Param[]
+  params: Param[],
+  currentParam: Param | null
 ) => {
   const hasAdditionals = !!additionalReqs.length
   const hasMultiAdditionals = additionalReqs.length > 1
-  const text = `import type { Injectable } from 'velona'
+  const text = `${
+    currentParam ? "import { z } from 'zod'\n" : ''
+  }import type { Injectable } from 'velona'
 import { depend } from 'velona'
 import type { FastifyInstance, onRequestHookHandler, preParsingHookHandler, preValidationHookHandler, preHandlerHookHandler } from 'fastify'
 import type { Schema } from 'fast-json-stringify'
 import type { HttpStatusOk } from 'aspida'
-import type { ServerMethods } from '${appText}'
+import type { ServerMethodHandler } from '${appText}'
 ${
   hasMultiAdditionals
     ? additionalReqs
@@ -100,14 +103,21 @@ ${[
       ? `  ${key}?: AddedHandler<${val}> | AddedHandler<${val}>[] | undefined\n`
       : `  ${key}?: ${val} | ${val}[] | undefined\n`
   )
-  .join('')}}
-type ControllerMethods = ServerMethods<Methods, ${hasAdditionals ? 'AdditionalRequest & ' : ''}{${
-    params.length
-      ? `\n  params: {\n${params.map(v => `    ${v[0]}: ${v[1]}`).join('\n')}\n  }\n`
-      : ''
-  }}>
+  .join('')}}${
+    params.length ? `\ntype Params = {\n${params.map(v => `  ${v[0]}: ${v[1]}`).join('\n')}\n}` : ''
+  }${
+    currentParam
+      ? `
 
-export function defineResponseSchema<T extends { [U in keyof ControllerMethods]?: { [V in HttpStatusOk]?: Schema | undefined } | undefined}>(methods: () => T) {
+export function defineValidators(validator: (fastify: FastifyInstance) => {
+  params: z.ZodType<{ ${currentParam[0]}: ${currentParam[1]} }>
+}) {
+  return validator
+}`
+      : ''
+  }
+
+export function defineResponseSchema<T extends { [U in keyof Methods]?: { [V in HttpStatusOk]?: Schema | undefined } | undefined}>(methods: () => T) {
   return methods
 }
 
@@ -117,9 +127,17 @@ export function defineHooks<T extends Record<string, any>>(hooks: (fastify: Fast
   return cb && typeof hooks !== 'function' ? depend(hooks, cb) : hooks
 }
 
-export function defineController(methods: (fastify: FastifyInstance) => ControllerMethods): (fastify: FastifyInstance) => ControllerMethods
-export function defineController<T extends Record<string, any>>(deps: T, cb: (d: T, fastify: FastifyInstance) => ControllerMethods): Injectable<T, [FastifyInstance], ControllerMethods>
-export function defineController<T extends Record<string, any>>(methods: (fastify: FastifyInstance) => ControllerMethods | T, cb?: ((deps: T, fastify: FastifyInstance) => ControllerMethods) | undefined) {
+type ServerMethods = {
+  [Key in keyof Methods]: ServerMethodHandler<Methods[Key]${
+    hasAdditionals || params.length ? ', ' : ''
+  }${hasAdditionals ? `AdditionalRequest${params.length ? ' & ' : ''}` : ''}${
+    params.length ? '{ params: Params }' : ''
+  }>
+}
+
+export function defineController<M extends ServerMethods>(methods: (fastify: FastifyInstance) => M): (fastify: FastifyInstance) => M
+export function defineController<M extends ServerMethods, T extends Record<string, any>>(deps: T, cb: (d: T, fastify: FastifyInstance) => M): Injectable<T, [FastifyInstance], M>
+export function defineController<M extends ServerMethods, T extends Record<string, any>>(methods: ((fastify: FastifyInstance) => M) | T, cb?: ((deps: T, fastify: FastifyInstance) => M) | undefined) {
   return cb && typeof methods !== 'function' ? depend(methods, cb) : methods
 }
 `
@@ -143,6 +161,7 @@ const createFiles = (
   appDir: string,
   dirPath: string,
   params: Param[],
+  currentParam: Param | null,
   appPath: string,
   additionalRequestPaths: string[]
 ) => {
@@ -153,12 +172,13 @@ const createFiles = (
     ...getAdditionalResPath(input, 'hooks')
   ]
 
-  createDefaultFiles(input)
+  createDefaultFilesIfNotExists(input, currentParam)
   createRelayFile(
     input,
     appText,
     [...additionalReqs, ...getAdditionalResPath(input, 'controller')],
-    params
+    params,
+    currentParam
   )
 
   const dirs = fs.readdirSync(input, { withFileTypes: true }).filter(d => d.isDirectory())
@@ -166,33 +186,50 @@ const createFiles = (
     throw new Error('There are two ore more path param folders.')
   }
 
-  dirs.forEach(d =>
-    createFiles(
+  dirs.forEach(d => {
+    const currentParam = d.name.startsWith('_')
+      ? ([d.name.slice(1).split('@')[0], d.name.split('@')[1] ?? 'string'] as [string, string])
+      : null
+    return createFiles(
       appDir,
       path.posix.join(dirPath, d.name),
-      d.name.startsWith('_')
-        ? [...params, [d.name.slice(1).split('@')[0], d.name.split('@')[1] ?? 'string']]
-        : params,
+      currentParam ? [...params, currentParam] : params,
+      currentParam,
       appText,
       additionalReqs
     )
-  )
+  })
 }
 
 export default (appDir: string, project: string) => {
-  createFiles(appDir, '', [], '$server', [])
+  createFiles(appDir, '', [], null, '$server', [])
 
   const { program, checker } = initTSC(appDir, project)
   const hooksPaths: string[] = []
+  const validatorsPaths: string[] = []
   const controllers: [string, boolean, boolean][] = []
   const createText = (
     dirPath: string,
-    cascadingHooks: { name: string; events: { type: HooksEvent; isArray: boolean }[] }[]
+    cascadingHooks: { name: string; events: { type: HooksEvent; isArray: boolean }[] }[],
+    cascadingValidators: { name: string; isNumber: boolean }[]
   ) => {
     const input = path.posix.join(appDir, dirPath)
     const source = program.getSourceFile(path.join(input, 'index.ts'))
     const results: string[] = []
     let hooks = cascadingHooks
+    let paramsValidators = cascadingValidators
+
+    const validatorsFilePath = path.join(input, 'validators.ts')
+    if (fs.existsSync(validatorsFilePath)) {
+      paramsValidators = [
+        ...cascadingValidators,
+        {
+          name: `validators${validatorsPaths.length}`,
+          isNumber: dirPath.split('@')[1] === 'number'
+        }
+      ]
+      validatorsPaths.push(`${input}/validators`)
+    }
 
     if (source) {
       const methods = ts.forEachChild(source, node =>
@@ -253,12 +290,16 @@ export default (appDir: string, project: string) => {
 
       if (methods?.length) {
         const controllerSource = program.getSourceFile(path.join(input, 'controller.ts'))
-        let isPromiseMethods: string[] = []
+        const isPromiseMethods: string[] = []
+        const hasHandlerMethods: string[] = []
+        const hasValidatorMethods: string[] = []
         let ctrlHooksSignature: ts.Signature | undefined
         let resSchemaSignature: ts.Signature | undefined
 
         if (controllerSource) {
-          isPromiseMethods =
+          const getMethodTypeNodes = (
+            cb: (symbol: ts.Symbol, typeNode: ts.TypeNode, type: ts.Type) => string | null
+          ): string[] =>
             ts.forEachChild(
               controllerSource,
               node =>
@@ -273,22 +314,58 @@ export default (appDir: string, project: string) => {
                       )[0]
                       .getReturnType()
                       .getProperties()
-                      .map(
-                        t =>
+                      .map(t => {
+                        const type =
                           t.valueDeclaration &&
-                          checker
-                            .getSignaturesOfType(
-                              checker.getTypeOfSymbolAtLocation(t, t.valueDeclaration),
-                              ts.SignatureKind.Call
-                            )[0]
-                            .getReturnType()
-                            .getSymbol()
-                            ?.getEscapedName() === 'Promise' &&
-                          t.name
-                      )
+                          checker.getTypeOfSymbolAtLocation(t, t.valueDeclaration)
+                        if (!type) return undefined
+
+                        const typeNode =
+                          t.valueDeclaration && checker.typeToTypeNode(type, undefined, undefined)
+                        if (!typeNode) return undefined
+
+                        return cb(t, typeNode, type)
+                      })
                       .filter((n): n is string => !!n)
                 )
             ) || []
+
+          isPromiseMethods.push(
+            ...getMethodTypeNodes((symbol, typeNode, type) => {
+              const handler = ts.isFunctionTypeNode(typeNode)
+                ? symbol
+                : type.getProperties().find(p => p.name === 'handler')
+
+              if (!handler) return null
+
+              return handler.valueDeclaration &&
+                checker
+                  .getSignaturesOfType(
+                    checker.getTypeOfSymbolAtLocation(handler, handler.valueDeclaration),
+                    ts.SignatureKind.Call
+                  )[0]
+                  .getReturnType()
+                  .getSymbol()
+                  ?.getEscapedName() === 'Promise'
+                ? symbol.name
+                : null
+            })
+          )
+
+          hasHandlerMethods.push(
+            ...getMethodTypeNodes((symbol, typeNode) =>
+              ts.isFunctionTypeNode(typeNode) ? null : symbol.name
+            )
+          )
+
+          hasValidatorMethods.push(
+            ...getMethodTypeNodes((symbol, typeNode, type) =>
+              !ts.isFunctionTypeNode(typeNode) &&
+              type.getProperties().find(p => p.name === 'validators')
+                ? symbol.name
+                : null
+            )
+          )
 
           let ctrlHooksNode: ts.VariableDeclaration | ts.ExportSpecifier | undefined
           let resSchemaNode: ts.VariableDeclaration | ts.ExportSpecifier | undefined
@@ -370,7 +447,7 @@ export default (appDir: string, project: string) => {
           .map(p => p.name as LowerHttpMethod)
 
         const genResSchemaText = (method: LowerHttpMethod) =>
-          `schema: { response: responseSchema${controllers.filter(c => c[2]).length}.${method} }`
+          `response: responseSchema${controllers.filter(c => c[2]).length}.${method}`
         const getSomeTypeQueryParams = (typeName: string, query: ts.Symbol) =>
           query.valueDeclaration &&
           checker
@@ -528,23 +605,41 @@ ${validateInfo
                       .replace(/\/_/g, '/:')
                       .replace(/@.+?($|\/)/g, '$1')}\``
                   : "basePath || '/'"
-              },${
-                hooksTexts.length || resSchemaMethods?.includes(m.name as LowerHttpMethod)
-                  ? `\n    {\n      ${
-                      resSchemaMethods?.includes(m.name as LowerHttpMethod)
-                        ? `${genResSchemaText(m.name as LowerHttpMethod)}${
-                            hooksTexts.length ? ',\n      ' : ''
-                          }`
-                        : ''
-                    }${hooksTexts.join(',\n      ')}\n    }${
-                      fs.readFileSync(`${input}/$relay.ts`, 'utf8').includes('AdditionalRequest')
-                        ? ' as RouteShorthandOptions'
-                        : ''
-                    },\n    `
-                  : ' '
-              }${
-                isPromiseMethods.includes(m.name) ? 'asyncMethodToHandler' : 'methodToHandler'
-              }(controller${controllers.length}.${m.name})${
+              },${(() => {
+                const validatorsText = hasValidatorMethods.includes(m.name)
+                  ? `...validatorsToSchema(controller${controllers.length}.${m.name}.validators)`
+                  : null
+                const paramsValidatorsText = paramsValidators.length
+                  ? `params: ${paramsValidators
+                      .map(
+                        v => `${v.name}.params`
+                        // v.isNumber ? `z.preprocess(Number, ${v.name}.params)` : `${v.name}.params`
+                      )
+                      .join('.and(')}${paramsValidators.length > 1 ? ')' : ''}`
+                  : null
+                const resSchemaText = resSchemaMethods?.includes(m.name as LowerHttpMethod)
+                  ? genResSchemaText(m.name as LowerHttpMethod)
+                  : null
+                const vals = [
+                  ...(validatorsText && !resSchemaText && !paramsValidatorsText
+                    ? [`schema: ${validatorsText.slice(3)}`, 'validatorCompiler']
+                    : validatorsText || resSchemaText || paramsValidatorsText
+                    ? [
+                        `schema: {\n        ${[validatorsText, resSchemaText, paramsValidatorsText]
+                          .filter(Boolean)
+                          .join(',\n        ')}\n      }`,
+                        'validatorCompiler'
+                      ]
+                    : []),
+                  ...hooksTexts
+                ]
+                return vals.length > 0 ? `\n    {\n      ${vals.join(',\n      ')}\n    },` : ''
+              })()}
+    ${
+      isPromiseMethods.includes(m.name) ? 'asyncMethodToHandler' : 'methodToHandler'
+    }(${`controller${controllers.length}.${m.name}${
+                hasHandlerMethods.includes(m.name) ? '.handler' : ''
+              }`})${
                 hooksTexts.length || resSchemaMethods?.includes(m.name as LowerHttpMethod)
                   ? '\n  '
                   : ''
@@ -564,7 +659,10 @@ ${validateInfo
         ...childrenDirs
           .filter(d => !d.name.startsWith('_'))
           .reduce<string[]>(
-            (prev, d) => [...prev, ...createText(path.posix.join(dirPath, d.name), hooks)],
+            (prev, d) => [
+              ...prev,
+              ...createText(path.posix.join(dirPath, d.name), hooks, paramsValidators)
+            ],
             []
           )
       )
@@ -572,14 +670,14 @@ ${validateInfo
       const value = childrenDirs.find(d => d.name.startsWith('_'))
 
       if (value) {
-        results.push(...createText(path.posix.join(dirPath, value.name), hooks))
+        results.push(...createText(path.posix.join(dirPath, value.name), hooks, paramsValidators))
       }
     }
 
     return results
   }
 
-  const text = createText('', []).join('\n')
+  const text = createText('', [], []).join('\n')
   const ctrlHooks = controllers.filter(c => c[1])
   const resSchemas = controllers.filter(c => c[2])
 
@@ -588,6 +686,11 @@ ${validateInfo
       .map(
         (m, i) =>
           `import hooksFn${i} from '${m.replace(/^api/, './api').replace(appDir, './api')}'\n`
+      )
+      .join('')}${validatorsPaths
+      .map(
+        (m, i) =>
+          `import validatorsFn${i} from '${m.replace(/^api/, './api').replace(appDir, './api')}'\n`
       )
       .join('')}${controllers
       .map(
@@ -607,6 +710,8 @@ ${validateInfo
       .map((_, i) => `  const hooks${i} = hooksFn${i}(fastify)\n`)
       .join('')}${ctrlHooks
       .map((_, i) => `  const ctrlHooks${i} = ctrlHooksFn${i}(fastify)\n`)
+      .join('')}${validatorsPaths
+      .map((_, i) => `  const validators${i} = validatorsFn${i}(fastify)\n`)
       .join('')}${resSchemas
       .map((_, i) => `  const responseSchema${i} = responseSchemaFn${i}()\n`)
       .join('')}${controllers
