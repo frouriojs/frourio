@@ -3,7 +3,7 @@ import type { ClassTransformOptions } from 'class-transformer'
 import { plainToInstance as defaultPlainToInstance } from 'class-transformer'
 import type { ValidatorOptions } from 'class-validator'
 import { validateOrReject as defaultValidateOrReject } from 'class-validator'
-import type { FastifyMultipartAttactFieldsToBodyOptions, Multipart } from '@fastify/multipart'
+import type { FastifyMultipartAttachFieldsToBodyOptions, Multipart, MultipartFile } from '@fastify/multipart'
 import multipart from '@fastify/multipart'
 import * as Validators from './validators'
 import type { ReadStream } from 'fs'
@@ -26,7 +26,6 @@ import controllerFn6 from './api/texts/_label@string/controller'
 import controllerFn7, { hooks as ctrlHooksFn1 } from './api/users/controller'
 import controllerFn8 from './api/users/_userId@number/controller'
 import controllerFn9 from './api/users/_userId@number/_name/controller'
-
 import type { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, FastifyRequest, FastifySchema, FastifySchemaCompiler, RouteShorthandOptions } from 'fastify'
 
 export type FrourioOptions = {
@@ -35,7 +34,7 @@ export type FrourioOptions = {
   validator?: ValidatorOptions | undefined
   plainToInstance?: ((cls: new (...args: any[]) => object, object: unknown, options: ClassTransformOptions) => object) | undefined
   validateOrReject?: ((instance: object, options: ValidatorOptions) => Promise<void>) | undefined
-  multipart?: FastifyMultipartAttactFieldsToBodyOptions | undefined
+  multipart?: FastifyMultipartAttachFieldsToBodyOptions | undefined
 }
 
 type HttpStatusNoOk = 301 | 302 | 400 | 401 | 402 | 403 | 404 | 405 | 406 | 409 | 500 | 501 | 502 | 503 | 504 | 505
@@ -64,9 +63,9 @@ type ServerResponse<K extends AspidaMethodParams> =
 type BlobToFile<T extends AspidaMethodParams> = T['reqFormat'] extends FormData
   ? {
       [P in keyof T['reqBody']]: Required<T['reqBody']>[P] extends Blob | ReadStream
-        ? Multipart
+        ? MultipartFile
         : Required<T['reqBody']>[P] extends (Blob | ReadStream)[]
-        ? Multipart[]
+        ? MultipartFile[]
         : T['reqBody'][P]
     }
   : T['reqBody']
@@ -206,9 +205,9 @@ const formatMultipartData = (arrayTypeKeys: [string, boolean][]): preValidationH
 
   Object.entries(body).forEach(([key, val]) => {
     if (Array.isArray(val)) {
-      body[key] = (val as Multipart[]).map(v => v.file ? v : (v as any).value)
+      body[key] = (val as Multipart[]).map(v => 'file' in v ? v : (v as any).value)
     } else {
-      body[key] = (val as Multipart).file ? val : (val as any).value
+      body[key] = 'file' in (val as Multipart) ? val : (val as any).value
     }
   })
 

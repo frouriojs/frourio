@@ -30,7 +30,7 @@ beforeEach(() => {
   subServerPlainToInstanceCallCount = 0
   subServerValidateOrRejectCallCount = 0
   return Promise.all([
-    frourio(server).listen(port),
+    frourio(server).listen({ port }),
     frourio(subServer, {
       basePath: subBasePath,
       plainToInstance: (cls, object, options): object => {
@@ -41,7 +41,7 @@ beforeEach(() => {
         subServerValidateOrRejectCallCount++
         return validateOrReject(instance, options)
       }
-    }).listen(subPort)
+    }).listen({ port: subPort })
   ])
 })
 
@@ -207,18 +207,6 @@ test('POST: formdata', async () => {
 
 test('PUT: zod validations', async () => {
   const port = '3000'
-  const res1 = await fetchClient.$put({
-    query: {
-      requiredNum: 0,
-      requiredNumArr: [],
-      id: '1',
-      disable: 'true',
-      bool: false,
-      boolArray: []
-    },
-    body: { port }
-  })
-  expect(res1.port).toBe(port)
 
   await Promise.all([
     expect(
@@ -248,6 +236,20 @@ test('PUT: zod validations', async () => {
       })
     ).rejects.toHaveProperty('response.status', 400)
   ])
+
+  await expect(
+    fetchClient.put({
+      query: {
+        requiredNum: 0,
+        requiredNumArr: [],
+        id: '1',
+        disable: 'true',
+        bool: false,
+        boolArray: []
+      },
+      body: { port }
+    })
+  ).resolves.toHaveProperty('status', 201)
 })
 
 test('POST: multi file upload', async () => {

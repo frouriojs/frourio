@@ -1,7 +1,6 @@
 import type { HttpStatusOk, AspidaMethodParams } from 'aspida'
 import type { z } from 'zod'
 import controllerFn0, { responseSchema as responseSchemaFn0 } from './api/controller'
-
 import type { FastifyInstance, RouteHandlerMethod, FastifySchema, FastifySchemaCompiler } from 'fastify'
 
 export type FrourioOptions = {

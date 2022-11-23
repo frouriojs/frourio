@@ -15,7 +15,6 @@ import controllerFn2 from './api/texts/controller'
 import controllerFn3 from './api/texts/sample/controller'
 import controllerFn4, { hooks as ctrlHooksFn1 } from './api/users/controller'
 import controllerFn5 from './api/users/_userId@number/controller'
-
 import type { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, FastifyRequest, FastifySchema, FastifySchemaCompiler, RouteShorthandOptions } from 'fastify'
 
 export type FrourioOptions = {
