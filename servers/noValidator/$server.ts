@@ -2,6 +2,7 @@ import type { FastifyMultipartAttachFieldsToBodyOptions, Multipart, MultipartFil
 import multipart from '@fastify/multipart'
 import type { ReadStream } from 'fs'
 import type { HttpStatusOk, AspidaMethodParams } from 'aspida'
+import type { Schema } from 'fast-json-stringify'
 import type { z } from 'zod'
 import hooksFn0 from './api/hooks'
 import hooksFn1 from './api/users/hooks'
@@ -16,8 +17,8 @@ import controllerFn6 from './api/users/_userId@number/controller'
 import type { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, FastifySchema, FastifySchemaCompiler, RouteShorthandOptions } from 'fastify'
 
 export type FrourioOptions = {
-  basePath?: string | undefined
-  multipart?: FastifyMultipartAttachFieldsToBodyOptions | undefined
+  basePath?: string
+  multipart?: FastifyMultipartAttachFieldsToBodyOptions
 }
 
 type HttpStatusNoOk = 301 | 302 | 400 | 401 | 402 | 403 | 404 | 405 | 406 | 409 | 500 | 501 | 502 | 503 | 504 | 505
@@ -73,6 +74,7 @@ type ServerHandlerPromise<T extends AspidaMethodParams, U extends Record<string,
 
 export type ServerMethodHandler<T extends AspidaMethodParams,  U extends Record<string, any> = {}> = ServerHandler<T, U> | ServerHandlerPromise<T, U> | {
   validators?: Partial<{ [Key in keyof RequestParams<T>]?: z.ZodType<RequestParams<T>[Key]>}>
+  schemas?: { response?: { [V in HttpStatusOk]?: Schema }}
   handler: ServerHandler<T, U> | ServerHandlerPromise<T, U>
 }
 

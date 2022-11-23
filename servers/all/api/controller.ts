@@ -14,42 +14,15 @@ const responseSchema = defineResponseSchema(() => ({
     200: {
       type: 'object',
       properties: {
-        id: {
-          type: 'string'
-        },
-        emptyNum: {
-          type: 'number'
-        },
-        requiredNum: {
-          type: 'number'
-        },
-        requiredNumArr: {
-          type: 'array',
-          items: {
-            type: 'number'
-          }
-        },
-        bool: {
-          type: 'boolean'
-        },
-        optionalBool: {
-          type: 'boolean'
-        },
-        boolArray: {
-          type: 'array',
-          items: {
-            type: 'boolean'
-          }
-        },
-        optionalBoolArray: {
-          type: 'array',
-          items: {
-            type: 'boolean'
-          }
-        },
-        disable: {
-          type: 'string'
-        }
+        id: { type: 'string' },
+        emptyNum: { type: 'number' },
+        requiredNum: { type: 'number' },
+        requiredNumArr: { type: 'array', items: { type: 'number' } },
+        bool: { type: 'boolean' },
+        optionalBool: { type: 'boolean' },
+        boolArray: { type: 'array', items: { type: 'boolean' } },
+        optionalBoolArray: { type: 'array', items: { type: 'boolean' } },
+        disable: { type: 'string' }
       }
     }
   }
@@ -86,6 +59,14 @@ export default defineController(
           optionalBoolArray: z.array(z.boolean()).optional()
         }),
         body: z.object({ port: z.string() })
+      },
+      schemas: {
+        response: {
+          201: {
+            type: 'object',
+            properties: { id: { type: 'number' }, port: { type: 'string' } }
+          }
+        }
       },
       handler: v => ({
         status: 201,

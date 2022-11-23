@@ -32,6 +32,12 @@ export default (input: string, project?: string) => {
 
   checkRequisites({ hasValidator })
 
+  if (controllers.includes('response: responseSchema')) {
+    console.warn(
+      `frourio: 'responseSchema' is deprecated. Specify schemas.response in controller instead.`
+    )
+  }
+
   if (hasValidator) {
     console.warn(
       `frourio: 'class-validator' is deprecated. Specify validators in controller instead.`
@@ -65,6 +71,7 @@ export default (input: string, project?: string) => {
 
   return {
     text: `${headImports.join('\n')}
+import type { Schema } from 'fast-json-stringify'
 import type { z } from 'zod'
 ${imports}import type { FastifyInstance, RouteHandlerMethod${
       hasNumberTypeQuery || hasBooleanTypeQuery || hasTypedParams || hasValidator || hasMultipart
@@ -75,15 +82,15 @@ ${imports}import type { FastifyInstance, RouteHandlerMethod${
     }${hasRouteShorthandOptions ? ', RouteShorthandOptions' : ''} } from 'fastify'
 
 export type FrourioOptions = {
-  basePath?: string | undefined
+  basePath?: string
 ${
   hasValidator
-    ? '  transformer?: ClassTransformOptions | undefined\n' +
-      '  validator?: ValidatorOptions | undefined\n' +
-      '  plainToInstance?: ((cls: new (...args: any[]) => object, object: unknown, options: ClassTransformOptions) => object) | undefined\n' +
-      '  validateOrReject?: ((instance: object, options: ValidatorOptions) => Promise<void>) | undefined\n'
+    ? '  transformer?: ClassTransformOptions\n' +
+      '  validator?: ValidatorOptions\n' +
+      '  plainToInstance?: (cls: new (...args: any[]) => object, object: unknown, options: ClassTransformOptions) => object\n' +
+      '  validateOrReject?: (instance: object, options: ValidatorOptions) => Promise<void>\n'
     : ''
-}${hasMultipart ? '  multipart?: FastifyMultipartAttachFieldsToBodyOptions | undefined\n' : ''}}
+}${hasMultipart ? '  multipart?: FastifyMultipartAttachFieldsToBodyOptions\n' : ''}}
 
 type HttpStatusNoOk = 301 | 302 | 400 | 401 | 402 | 403 | 404 | 405 | 406 | 409 | 500 | 501 | 502 | 503 | 504 | 505
 
@@ -142,6 +149,7 @@ type ServerHandlerPromise<T extends AspidaMethodParams, U extends Record<string,
 
 export type ServerMethodHandler<T extends AspidaMethodParams,  U extends Record<string, any> = {}> = ServerHandler<T, U> | ServerHandlerPromise<T, U> | {
   validators?: Partial<{ [Key in keyof RequestParams<T>]?: z.ZodType<RequestParams<T>[Key]>}>
+  schemas?: { response?: { [V in HttpStatusOk]?: Schema }}
   handler: ServerHandler<T, U> | ServerHandlerPromise<T, U>
 }
 ${
