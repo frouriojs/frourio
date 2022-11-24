@@ -18,7 +18,7 @@ import controllerFn2 from './api/multiForm/controller'
 import controllerFn3 from './api/texts/controller'
 import controllerFn4 from './api/texts/sample/controller'
 import controllerFn5, { hooks as ctrlHooksFn1 } from './api/users/controller'
-import type { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, FastifyRequest, RouteShorthandOptions } from 'fastify'
+import type { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, FastifyRequest, RouteShorthandOptions, onRequestHookHandler, preParsingHookHandler, preHandlerHookHandler } from 'fastify'
 
 export type FrourioOptions = {
   basePath?: string
@@ -83,6 +83,12 @@ type ServerHandlerPromise<T extends AspidaMethodParams, U extends Record<string,
 export type ServerMethodHandler<T extends AspidaMethodParams,  U extends Record<string, any> = {}> = ServerHandler<T, U> | ServerHandlerPromise<T, U> | {
   validators?: Partial<{ [Key in keyof RequestParams<T>]?: z.ZodType<RequestParams<T>[Key]>}>
   schemas?: { response?: { [V in HttpStatusOk]?: Schema }}
+  hooks?: {
+    onRequest?: onRequestHookHandler | onRequestHookHandler[]
+    preParsing?: preParsingHookHandler | preParsingHookHandler[]
+    preValidation?: preValidationHookHandler | preValidationHookHandler[]
+    preHandler?: preHandlerHookHandler | preHandlerHookHandler[]
+  }
   handler: ServerHandler<T, U> | ServerHandlerPromise<T, U>
 }
 

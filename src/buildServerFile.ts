@@ -38,9 +38,15 @@ export default (input: string, project?: string) => {
     )
   }
 
+  if (controllers.includes('ctrlHooks0.')) {
+    console.warn(
+      `frourio: 'defineHooks in controller.ts' is deprecated. Specify hooks in controller instead.`
+    )
+  }
+
   if (hasValidator) {
     console.warn(
-      `frourio: 'class-validator' is deprecated. Specify validators in controller instead.`
+      `frourio: 'class-validator' is deprecated. Specify validators in controller instead. ref: https://frourio.com/docs/reference/validation/zod`
     )
 
     headImports.push(
@@ -73,13 +79,11 @@ export default (input: string, project?: string) => {
     text: `${headImports.join('\n')}
 import type { Schema } from 'fast-json-stringify'
 import type { z } from 'zod'
-${imports}import type { FastifyInstance, RouteHandlerMethod${
-      hasNumberTypeQuery || hasBooleanTypeQuery || hasTypedParams || hasValidator || hasMultipart
-        ? ', preValidationHookHandler'
-        : ''
-    }${hasValidator ? ', FastifyRequest' : ''}${
-      hasValidatorCompiler ? ', FastifySchema, FastifySchemaCompiler' : ''
-    }${hasRouteShorthandOptions ? ', RouteShorthandOptions' : ''} } from 'fastify'
+${imports}import type { FastifyInstance, RouteHandlerMethod, preValidationHookHandler${
+      hasValidator ? ', FastifyRequest' : ''
+    }${hasValidatorCompiler ? ', FastifySchema, FastifySchemaCompiler' : ''}${
+      hasRouteShorthandOptions ? ', RouteShorthandOptions' : ''
+    }, onRequestHookHandler, preParsingHookHandler, preHandlerHookHandler } from 'fastify'
 
 export type FrourioOptions = {
   basePath?: string
@@ -150,6 +154,12 @@ type ServerHandlerPromise<T extends AspidaMethodParams, U extends Record<string,
 export type ServerMethodHandler<T extends AspidaMethodParams,  U extends Record<string, any> = {}> = ServerHandler<T, U> | ServerHandlerPromise<T, U> | {
   validators?: Partial<{ [Key in keyof RequestParams<T>]?: z.ZodType<RequestParams<T>[Key]>}>
   schemas?: { response?: { [V in HttpStatusOk]?: Schema }}
+  hooks?: {
+    onRequest?: onRequestHookHandler | onRequestHookHandler[]
+    preParsing?: preParsingHookHandler | preParsingHookHandler[]
+    preValidation?: preValidationHookHandler | preValidationHookHandler[]
+    preHandler?: preHandlerHookHandler | preHandlerHookHandler[]
+  }
   handler: ServerHandler<T, U> | ServerHandlerPromise<T, U>
 }
 ${

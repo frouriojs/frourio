@@ -68,6 +68,13 @@ export default defineController(
           }
         }
       },
+      hooks: {
+        preValidation: [],
+        preHandler: (req, _, done) => {
+          console.log(req.method)
+          done()
+        }
+      },
       handler: v => ({
         status: 201,
         body: { id: +v.query.id, port: v.body.port }
