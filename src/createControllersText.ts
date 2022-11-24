@@ -100,8 +100,8 @@ ${[
 ]
   .map(([key, val]) =>
     hasAdditionals
-      ? `  ${key}?: AddedHandler<${val}> | AddedHandler<${val}>[] | undefined\n`
-      : `  ${key}?: ${val} | ${val}[] | undefined\n`
+      ? `  ${key}?: AddedHandler<${val}> | AddedHandler<${val}>[]\n`
+      : `  ${key}?: ${val} | ${val}[]\n`
   )
   .join('')}}${
     params.length ? `\ntype Params = {\n${params.map(v => `  ${v[0]}: ${v[1]}`).join('\n')}\n}` : ''
@@ -117,13 +117,13 @@ export function defineValidators(validator: (fastify: FastifyInstance) => {
       : ''
   }
 
-export function defineResponseSchema<T extends { [U in keyof Methods]?: { [V in HttpStatusOk]?: Schema | undefined } | undefined}>(methods: () => T) {
+export function defineResponseSchema<T extends { [U in keyof Methods]?: { [V in HttpStatusOk]?: Schema }}>(methods: () => T) {
   return methods
 }
 
 export function defineHooks<T extends Hooks>(hooks: (fastify: FastifyInstance) => T): (fastify: FastifyInstance) => T
 export function defineHooks<T extends Record<string, any>, U extends Hooks>(deps: T, cb: (d: T, fastify: FastifyInstance) => U): Injectable<T, [FastifyInstance], U>
-export function defineHooks<T extends Record<string, any>>(hooks: (fastify: FastifyInstance) => Hooks | T, cb?: ((deps: T, fastify: FastifyInstance) => Hooks) | undefined) {
+export function defineHooks<T extends Record<string, any>>(hooks: (fastify: FastifyInstance) => Hooks | T, cb?: ((deps: T, fastify: FastifyInstance) => Hooks)) {
   return cb && typeof hooks !== 'function' ? depend(hooks, cb) : hooks
 }
 
@@ -137,7 +137,7 @@ type ServerMethods = {
 
 export function defineController<M extends ServerMethods>(methods: (fastify: FastifyInstance) => M): (fastify: FastifyInstance) => M
 export function defineController<M extends ServerMethods, T extends Record<string, any>>(deps: T, cb: (d: T, fastify: FastifyInstance) => M): Injectable<T, [FastifyInstance], M>
-export function defineController<M extends ServerMethods, T extends Record<string, any>>(methods: ((fastify: FastifyInstance) => M) | T, cb?: ((deps: T, fastify: FastifyInstance) => M) | undefined) {
+export function defineController<M extends ServerMethods, T extends Record<string, any>>(methods: ((fastify: FastifyInstance) => M) | T, cb?: ((deps: T, fastify: FastifyInstance) => M)) {
   return cb && typeof methods !== 'function' ? depend(methods, cb) : methods
 }
 `
@@ -292,14 +292,19 @@ export default (appDir: string, project: string) => {
         const controllerSource = program.getSourceFile(path.join(input, 'controller.ts'))
         const isPromiseMethods: string[] = []
         const hasHandlerMethods: string[] = []
-        const hasValidatorMethods: string[] = []
+        const hasValidatorsMethods: string[] = []
+        const hasSchemasMethods: string[] = []
+        const hasHooksMethods: {
+          method: string
+          events: { type: HooksEvent; isArray: boolean }[]
+        }[] = []
         let ctrlHooksSignature: ts.Signature | undefined
         let resSchemaSignature: ts.Signature | undefined
 
         if (controllerSource) {
-          const getMethodTypeNodes = (
-            cb: (symbol: ts.Symbol, typeNode: ts.TypeNode, type: ts.Type) => string | null
-          ): string[] =>
+          const getMethodTypeNodes = <T>(
+            cb: (symbol: ts.Symbol, typeNode: ts.TypeNode, type: ts.Type) => T | null
+          ): T[] =>
             ts.forEachChild(
               controllerSource,
               node =>
@@ -326,7 +331,7 @@ export default (appDir: string, project: string) => {
 
                         return cb(t, typeNode, type)
                       })
-                      .filter((n): n is string => !!n)
+                      .filter((n): n is T => !!n)
                 )
             ) || []
 
@@ -358,13 +363,55 @@ export default (appDir: string, project: string) => {
             )
           )
 
-          hasValidatorMethods.push(
+          hasValidatorsMethods.push(
             ...getMethodTypeNodes((symbol, typeNode, type) =>
               !ts.isFunctionTypeNode(typeNode) &&
               type.getProperties().find(p => p.name === 'validators')
                 ? symbol.name
                 : null
             )
+          )
+
+          hasSchemasMethods.push(
+            ...getMethodTypeNodes((symbol, typeNode, type) =>
+              !ts.isFunctionTypeNode(typeNode) &&
+              type.getProperties().find(p => p.name === 'schemas')
+                ? symbol.name
+                : null
+            )
+          )
+
+          hasHooksMethods.push(
+            ...getMethodTypeNodes((symbol, typeNode, type) => {
+              if (ts.isFunctionTypeNode(typeNode)) return null
+
+              const hooksSymbol = type.getProperties().find(p => p.name === 'hooks')
+
+              if (!hooksSymbol?.valueDeclaration) return null
+
+              return {
+                method: symbol.name,
+                events: checker
+                  .getTypeOfSymbolAtLocation(hooksSymbol, hooksSymbol.valueDeclaration)
+                  .getProperties()
+                  .map(p => {
+                    const typeNode =
+                      p.valueDeclaration &&
+                      checker.typeToTypeNode(
+                        checker.getTypeOfSymbolAtLocation(p, p.valueDeclaration),
+                        undefined,
+                        undefined
+                      )
+
+                    return {
+                      type: p.name as HooksEvent,
+                      isArray: typeNode
+                        ? ts.isArrayTypeNode(typeNode) || ts.isTupleTypeNode(typeNode)
+                        : false
+                    }
+                  })
+              }
+            })
           )
 
           let ctrlHooksNode: ts.VariableDeclaration | ts.ExportSpecifier | undefined
@@ -429,7 +476,7 @@ export default (appDir: string, project: string) => {
             }
           })
 
-        const genHookTexts = (event: HooksEvent) => [
+        const genHookTexts = (event: HooksEvent, methodName: string) => [
           ...hooks.reduce<string[]>((prev, h) => {
             const ev = h.events.find(e => e.type === event)
             return ev ? [...prev, `${ev.isArray ? '...' : ''}${h.name}.${event}`] : prev
@@ -438,7 +485,20 @@ export default (appDir: string, project: string) => {
             e.type === event
               ? `${e.isArray ? '...' : ''}ctrlHooks${controllers.filter(c => c[1]).length}.${event}`
               : ''
-          ) ?? [])
+          ) ?? []),
+          ...(hasHooksMethods.some(
+            m => m.method === methodName && m.events.some(e => e.type === event)
+          )
+            ? [
+                `${
+                  hasHooksMethods
+                    .find(m => m.method === methodName)
+                    ?.events.find(e => e.type === event)?.isArray
+                    ? '...'
+                    : ''
+                }controller${controllers.length}.${methodName}.hooks.${event}`
+              ]
+            : [])
         ]
 
         const resSchemaMethods = resSchemaSignature
@@ -546,7 +606,7 @@ export default (appDir: string, project: string) => {
                             .filter(Boolean)
                             .join(', ')}])`
                         : '',
-                      ...genHookTexts('preValidation'),
+                      ...genHookTexts('preValidation', m.name),
                       ...(query &&
                       [...(numberTypeQueryParams ?? []), ...(booleanTypeQueryParams ?? [])].some(
                         t => t?.endsWith('true]')
@@ -586,7 +646,7 @@ ${validateInfo
                       : ''
                   }
 
-                  const texts = genHookTexts(key).filter(Boolean)
+                  const texts = genHookTexts(key, m.name).filter(Boolean)
                   return texts.length
                     ? `${key}: ${
                         texts.length === 1 ? texts[0].replace('...', '') : `[${texts.join(', ')}]`
@@ -606,8 +666,11 @@ ${validateInfo
                       .replace(/@.+?($|\/)/g, '$1')}\``
                   : "basePath || '/'"
               },${(() => {
-                const validatorsText = hasValidatorMethods.includes(m.name)
+                const validatorsText = hasValidatorsMethods.includes(m.name)
                   ? `...validatorsToSchema(controller${controllers.length}.${m.name}.validators)`
+                  : null
+                const schemasText = hasSchemasMethods.includes(m.name)
+                  ? `...controller${controllers.length}.${m.name}.schemas`
                   : null
                 const paramsValidatorsText = paramsValidators.length
                   ? `params: ${paramsValidators
@@ -621,16 +684,23 @@ ${validateInfo
                   ? genResSchemaText(m.name as LowerHttpMethod)
                   : null
                 const vals = [
-                  ...(validatorsText && !resSchemaText && !paramsValidatorsText
-                    ? [`schema: ${validatorsText.slice(3)}`, 'validatorCompiler']
-                    : validatorsText || resSchemaText || paramsValidatorsText
+                  ...(validatorsText && !schemasText && !resSchemaText && !paramsValidatorsText
+                    ? [`schema: ${validatorsText.slice(3)}`]
+                    : schemasText && !validatorsText && !resSchemaText && !paramsValidatorsText
+                    ? [`schema: ${schemasText.slice(3)}`]
+                    : validatorsText || schemasText || resSchemaText || paramsValidatorsText
                     ? [
-                        `schema: {\n        ${[validatorsText, resSchemaText, paramsValidatorsText]
+                        `schema: {\n        ${[
+                          validatorsText,
+                          schemasText,
+                          resSchemaText,
+                          paramsValidatorsText
+                        ]
                           .filter(Boolean)
-                          .join(',\n        ')}\n      }`,
-                        'validatorCompiler'
+                          .join(',\n        ')}\n      }`
                       ]
                     : []),
+                  ...(validatorsText || paramsValidatorsText ? ['validatorCompiler'] : []),
                   ...hooksTexts
                 ]
                 return vals.length > 0

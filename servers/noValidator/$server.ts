@@ -1,7 +1,8 @@
-import type { FastifyMultipartAttactFieldsToBodyOptions, Multipart } from '@fastify/multipart'
+import type { FastifyMultipartAttachFieldsToBodyOptions, Multipart, MultipartFile } from '@fastify/multipart'
 import multipart from '@fastify/multipart'
 import type { ReadStream } from 'fs'
 import type { HttpStatusOk, AspidaMethodParams } from 'aspida'
+import type { Schema } from 'fast-json-stringify'
 import type { z } from 'zod'
 import hooksFn0 from './api/hooks'
 import hooksFn1 from './api/users/hooks'
@@ -13,12 +14,11 @@ import controllerFn3 from './api/texts/controller'
 import controllerFn4 from './api/texts/sample/controller'
 import controllerFn5, { hooks as ctrlHooksFn1 } from './api/users/controller'
 import controllerFn6 from './api/users/_userId@number/controller'
-
-import type { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, FastifySchema, FastifySchemaCompiler, RouteShorthandOptions } from 'fastify'
+import type { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, FastifySchema, FastifySchemaCompiler, RouteShorthandOptions, onRequestHookHandler, preParsingHookHandler, preHandlerHookHandler } from 'fastify'
 
 export type FrourioOptions = {
-  basePath?: string | undefined
-  multipart?: FastifyMultipartAttactFieldsToBodyOptions | undefined
+  basePath?: string
+  multipart?: FastifyMultipartAttachFieldsToBodyOptions
 }
 
 type HttpStatusNoOk = 301 | 302 | 400 | 401 | 402 | 403 | 404 | 405 | 406 | 409 | 500 | 501 | 502 | 503 | 504 | 505
@@ -47,9 +47,9 @@ type ServerResponse<K extends AspidaMethodParams> =
 type BlobToFile<T extends AspidaMethodParams> = T['reqFormat'] extends FormData
   ? {
       [P in keyof T['reqBody']]: Required<T['reqBody']>[P] extends Blob | ReadStream
-        ? Multipart
+        ? MultipartFile
         : Required<T['reqBody']>[P] extends (Blob | ReadStream)[]
-        ? Multipart[]
+        ? MultipartFile[]
         : T['reqBody'][P]
     }
   : T['reqBody']
@@ -74,6 +74,13 @@ type ServerHandlerPromise<T extends AspidaMethodParams, U extends Record<string,
 
 export type ServerMethodHandler<T extends AspidaMethodParams,  U extends Record<string, any> = {}> = ServerHandler<T, U> | ServerHandlerPromise<T, U> | {
   validators?: Partial<{ [Key in keyof RequestParams<T>]?: z.ZodType<RequestParams<T>[Key]>}>
+  schemas?: { response?: { [V in HttpStatusOk]?: Schema }}
+  hooks?: {
+    onRequest?: onRequestHookHandler | onRequestHookHandler[]
+    preParsing?: preParsingHookHandler | preParsingHookHandler[]
+    preValidation?: preValidationHookHandler | preValidationHookHandler[]
+    preHandler?: preHandlerHookHandler | preHandlerHookHandler[]
+  }
   handler: ServerHandler<T, U> | ServerHandlerPromise<T, U>
 }
 
@@ -106,9 +113,9 @@ const formatMultipartData = (arrayTypeKeys: [string, boolean][]): preValidationH
 
   Object.entries(body).forEach(([key, val]) => {
     if (Array.isArray(val)) {
-      body[key] = (val as Multipart[]).map(v => v.file ? v : (v as any).value)
+      body[key] = (val as Multipart[]).map(v => 'file' in v ? v : (v as any).value)
     } else {
-      body[key] = (val as Multipart).file ? val : (val as any).value
+      body[key] = 'file' in (val as Multipart) ? val : (val as any).value
     }
   })
 

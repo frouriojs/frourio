@@ -1,11 +1,11 @@
 import type { HttpStatusOk, AspidaMethodParams } from 'aspida'
+import type { Schema } from 'fast-json-stringify'
 import type { z } from 'zod'
 import controllerFn0, { responseSchema as responseSchemaFn0 } from './api/controller'
-
-import type { FastifyInstance, RouteHandlerMethod, FastifySchema, FastifySchemaCompiler } from 'fastify'
+import type { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, onRequestHookHandler, preParsingHookHandler, preHandlerHookHandler } from 'fastify'
 
 export type FrourioOptions = {
-  basePath?: string | undefined
+  basePath?: string
 }
 
 type HttpStatusNoOk = 301 | 302 | 400 | 401 | 402 | 403 | 404 | 405 | 406 | 409 | 500 | 501 | 502 | 503 | 504 | 505
@@ -51,12 +51,14 @@ type ServerHandlerPromise<T extends AspidaMethodParams, U extends Record<string,
 
 export type ServerMethodHandler<T extends AspidaMethodParams,  U extends Record<string, any> = {}> = ServerHandler<T, U> | ServerHandlerPromise<T, U> | {
   validators?: Partial<{ [Key in keyof RequestParams<T>]?: z.ZodType<RequestParams<T>[Key]>}>
+  schemas?: { response?: { [V in HttpStatusOk]?: Schema }}
+  hooks?: {
+    onRequest?: onRequestHookHandler | onRequestHookHandler[]
+    preParsing?: preParsingHookHandler | preParsingHookHandler[]
+    preValidation?: preValidationHookHandler | preValidationHookHandler[]
+    preHandler?: preHandlerHookHandler | preHandlerHookHandler[]
+  }
   handler: ServerHandler<T, U> | ServerHandlerPromise<T, U>
-}
-
-const validatorCompiler: FastifySchemaCompiler<FastifySchema> = ({ schema }) => (data: unknown) => {
-  const result = (schema as z.ZodType<unknown>).safeParse(data)
-  return result.success ? { value: result.data } : { error: result.error }
 }
 
 const methodToHandler = (
@@ -79,8 +81,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
     {
       schema: {
         response: responseSchema0.get
-      },
-      validatorCompiler
+      }
     },
     methodToHandler(controller0.get)
   )
