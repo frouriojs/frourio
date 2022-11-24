@@ -92,7 +92,10 @@ const createTypedParamsHandler = (numberTypeParams: string[]): preValidationHook
 const createValidateHandler = (validators: (req: FastifyRequest) => (Promise<void> | null)[]): preValidationHookHandler =>
   (req, reply) => Promise.all(validators(req)).catch(err => reply.code(400).send(err))
 
-const validatorCompiler: FastifySchemaCompiler<FastifySchema> = ({ schema }) => (data: any) => (schema as z.ZodType<any>).parse(data)
+const validatorCompiler: FastifySchemaCompiler<FastifySchema> = ({ schema }) => (data: unknown) => {
+  const result = (schema as z.ZodType<unknown>).safeParse(data)
+  return result.success ? { value: result.data } : { error: result.error }
+}
 
 const methodToHandler = (
   methodCallback: ServerHandler<any, any>
