@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.31.0](https://github.com/frouriojs/frourio/compare/v0.30.2...v0.31.0) (2022-11-24)
+
+### Features
+
+- add response schema and hooks to controller (https://github.com/frouriojs/frourio/pull/262)
+
 ## [0.30.2](https://github.com/frouriojs/frourio/compare/v0.30.1...v0.30.2) (2022-11-24)
 
 ### Bug Fixes
