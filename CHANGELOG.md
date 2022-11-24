@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.30.2](https://github.com/frouriojs/frourio/compare/v0.30.1...v0.30.2) (2022-11-24)
+
+### Bug Fixes
+
+- use safeParse for validation error (https://github.com/frouriojs/frourio/pull/261)
+
 ## [0.30.1](https://github.com/frouriojs/frourio/compare/v0.30.0...v0.30.1) (2022-11-16)
 
 ### Bug Fixes

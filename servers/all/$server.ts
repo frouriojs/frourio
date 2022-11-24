@@ -219,7 +219,10 @@ const formatMultipartData = (arrayTypeKeys: [string, boolean][]): preValidationH
   done()
 }
 
-const validatorCompiler: FastifySchemaCompiler<FastifySchema> = ({ schema }) => (data: any) => (schema as z.ZodType<any>).parse(data)
+const validatorCompiler: FastifySchemaCompiler<FastifySchema> = ({ schema }) => (data: unknown) => {
+  const result = (schema as z.ZodType<unknown>).safeParse(data)
+  return result.success ? { value: result.data } : { error: result.error }
+}
 
 const validatorsToSchema = (validator?: { query?: unknown; body?: unknown; headers?: unknown }): FastifySchema => ({
   querystring: validator?.query,

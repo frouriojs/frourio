@@ -233,7 +233,7 @@ test('PUT: zod validations', async () => {
         },
         body: { port: 3000 as any }
       })
-    ).rejects.toHaveProperty('response.status', 500),
+    ).rejects.toHaveProperty('response.status', 400),
     expect(
       fetchClient.put({
         query: {
