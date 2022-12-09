@@ -61,10 +61,10 @@ const createRelayFile = (
     currentParam ? "import { z } from 'zod'\n" : ''
   }import type { Injectable } from 'velona'
 import { depend } from 'velona'
-import type { FastifyInstance, onRequestHookHandler, preParsingHookHandler, preValidationHookHandler, preHandlerHookHandler } from 'fastify'
+import type { FastifyInstance } from 'fastify'
 import type { Schema } from 'fast-json-stringify'
 import type { HttpStatusOk } from 'aspida'
-import type { ServerMethodHandler } from '${appText}'
+import type { ServerHooks, ServerMethodHandler } from '${appText}'
 ${
   hasMultiAdditionals
     ? additionalReqs
@@ -85,45 +85,35 @@ ${
   hasMultiAdditionals
     ? `type AdditionalRequest = ${additionalReqs
         .map((_, i) => `AdditionalRequest${i}`)
-        .join(' & ')}\n`
+        .join(' & ')}\n\n`
     : ''
 }${
-    hasAdditionals
-      ? 'type AddedHandler<T> = T extends (req: infer U, ...args: infer V) => infer W ? (req: U & Partial<AdditionalRequest>, ...args: V) => W : never\n'
+    params.length
+      ? `type Params = {\n${params.map(v => `  ${v[0]}: ${v[1]}`).join('\n')}\n}\n\n`
       : ''
-  }type Hooks = {
-${[
-  ['onRequest', 'onRequestHookHandler'],
-  ['preParsing', 'preParsingHookHandler'],
-  ['preValidation', 'preValidationHookHandler'],
-  ['preHandler', 'preHandlerHookHandler']
-]
-  .map(([key, val]) =>
-    hasAdditionals
-      ? `  ${key}?: AddedHandler<${val}> | AddedHandler<${val}>[]\n`
-      : `  ${key}?: ${val} | ${val}[]\n`
-  )
-  .join('')}}${
-    params.length ? `\ntype Params = {\n${params.map(v => `  ${v[0]}: ${v[1]}`).join('\n')}\n}` : ''
   }${
     currentParam
-      ? `
-
-export function defineValidators(validator: (fastify: FastifyInstance) => {
+      ? `export function defineValidators(validator: (fastify: FastifyInstance) => {
   params: z.ZodType<{ ${currentParam[0]}: ${currentParam[1]} }>
 }) {
   return validator
-}`
+}\n\n`
       : ''
-  }
-
-export function defineResponseSchema<T extends { [U in keyof Methods]?: { [V in HttpStatusOk]?: Schema }}>(methods: () => T) {
+  }export function defineResponseSchema<T extends { [U in keyof Methods]?: { [V in HttpStatusOk]?: Schema }}>(methods: () => T) {
   return methods
 }
 
-export function defineHooks<T extends Hooks>(hooks: (fastify: FastifyInstance) => T): (fastify: FastifyInstance) => T
-export function defineHooks<T extends Record<string, any>, U extends Hooks>(deps: T, cb: (d: T, fastify: FastifyInstance) => U): Injectable<T, [FastifyInstance], U>
-export function defineHooks<T extends Record<string, any>>(hooks: (fastify: FastifyInstance) => Hooks | T, cb?: ((deps: T, fastify: FastifyInstance) => Hooks)) {
+export function defineHooks<T extends ServerHooks${
+    hasAdditionals ? '<AdditionalRequest>' : ''
+  }>(hooks: (fastify: FastifyInstance) => T): (fastify: FastifyInstance) => T
+export function defineHooks<T extends Record<string, unknown>, U extends ServerHooks${
+    hasAdditionals ? '<AdditionalRequest>' : ''
+  }>(deps: T, cb: (d: T, fastify: FastifyInstance) => U): Injectable<T, [FastifyInstance], U>
+export function defineHooks<T extends Record<string, unknown>>(hooks: (fastify: FastifyInstance) => ServerHooks${
+    hasAdditionals ? '<AdditionalRequest>' : ''
+  } | T, cb?: ((deps: T, fastify: FastifyInstance) => ServerHooks${
+    hasAdditionals ? '<AdditionalRequest>' : ''
+  })) {
   return cb && typeof hooks !== 'function' ? depend(hooks, cb) : hooks
 }
 
@@ -136,8 +126,8 @@ type ServerMethods = {
 }
 
 export function defineController<M extends ServerMethods>(methods: (fastify: FastifyInstance) => M): (fastify: FastifyInstance) => M
-export function defineController<M extends ServerMethods, T extends Record<string, any>>(deps: T, cb: (d: T, fastify: FastifyInstance) => M): Injectable<T, [FastifyInstance], M>
-export function defineController<M extends ServerMethods, T extends Record<string, any>>(methods: ((fastify: FastifyInstance) => M) | T, cb?: ((deps: T, fastify: FastifyInstance) => M)) {
+export function defineController<M extends ServerMethods, T extends Record<string, unknown>>(deps: T, cb: (d: T, fastify: FastifyInstance) => M): Injectable<T, [FastifyInstance], M>
+export function defineController<M extends ServerMethods, T extends Record<string, unknown>>(methods: ((fastify: FastifyInstance) => M) | T, cb?: ((deps: T, fastify: FastifyInstance) => M)) {
   return cb && typeof methods !== 'function' ? depend(methods, cb) : methods
 }
 `

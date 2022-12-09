@@ -64,23 +64,27 @@ type RequestParams<T extends AspidaMethodParams> = Pick<{
   headers: Required<T>['reqHeaders'] extends {} | null ? 'headers' : never
 }['query' | 'body' | 'headers']>
 
-type ServerHandler<T extends AspidaMethodParams, U extends Record<string, any> = {}> = (
+type ServerHandler<T extends AspidaMethodParams, U extends Record<string, unknown> = {}> = (
   req: RequestParams<T> & U
 ) => ServerResponse<T>
 
-type ServerHandlerPromise<T extends AspidaMethodParams, U extends Record<string, any> = {}> = (
+type ServerHandlerPromise<T extends AspidaMethodParams, U extends Record<string, unknown> = {}> = (
   req: RequestParams<T> & U
 ) => Promise<ServerResponse<T>>
 
-export type ServerMethodHandler<T extends AspidaMethodParams,  U extends Record<string, any> = {}> = ServerHandler<T, U> | ServerHandlerPromise<T, U> | {
+type AddedHandler<T, R extends Record<string, unknown>> = T extends (req: infer U, ...args: infer V) => infer W ? (req: U & Partial<R>, ...args: V) => W : never
+
+export type ServerHooks<R extends Record<string, unknown> = {}> = {
+  onRequest?: AddedHandler<onRequestHookHandler, R> | AddedHandler<onRequestHookHandler, R>[]
+  preParsing?: AddedHandler<preParsingHookHandler, R> | AddedHandler<preParsingHookHandler, R>[]
+  preValidation?: AddedHandler<preValidationHookHandler, R> | AddedHandler<preValidationHookHandler, R>[]
+  preHandler?: AddedHandler<preHandlerHookHandler, R> | AddedHandler<preHandlerHookHandler, R>[]
+}
+
+export type ServerMethodHandler<T extends AspidaMethodParams,  U extends Record<string, unknown> = {}> = ServerHandler<T, U> | ServerHandlerPromise<T, U> | {
   validators?: Partial<{ [Key in keyof RequestParams<T>]?: z.ZodType<RequestParams<T>[Key]>}>
   schemas?: { response?: { [V in HttpStatusOk]?: Schema }}
-  hooks?: {
-    onRequest?: onRequestHookHandler | onRequestHookHandler[]
-    preParsing?: preParsingHookHandler | preParsingHookHandler[]
-    preValidation?: preValidationHookHandler | preValidationHookHandler[]
-    preHandler?: preHandlerHookHandler | preHandlerHookHandler[]
-  }
+  hooks?: ServerHooks<U>
   handler: ServerHandler<T, U> | ServerHandlerPromise<T, U>
 }
 
