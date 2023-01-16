@@ -32,7 +32,11 @@ We are always forced to write "Two TypeScript".
 We waste a lot of time on dynamic testing using the browser and server.
 
 <div align="center">
-   <img src="https://frouriojs.github.io/frourio/assets/images/TwoTS.svg" width="1200" alt="Why frourio ?" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://frourio.com/img/docs/TwoTS-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="https://frourio.com/img/docs/TwoTS.svg">
+    <img alt="Why frourio ?" src="https://frourio.com/img/docs/TwoTS.svg">
+  </picture>
 </div>
 <br />
 <br />
@@ -40,7 +44,11 @@ We waste a lot of time on dynamic testing using the browser and server.
 Frourio is a framework for developing web apps quickly and safely in **"One TypeScript"**.
 
 <div align="center">
-   <img src="https://frouriojs.github.io/frourio/assets/images/OneTS.svg" width="1200" alt="Architecture of create-frourio-app" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://frourio.com/img/docs/OneTS-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="https://frourio.com/img/docs/OneTS.svg">
+    <img alt="Architecture of create-frourio-app" src="https://frourio.com/img/docs/OneTS.svg">
+  </picture>
 </div>
 <br />
 <br />
