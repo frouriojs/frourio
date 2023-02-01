@@ -106,7 +106,7 @@
     "fastify": "^4.10.2",
     "jest": "^29.3.1",
     "node-fetch": "^2.6.1",
-    "prettier": "^2.7.1",
+    "prettier": "^2.8.3",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "ts-jest": "^29.0.3",
