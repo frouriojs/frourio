@@ -90,7 +90,7 @@
     "@types/jest": "^29.2.3",
     "@types/node-fetch": "^2.5.10",
     "@types/rimraf": "^3.0.2",
-    "@typescript-eslint/eslint-plugin": "^5.42.1",
+    "@typescript-eslint/eslint-plugin": "^5.54.0",
     "@typescript-eslint/parser": "^5.42.1",
     "axios": "^0.26.0",
     "class-transformer": "^0.5.1",
