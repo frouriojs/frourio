@@ -161,7 +161,7 @@ export type ServerHooks<R extends Record<string, unknown> = {}> = {
 }
 
 export type ServerMethodHandler<T extends AspidaMethodParams,  U extends Record<string, unknown> = {}> = ServerHandler<T, U> | ServerHandlerPromise<T, U> | {
-  validators?: Partial<{ [Key in keyof RequestParams<T>]?: z.ZodType<RequestParams<T>[Key]>}>
+  validators?: { [Key in keyof RequestParams<T>]?: z.ZodType<RequestParams<T>[Key]>}
   schemas?: { response?: { [V in HttpStatusOk]?: Schema }}
   hooks?: ServerHooks<U>
   handler: ServerHandler<T, U> | ServerHandlerPromise<T, U>
@@ -329,10 +329,9 @@ const validatorCompiler: FastifySchemaCompiler<FastifySchema> = ({ schema }) => 
             hasValidatorsToSchema
               ? `
 
-const validatorsToSchema = (validator?: { query?: unknown; body?: unknown; headers?: unknown }): FastifySchema => ({
-  querystring: validator?.query,
-  body: validator?.body,
-  headers: validator?.headers
+const validatorsToSchema = ({ query, ...validators }: { query?: unknown; body?: unknown; headers?: unknown }): FastifySchema => ({
+  ...(query ? { querystring: query } : {}),
+  ...validators
 })`
               : ''
           }

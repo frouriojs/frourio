@@ -77,7 +77,7 @@ export type ServerHooks<R extends Record<string, unknown> = {}> = {
 }
 
 export type ServerMethodHandler<T extends AspidaMethodParams,  U extends Record<string, unknown> = {}> = ServerHandler<T, U> | ServerHandlerPromise<T, U> | {
-  validators?: Partial<{ [Key in keyof RequestParams<T>]?: z.ZodType<RequestParams<T>[Key]>}>
+  validators?: { [Key in keyof RequestParams<T>]?: z.ZodType<RequestParams<T>[Key]>}
   schemas?: { response?: { [V in HttpStatusOk]?: Schema }}
   hooks?: ServerHooks<U>
   handler: ServerHandler<T, U> | ServerHandlerPromise<T, U>

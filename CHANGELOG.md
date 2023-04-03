@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.32.0](https://github.com/frouriojs/frourio/compare/v0.31.1...v0.32.0) (2023-04-04)
+
+### Features
+
+- update fastify@4.15.0 and zod@3.21.4 (https://github.com/frouriojs/frourio/pull/290)
+
+### Bug Fixes
+
+- remove unused props from validatorsToSchema (https://github.com/frouriojs/frourio/pull/269)
+
 ## [0.31.1](https://github.com/frouriojs/frourio/compare/v0.31.0...v0.31.1) (2022-12-09)
 
 ### Bug Fixes
