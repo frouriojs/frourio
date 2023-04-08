@@ -29,11 +29,7 @@ jobs:
       - run: yarn lint
         if: matrix.os != 'windows-latest'
       - run: yarn typecheck
-      - run: yarn test --coverage
-      - run: npx codecov
-        if: github.ref == 'refs/heads/main' && matrix.os == 'ubuntu-latest' && matrix.node-version == 16
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      - run: yarn test
 
   release:
     runs-on: ubuntu-latest
