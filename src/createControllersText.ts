@@ -40,8 +40,8 @@ const initTSC = (appDir: string, project: string) => {
 
   const program = ts.createProgram(
     findRootFiles(appDir),
-    compilerOptions?.options
-      ? { baseUrl: compilerOptions?.options.baseUrl, paths: compilerOptions?.options.paths }
+    compilerOptions?.options.baseUrl && compilerOptions.options.paths
+      ? { baseUrl: compilerOptions.options.baseUrl, paths: compilerOptions.options.paths }
       : {}
   )
 

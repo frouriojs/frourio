@@ -4,7 +4,7 @@ export type Methods = {
   get: {
     query?: Query
     status: 200
-    resBody?: Query
+    resBody?: Query | undefined
   }
 
   post: {
@@ -21,16 +21,16 @@ export type Methods = {
   put: {
     query: {
       requiredNum: number
-      optionalNum?: number
-      optionalNumArr?: Array<number>
-      emptyNum?: number
+      optionalNum?: number | undefined
+      optionalNumArr?: Array<number> | undefined
+      emptyNum?: number | undefined
       requiredNumArr: number[]
       id: string
       disable: string
       bool: boolean
-      optionalBool?: boolean
+      optionalBool?: boolean | undefined
       boolArray: boolean[]
-      optionalBoolArray?: boolean[]
+      optionalBoolArray?: boolean[] | undefined
     }
     reqBody: {
       port: string
