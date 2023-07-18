@@ -1,9 +1,9 @@
-import minimist from 'minimist'
-import write from 'aspida/dist/writeRouteFile'
 import watch from 'aspida/dist/watchInputDir'
+import write from 'aspida/dist/writeRouteFile'
+import minimist from 'minimist'
 import build from './buildServerFile'
-import clean from './cleanStaleRoutes'
 import cleanAll from './cleanAllStaleRoutes'
+import clean from './cleanStaleRoutes'
 
 export const run = (args: string[]) => {
   const argv = minimist(args, {

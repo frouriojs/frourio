@@ -1,4 +1,4 @@
-import { IsNumberString, IsBooleanString, IsPort, IsInt, MaxLength } from 'class-validator'
+import { IsBooleanString, IsInt, IsNumberString, IsPort, MaxLength } from 'class-validator'
 
 export class Query {
   @IsNumberString()

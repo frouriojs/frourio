@@ -1,5 +1,5 @@
-import { defineController } from './$relay'
 import { Methods } from './'
+import { defineController } from './$relay'
 
 export default defineController(() => ({
   post: ({ body }) => ({

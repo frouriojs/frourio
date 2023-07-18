@@ -1,18 +1,18 @@
 import { Type } from 'class-transformer'
 import {
-  IsNumberString,
-  IsBooleanString,
-  IsBoolean,
-  IsPort,
-  IsInt,
-  MaxLength,
-  IsString,
   Allow,
-  IsOptional,
   ArrayNotEmpty,
+  IsBoolean,
+  IsBooleanString,
   IsISO31661Alpha2,
-  ValidateNested,
-  IsObject
+  IsInt,
+  IsNumberString,
+  IsObject,
+  IsOptional,
+  IsPort,
+  IsString,
+  MaxLength,
+  ValidateNested
 } from 'class-validator'
 import type { ReadStream } from 'fs'
 

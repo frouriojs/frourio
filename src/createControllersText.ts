@@ -1,9 +1,9 @@
-import path from 'path'
-import fs from 'fs'
-import ts from 'typescript'
-import { createDefaultFilesIfNotExists } from './createDefaultFilesIfNotExists'
-import type { Param } from './createDefaultFilesIfNotExists'
 import type { LowerHttpMethod } from 'aspida'
+import fs from 'fs'
+import path from 'path'
+import ts from 'typescript'
+import type { Param } from './createDefaultFilesIfNotExists'
+import { createDefaultFilesIfNotExists } from './createDefaultFilesIfNotExists'
 
 type HooksEvent = 'onRequest' | 'preParsing' | 'preValidation' | 'preHandler'
 
