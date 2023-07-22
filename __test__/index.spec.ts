@@ -1,54 +1,54 @@
 /* eslint-disable jest/no-done-callback */
-import fs from 'fs'
-import rimraf from 'rimraf'
-import fastify, { FastifyInstance } from 'fastify'
-import FormData from 'form-data'
-import axios from 'axios'
-import { plainToInstance } from 'class-transformer'
-import { validateOrReject } from 'class-validator'
-import aspida from '@aspida/axios'
-import aspidaFetch from '@aspida/node-fetch'
-import api from '../servers/all/api/$api'
-import frourio from '../servers/all/$server'
-import controller from '../servers/all/api/controller'
+import fs from 'fs';
+import rimraf from 'rimraf';
+import fastify, { FastifyInstance } from 'fastify';
+import FormData from 'form-data';
+import axios from 'axios';
+import { plainToInstance } from 'class-transformer';
+import { validateOrReject } from 'class-validator';
+import aspida from '@aspida/axios';
+import aspidaFetch from '@aspida/node-fetch';
+import api from '../servers/all/api/$api';
+import frourio from '../servers/all/$server';
+import controller from '../servers/all/api/controller';
 
-const port = 11111
-const subPort = 22222
-const baseURL = `http://localhost:${port}`
-const subBasePath = '/api'
-const subBaseURL = `http://localhost:${subPort}${subBasePath}`
-const client = api(aspida(undefined, { baseURL }))
-const fetchClient = api(aspidaFetch(undefined, { baseURL: subBaseURL, throwHttpErrors: true }))
-let server: FastifyInstance
-let subServer: FastifyInstance
-let subServerPlainToInstanceCallCount = 0
-let subServerValidateOrRejectCallCount = 0
+const port = 11111;
+const subPort = 22222;
+const baseURL = `http://localhost:${port}`;
+const subBasePath = '/api';
+const subBaseURL = `http://localhost:${subPort}${subBasePath}`;
+const client = api(aspida(undefined, { baseURL }));
+const fetchClient = api(aspidaFetch(undefined, { baseURL: subBaseURL, throwHttpErrors: true }));
+let server: FastifyInstance;
+let subServer: FastifyInstance;
+let subServerPlainToInstanceCallCount = 0;
+let subServerValidateOrRejectCallCount = 0;
 
 beforeEach(() => {
-  server = fastify()
-  subServer = fastify()
-  subServerPlainToInstanceCallCount = 0
-  subServerValidateOrRejectCallCount = 0
+  server = fastify();
+  subServer = fastify();
+  subServerPlainToInstanceCallCount = 0;
+  subServerValidateOrRejectCallCount = 0;
   return Promise.all([
     frourio(server).listen({ port }),
     frourio(subServer, {
       basePath: subBasePath,
       plainToInstance: (cls, object, options): object => {
-        subServerPlainToInstanceCallCount++
-        return plainToInstance(cls, object, options)
+        subServerPlainToInstanceCallCount++;
+        return plainToInstance(cls, object, options);
       },
       validateOrReject: (instance, options): Promise<void> => {
-        subServerValidateOrRejectCallCount++
-        return validateOrReject(instance, options)
+        subServerValidateOrRejectCallCount++;
+        return validateOrReject(instance, options);
       }
     }).listen({ port: subPort })
-  ])
-})
+  ]);
+});
 
 afterEach(() => {
-  rimraf.sync('packages/frourio/servers/all/.upload')
-  return Promise.all([server.close(), subServer.close()])
-})
+  rimraf.sync('packages/frourio/servers/all/.upload');
+  return Promise.all([server.close(), subServer.close()]);
+});
 
 test('GET: 200', () =>
   Promise.all(
@@ -78,26 +78,26 @@ test('GET: 200', () =>
         expect(fetchClient.$get({ query })).resolves.toEqual(query)
       ])
     )
-  ))
+  ));
 
 test('GET: string', async () => {
-  const text = 'test'
-  const res = await client.texts.get({ query: { val: text } })
-  expect(res.body).toBe(text)
-  expect(res.headers['content-type']).toBe('text/plain; charset=utf-8')
-})
+  const text = 'test';
+  const res = await client.texts.get({ query: { val: text } });
+  expect(res.body).toBe(text);
+  expect(res.headers['content-type']).toBe('text/plain; charset=utf-8');
+});
 
 test('GET: params.userId and name', async () => {
-  const userId = 1
-  const name = 'aaa'
-  const res = await client.users._userId(userId).get()
-  expect(res.body.id).toBe(userId)
-  expect(res.headers['content-type']).toBe('application/json; charset=utf-8')
+  const userId = 1;
+  const name = 'aaa';
+  const res = await client.users._userId(userId).get();
+  expect(res.body.id).toBe(userId);
+  expect(res.headers['content-type']).toBe('application/json; charset=utf-8');
 
-  const res2 = await client.users._userId(userId)._name(name).get()
-  expect(res2.body).toBe(name)
-  expect(res2.headers['content-type']).toBe('text/plain; charset=utf-8')
-})
+  const res2 = await client.users._userId(userId)._name(name).get();
+  expect(res2.body).toBe(name);
+  expect(res2.headers['content-type']).toBe('text/plain; charset=utf-8');
+});
 
 test('GET: 400 params.userId and name', async () => {
   await expect(
@@ -105,8 +105,8 @@ test('GET: 400 params.userId and name', async () => {
       ._userId('aaa' as any)
       ._name(111)
       .get()
-  ).rejects.toHaveProperty('response.status', 400)
-})
+  ).rejects.toHaveProperty('response.status', 400);
+});
 
 test('GET: 400', () =>
   Promise.all(
@@ -151,24 +151,24 @@ test('GET: 400', () =>
         expect(fetchClient.get({ query })).rejects.toHaveProperty('response.status', 400)
       ])
     )
-  ))
+  ));
 
 test('GET: 500', async () => {
-  await expect(client.$500.get()).rejects.toHaveProperty('response.status', 500)
-})
+  await expect(client.$500.get()).rejects.toHaveProperty('response.status', 500);
+});
 
 test('PUT: JSON', async () => {
-  const id = 'abcd'
-  const res = await client.texts.sample.$put({ body: { id } })
-  expect(res?.id).toBe(id)
-})
+  const id = 'abcd';
+  const res = await client.texts.sample.$put({ body: { id } });
+  expect(res?.id).toBe(id);
+});
 
 test('POST: formdata', async () => {
-  expect(subServerPlainToInstanceCallCount).toBe(0)
-  expect(subServerValidateOrRejectCallCount).toBe(0)
+  expect(subServerPlainToInstanceCallCount).toBe(0);
+  expect(subServerValidateOrRejectCallCount).toBe(0);
 
-  const port = '3000'
-  const fileName = 'tsconfig.json'
+  const port = '3000';
+  const fileName = 'tsconfig.json';
   const res1 = await client.$post({
     query: {
       requiredNum: 0,
@@ -179,12 +179,12 @@ test('POST: formdata', async () => {
       boolArray: []
     },
     body: { port, file: fs.createReadStream(fileName) }
-  })
-  expect(res1.port).toBe(port)
-  expect(res1.fileName).toBe(fileName)
+  });
+  expect(res1.port).toBe(port);
+  expect(res1.fileName).toBe(fileName);
 
-  expect(subServerPlainToInstanceCallCount).toBe(0)
-  expect(subServerValidateOrRejectCallCount).toBe(0)
+  expect(subServerPlainToInstanceCallCount).toBe(0);
+  expect(subServerValidateOrRejectCallCount).toBe(0);
 
   const res2 = await fetchClient.$post({
     query: {
@@ -196,17 +196,17 @@ test('POST: formdata', async () => {
       boolArray: []
     },
     body: { port, file: fs.createReadStream(fileName) }
-  })
-  expect(res2.port).toBe(port)
-  expect(res2.fileName).toBe(fileName)
+  });
+  expect(res2.port).toBe(port);
+  expect(res2.fileName).toBe(fileName);
 
   // 2 = query + body
-  expect(subServerPlainToInstanceCallCount).toBe(2)
-  expect(subServerValidateOrRejectCallCount).toBe(2)
-})
+  expect(subServerPlainToInstanceCallCount).toBe(2);
+  expect(subServerValidateOrRejectCallCount).toBe(2);
+});
 
 test('PUT: zod validations', async () => {
-  const port = '3000'
+  const port = '3000';
 
   await Promise.all([
     expect(
@@ -235,7 +235,7 @@ test('PUT: zod validations', async () => {
         body: { port }
       })
     ).rejects.toHaveProperty('response.status', 400)
-  ])
+  ]);
 
   await expect(
     fetchClient.put({
@@ -249,22 +249,22 @@ test('PUT: zod validations', async () => {
       },
       body: { port }
     })
-  ).resolves.toHaveProperty('status', 201)
-})
+  ).resolves.toHaveProperty('status', 201);
+});
 
 test('POST: multi file upload', async () => {
-  const fileName = 'tsconfig.json'
-  const form = new FormData()
-  const fileST = fs.createReadStream(fileName)
-  form.append('optionalArr', 'sample')
-  form.append('name', 'sample')
-  form.append('vals', 'dammy')
-  form.append('icon', fileST)
-  form.append('files', fileST)
-  form.append('files', fileST)
+  const fileName = 'tsconfig.json';
+  const form = new FormData();
+  const fileST = fs.createReadStream(fileName);
+  form.append('optionalArr', 'sample');
+  form.append('name', 'sample');
+  form.append('vals', 'dammy');
+  form.append('icon', fileST);
+  form.append('files', fileST);
+  form.append('files', fileST);
   const res = await axios.post(`${baseURL}/multiForm`, form, {
     headers: form.getHeaders()
-  })
+  });
 
   expect(res.data).toEqual({
     requiredArr: 0,
@@ -273,23 +273,23 @@ test('POST: multi file upload', async () => {
     icon: -1,
     vals: 1,
     files: 2
-  })
-})
+  });
+});
 
 test('POST: 400', async () => {
-  const fileName = 'tsconfig.json'
-  const form = new FormData()
-  const fileST = fs.createReadStream(fileName)
-  form.append('name', 'sample')
-  form.append('vals', 'dammy')
-  form.append('icon', fileST)
+  const fileName = 'tsconfig.json';
+  const form = new FormData();
+  const fileST = fs.createReadStream(fileName);
+  form.append('name', 'sample');
+  form.append('vals', 'dammy');
+  form.append('icon', fileST);
 
   await expect(
     axios.post(`${baseURL}/multiForm`, form, {
       headers: form.getHeaders()
     })
-  ).rejects.toHaveProperty('response.status', 400)
-})
+  ).rejects.toHaveProperty('response.status', 400);
+});
 
 test('POST: nested validation', async () => {
   const res1 = await client.users.post({
@@ -301,8 +301,8 @@ test('POST: nested validation', async () => {
         stateProvince: 'Tokyo'
       }
     }
-  })
-  expect(res1.status).toBe(204)
+  });
+  expect(res1.status).toBe(204);
 
   // Note that extraneous properties are allowed by default
   const res2 = await client.users.post({
@@ -319,9 +319,9 @@ test('POST: nested validation', async () => {
       },
       extra2: 'qux'
     } as any
-  })
-  expect(res2.status).toBe(204)
-})
+  });
+  expect(res2.status).toBe(204);
+});
 
 test('POST: 400 (nested validation)', async () => {
   // id is not a number
@@ -336,14 +336,14 @@ test('POST: 400 (nested validation)', async () => {
         }
       } as any
     })
-  ).rejects.toHaveProperty('response.status', 400)
+  ).rejects.toHaveProperty('response.status', 400);
 
   // location is missing
   await expect(
     client.users.post({
       body: { id: 123, name: 'foo' } as any
     })
-  ).rejects.toHaveProperty('response.status', 400)
+  ).rejects.toHaveProperty('response.status', 400);
 
   // country is not a valid 2-letter country code
   await expect(
@@ -357,7 +357,7 @@ test('POST: 400 (nested validation)', async () => {
         }
       } as any
     })
-  ).rejects.toHaveProperty('response.status', 400)
+  ).rejects.toHaveProperty('response.status', 400);
 
   // stateProvince is not a string
   await expect(
@@ -371,24 +371,24 @@ test('POST: 400 (nested validation)', async () => {
         }
       } as any
     })
-  ).rejects.toHaveProperty('response.status', 400)
-})
+  ).rejects.toHaveProperty('response.status', 400);
+});
 
 test('controller dependency injection', async () => {
-  let val = 0
-  const id = '5'
+  let val = 0;
+  const id = '5';
   const injectedController = controller
     .inject({
       log: () => {
-        throw new Error()
+        throw new Error();
       }
     })
     .inject(() => ({
       log: n => {
-        val = +n * 2
-        return Promise.resolve(`${val}`)
+        val = +n * 2;
+        return Promise.resolve(`${val}`);
       }
-    }))(server)
+    }))(server);
 
   await expect(
     injectedController.get({
@@ -401,6 +401,6 @@ test('controller dependency injection', async () => {
         boolArray: []
       }
     })
-  ).resolves.toHaveProperty('body.id', `${+id * 2}`)
-  expect(val).toBe(+id * 2)
-})
+  ).resolves.toHaveProperty('body.id', `${+id * 2}`);
+  expect(val).toBe(+id * 2);
+});

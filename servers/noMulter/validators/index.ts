@@ -1,22 +1,22 @@
-import { IsNumberString, IsBooleanString, IsPort, IsInt, MaxLength } from 'class-validator'
+import { IsNumberString, IsBooleanString, IsPort, IsInt, MaxLength } from 'class-validator';
 
 export class Query {
   @IsNumberString()
-  id: string
+  id: string;
 
   @IsBooleanString()
-  disable: string
+  disable: string;
 }
 
 export class Body {
   @IsPort()
-  port: string
+  port: string;
 }
 
 export class UserInfo {
   @IsInt()
-  id: number
+  id: number;
 
   @MaxLength(20)
-  name: string
+  name: string;
 }

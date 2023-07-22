@@ -1,6 +1,6 @@
-import path from 'path'
-import createControllersText from './createControllersText'
-import checkRequisites from './checkRequisites'
+import path from 'path';
+import createControllersText from './createControllersText';
+import checkRequisites from './checkRequisites';
 
 const genHandlerText = (isAsync: boolean) => `
 const ${isAsync ? 'asyncM' : 'm'}ethodToHandler = (
@@ -12,42 +12,42 @@ const ${isAsync ? 'asyncM' : 'm'}ethodToHandler = (
 
   reply.code(data.status).send(data.body)
 }
-`
+`;
 
 export default (input: string, project?: string) => {
-  const { imports, consts, controllers } = createControllersText(`${input}/api`, project ?? input)
-  const hasNumberTypeQuery = controllers.includes('parseNumberTypeQueryParams(')
-  const hasBooleanTypeQuery = controllers.includes('parseBooleanTypeQueryParams(')
-  const hasOptionalQuery = controllers.includes(' callParserIfExistsQuery(')
-  const hasNormalizeQuery = controllers.includes(' normalizeQuery')
-  const hasTypedParams = controllers.includes(' createTypedParamsHandler(')
-  const hasValidator = controllers.includes(' validateOrReject(')
-  const hasMultipart = controllers.includes(' formatMultipartData(')
-  const hasMethodToHandler = controllers.includes(' methodToHandler(')
-  const hasAsyncMethodToHandler = controllers.includes(' asyncMethodToHandler(')
-  const hasRouteShorthandOptions = controllers.includes(' as RouteShorthandOptions,')
-  const hasValidatorCompiler = controllers.includes(' validatorCompiler')
-  const hasValidatorsToSchema = controllers.includes('validatorsToSchema(')
-  const headImports: string[] = []
+  const { imports, consts, controllers } = createControllersText(`${input}/api`, project ?? input);
+  const hasNumberTypeQuery = controllers.includes('parseNumberTypeQueryParams(');
+  const hasBooleanTypeQuery = controllers.includes('parseBooleanTypeQueryParams(');
+  const hasOptionalQuery = controllers.includes(' callParserIfExistsQuery(');
+  const hasNormalizeQuery = controllers.includes(' normalizeQuery');
+  const hasTypedParams = controllers.includes(' createTypedParamsHandler(');
+  const hasValidator = controllers.includes(' validateOrReject(');
+  const hasMultipart = controllers.includes(' formatMultipartData(');
+  const hasMethodToHandler = controllers.includes(' methodToHandler(');
+  const hasAsyncMethodToHandler = controllers.includes(' asyncMethodToHandler(');
+  const hasRouteShorthandOptions = controllers.includes(' as RouteShorthandOptions,');
+  const hasValidatorCompiler = controllers.includes(' validatorCompiler');
+  const hasValidatorsToSchema = controllers.includes('validatorsToSchema(');
+  const headImports: string[] = [];
 
-  checkRequisites({ hasValidator })
+  checkRequisites({ hasValidator });
 
   if (controllers.includes('response: responseSchema')) {
     console.warn(
       `frourio: 'responseSchema' is deprecated. Specify schemas.response in controller instead.`
-    )
+    );
   }
 
   if (controllers.includes('ctrlHooks0.')) {
     console.warn(
       `frourio: 'defineHooks in controller.ts' is deprecated. Specify hooks in controller instead.`
-    )
+    );
   }
 
   if (hasValidator) {
     console.warn(
       `frourio: 'class-validator' is deprecated. Specify validators in controller instead. ref: https://frourio.com/docs/reference/validation/zod`
-    )
+    );
 
     headImports.push(
       "import 'reflect-metadata'",
@@ -55,25 +55,25 @@ export default (input: string, project?: string) => {
       "import { plainToInstance as defaultPlainToInstance } from 'class-transformer'",
       "import type { ValidatorOptions } from 'class-validator'",
       "import { validateOrReject as defaultValidateOrReject } from 'class-validator'"
-    )
+    );
   }
 
   if (hasMultipart) {
     headImports.push(
       "import type { FastifyMultipartAttachFieldsToBodyOptions, Multipart, MultipartFile } from '@fastify/multipart'",
       "import multipart from '@fastify/multipart'"
-    )
+    );
   }
 
   if (hasValidator) {
-    headImports.push("import * as Validators from './validators'")
+    headImports.push("import * as Validators from './validators'");
   }
 
   if (hasMultipart) {
-    headImports.push("import type { ReadStream } from 'fs'")
+    headImports.push("import type { ReadStream } from 'fs'");
   }
 
-  headImports.push("import type { HttpStatusOk, AspidaMethodParams } from 'aspida'")
+  headImports.push("import type { HttpStatusOk, AspidaMethodParams } from 'aspida'");
 
   return {
     text: `${headImports.join('\n')}
@@ -358,5 +358,5 @@ ${
 }
 `,
     filePath: path.posix.join(input, '$server.ts')
-  }
-}
+  };
+};

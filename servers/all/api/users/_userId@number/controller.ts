@@ -1,14 +1,14 @@
-import { defineController } from './$relay'
+import { defineController } from './$relay';
 
 export type AdditionalRequest = {
-  name: string
-}
+  name: string;
+};
 
 export default defineController(() => ({
   get: {
     hooks: {
       preHandler: (req, _, done) => {
-        !req.name && done()
+        !req.name && done();
       }
     },
     handler: ({ params }) => ({
@@ -23,4 +23,4 @@ export default defineController(() => ({
       }
     })
   }
-}))
+}));

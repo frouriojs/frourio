@@ -1,5 +1,5 @@
-import { defineController } from './$relay'
-import { Methods } from './'
+import { defineController } from './$relay';
+import { Methods } from './';
 
 export default defineController(() => ({
   post: ({ body }) => ({
@@ -9,4 +9,4 @@ export default defineController(() => ({
       {} as Methods['post']['resBody']
     )
   })
-}))
+}));

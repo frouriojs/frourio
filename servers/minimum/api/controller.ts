@@ -1,4 +1,4 @@
-import { defineResponseSchema, defineController } from './$relay'
+import { defineResponseSchema, defineController } from './$relay';
 
 export const responseSchema = defineResponseSchema(() => ({
   get: {
@@ -11,8 +11,8 @@ export const responseSchema = defineResponseSchema(() => ({
       }
     }
   }
-}))
+}));
 
 export default defineController(() => ({
   get: () => ({ status: 200, body: { hello: 'world' } })
-}))
+}));

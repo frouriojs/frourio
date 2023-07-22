@@ -1,7 +1,7 @@
 export type Methods = {
   get: {
     resBody: {
-      hello: string
-    }
-  }
-}
+      hello: string;
+    };
+  };
+};

@@ -1,11 +1,11 @@
-import { defineHooks } from './$relay'
+import { defineHooks } from './$relay';
 
 export type AdditionalRequest = {
-  cookie?: string
-}
+  cookie?: string;
+};
 
 export default defineHooks(() => ({
   onRequest: (_req, _, done) => {
-    done()
+    done();
   }
-}))
+}));

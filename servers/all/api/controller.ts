@@ -1,13 +1,13 @@
-import { defineController, defineHooks, defineResponseSchema } from '~/$relay'
-import { depend } from 'velona'
-import { z } from 'zod'
+import { defineController, defineHooks, defineResponseSchema } from '~/$relay';
+import { depend } from 'velona';
+import { z } from 'zod';
 
 const hooks = defineHooks({ print: (...args: string[]) => console.log(...args) }, ({ print }) => ({
   onRequest: depend({}, (_deps, req, _reply, done) => {
-    print('Controller level onRequest hook:', req.url)
-    done()
+    print('Controller level onRequest hook:', req.url);
+    done();
   })
-}))
+}));
 
 const responseSchema = defineResponseSchema(() => ({
   get: {
@@ -26,18 +26,18 @@ const responseSchema = defineResponseSchema(() => ({
       }
     }
   }
-}))
+}));
 
 export default defineController(
   {
     log: (n: string) => {
-      console.log(n)
-      return Promise.resolve(n)
+      console.log(n);
+      return Promise.resolve(n);
     }
   },
   ({ log }) => ({
     get: async v => {
-      return { status: 200, body: v.query && { ...v.query, id: await log(v.query.id) } }
+      return { status: 200, body: v.query && { ...v.query, id: await log(v.query.id) } };
     },
     post: v => ({
       status: 201,
@@ -71,8 +71,8 @@ export default defineController(
       hooks: {
         preValidation: [],
         preHandler: (req, _, done) => {
-          console.log(req.method)
-          done()
+          console.log(req.method);
+          done();
         }
       },
       handler: v => ({
@@ -81,6 +81,6 @@ export default defineController(
       })
     }
   })
-)
+);
 
-export { hooks, responseSchema }
+export { hooks, responseSchema };

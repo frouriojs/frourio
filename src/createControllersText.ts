@@ -1,11 +1,11 @@
-import path from 'path'
-import fs from 'fs'
-import ts from 'typescript'
-import { createDefaultFilesIfNotExists } from './createDefaultFilesIfNotExists'
-import type { Param } from './createDefaultFilesIfNotExists'
-import type { LowerHttpMethod } from 'aspida'
+import path from 'path';
+import fs from 'fs';
+import ts from 'typescript';
+import { createDefaultFilesIfNotExists } from './createDefaultFilesIfNotExists';
+import type { Param } from './createDefaultFilesIfNotExists';
+import type { LowerHttpMethod } from 'aspida';
 
-type HooksEvent = 'onRequest' | 'preParsing' | 'preValidation' | 'preHandler'
+type HooksEvent = 'onRequest' | 'preParsing' | 'preValidation' | 'preHandler';
 
 const findRootFiles = (dir: string): string[] =>
   fs
@@ -20,15 +20,15 @@ const findRootFiles = (dir: string): string[] =>
           : [])
       ],
       []
-    )
+    );
 
 const initTSC = (appDir: string, project: string) => {
-  const configDir = path.resolve(project.replace(/\/[^/]+\.json$/, ''))
+  const configDir = path.resolve(project.replace(/\/[^/]+\.json$/, ''));
   const configFileName = ts.findConfigFile(
     configDir,
     ts.sys.fileExists,
     project.endsWith('.json') ? project.split('/').pop() : undefined
-  )
+  );
 
   const compilerOptions = configFileName
     ? ts.parseJsonConfigFileContent(
@@ -36,17 +36,17 @@ const initTSC = (appDir: string, project: string) => {
         ts.sys,
         configDir
       )
-    : undefined
+    : undefined;
 
   const program = ts.createProgram(
     findRootFiles(appDir),
     compilerOptions?.options
       ? { baseUrl: compilerOptions?.options.baseUrl, paths: compilerOptions?.options.paths }
       : {}
-  )
+  );
 
-  return { program, checker: program.getTypeChecker() }
-}
+  return { program, checker: program.getTypeChecker() };
+};
 
 const createRelayFile = (
   input: string,
@@ -55,8 +55,8 @@ const createRelayFile = (
   params: Param[],
   currentParam: Param | null
 ) => {
-  const hasAdditionals = !!additionalReqs.length
-  const hasMultiAdditionals = additionalReqs.length > 1
+  const hasAdditionals = !!additionalReqs.length;
+  const hasMultiAdditionals = additionalReqs.length > 1;
   const text = `${
     currentParam ? "import { z } from 'zod'\n" : ''
   }import type { Injectable } from 'velona'
@@ -130,14 +130,14 @@ export function defineController<M extends ServerMethods, T extends Record<strin
 export function defineController<M extends ServerMethods, T extends Record<string, unknown>>(methods: ((fastify: FastifyInstance) => M) | T, cb?: ((deps: T, fastify: FastifyInstance) => M)) {
   return cb && typeof methods !== 'function' ? depend(methods, cb) : methods
 }
-`
+`;
 
   fs.writeFileSync(
     path.join(input, '$relay.ts'),
     text.replace(', {}', '').replace(' & {}', ''),
     'utf8'
-  )
-}
+  );
+};
 
 const getAdditionalResPath = (input: string, name: string) =>
   fs.existsSync(path.join(input, `${name}.ts`)) &&
@@ -145,7 +145,7 @@ const getAdditionalResPath = (input: string, name: string) =>
     fs.readFileSync(path.join(input, `${name}.ts`), 'utf8')
   )
     ? [`./${name}`]
-    : []
+    : [];
 
 const createFiles = (
   appDir: string,
@@ -155,31 +155,31 @@ const createFiles = (
   appPath: string,
   additionalRequestPaths: string[]
 ) => {
-  const input = path.posix.join(appDir, dirPath)
-  const appText = `../${appPath}`
+  const input = path.posix.join(appDir, dirPath);
+  const appText = `../${appPath}`;
   const additionalReqs = [
     ...additionalRequestPaths.map(p => `./.${p}`),
     ...getAdditionalResPath(input, 'hooks')
-  ]
+  ];
 
-  createDefaultFilesIfNotExists(input, currentParam)
+  createDefaultFilesIfNotExists(input, currentParam);
   createRelayFile(
     input,
     appText,
     [...additionalReqs, ...getAdditionalResPath(input, 'controller')],
     params,
     currentParam
-  )
+  );
 
-  const dirs = fs.readdirSync(input, { withFileTypes: true }).filter(d => d.isDirectory())
+  const dirs = fs.readdirSync(input, { withFileTypes: true }).filter(d => d.isDirectory());
   if (dirs.filter(d => d.name.startsWith('_')).length >= 2) {
-    throw new Error('There are two ore more path param folders.')
+    throw new Error('There are two ore more path param folders.');
   }
 
   dirs.forEach(d => {
     const currentParam = d.name.startsWith('_')
       ? ([d.name.slice(1).split('@')[0], d.name.split('@')[1] ?? 'string'] as [string, string])
-      : null
+      : null;
     return createFiles(
       appDir,
       path.posix.join(dirPath, d.name),
@@ -187,29 +187,29 @@ const createFiles = (
       currentParam,
       appText,
       additionalReqs
-    )
-  })
-}
+    );
+  });
+};
 
 export default (appDir: string, project: string) => {
-  createFiles(appDir, '', [], null, '$server', [])
+  createFiles(appDir, '', [], null, '$server', []);
 
-  const { program, checker } = initTSC(appDir, project)
-  const hooksPaths: string[] = []
-  const validatorsPaths: string[] = []
-  const controllers: [string, boolean, boolean][] = []
+  const { program, checker } = initTSC(appDir, project);
+  const hooksPaths: string[] = [];
+  const validatorsPaths: string[] = [];
+  const controllers: [string, boolean, boolean][] = [];
   const createText = (
     dirPath: string,
     cascadingHooks: { name: string; events: { type: HooksEvent; isArray: boolean }[] }[],
     cascadingValidators: { name: string; isNumber: boolean }[]
   ) => {
-    const input = path.posix.join(appDir, dirPath)
-    const source = program.getSourceFile(path.join(input, 'index.ts'))
-    const results: string[] = []
-    let hooks = cascadingHooks
-    let paramsValidators = cascadingValidators
+    const input = path.posix.join(appDir, dirPath);
+    const source = program.getSourceFile(path.join(input, 'index.ts'));
+    const results: string[] = [];
+    let hooks = cascadingHooks;
+    let paramsValidators = cascadingValidators;
 
-    const validatorsFilePath = path.join(input, 'validators.ts')
+    const validatorsFilePath = path.join(input, 'validators.ts');
     if (fs.existsSync(validatorsFilePath)) {
       paramsValidators = [
         ...cascadingValidators,
@@ -217,8 +217,8 @@ export default (appDir: string, project: string) => {
           name: `validators${validatorsPaths.length}`,
           isNumber: dirPath.split('@')[1] === 'number'
         }
-      ]
-      validatorsPaths.push(`${input}/validators`)
+      ];
+      validatorsPaths.push(`${input}/validators`);
     }
 
     if (source) {
@@ -228,9 +228,9 @@ export default (appDir: string, project: string) => {
         node.modifiers?.some(m => m.kind === ts.SyntaxKind.ExportKeyword)
           ? checker.getTypeAtLocation(node).getProperties()
           : undefined
-      )
+      );
 
-      const hooksSource = program.getSourceFile(path.join(input, 'hooks.ts'))
+      const hooksSource = program.getSourceFile(path.join(input, 'hooks.ts'));
 
       if (hooksSource) {
         const events = ts.forEachChild(hooksSource, node => {
@@ -256,40 +256,40 @@ export default (appDir: string, project: string) => {
                               checker.getTypeOfSymbolAtLocation(p, p.valueDeclaration),
                               undefined,
                               undefined
-                            )
+                            );
 
                           return {
                             type: p.name as HooksEvent,
                             isArray: typeNode
                               ? ts.isArrayTypeNode(typeNode) || ts.isTupleTypeNode(typeNode)
                               : false
-                          }
+                          };
                         })
-                    )
+                    );
                   }
                 })
-            )
+            );
           }
-        })
+        });
 
         if (events) {
-          hooks = [...cascadingHooks, { name: `hooks${hooksPaths.length}`, events }]
-          hooksPaths.push(`${input}/hooks`)
+          hooks = [...cascadingHooks, { name: `hooks${hooksPaths.length}`, events }];
+          hooksPaths.push(`${input}/hooks`);
         }
       }
 
       if (methods?.length) {
-        const controllerSource = program.getSourceFile(path.join(input, 'controller.ts'))
-        const isPromiseMethods: string[] = []
-        const hasHandlerMethods: string[] = []
-        const hasValidatorsMethods: string[] = []
-        const hasSchemasMethods: string[] = []
+        const controllerSource = program.getSourceFile(path.join(input, 'controller.ts'));
+        const isPromiseMethods: string[] = [];
+        const hasHandlerMethods: string[] = [];
+        const hasValidatorsMethods: string[] = [];
+        const hasSchemasMethods: string[] = [];
         const hasHooksMethods: {
-          method: string
-          events: { type: HooksEvent; isArray: boolean }[]
-        }[] = []
-        let ctrlHooksSignature: ts.Signature | undefined
-        let resSchemaSignature: ts.Signature | undefined
+          method: string;
+          events: { type: HooksEvent; isArray: boolean }[];
+        }[] = [];
+        let ctrlHooksSignature: ts.Signature | undefined;
+        let resSchemaSignature: ts.Signature | undefined;
 
         if (controllerSource) {
           const getMethodTypeNodes = <T>(
@@ -312,26 +312,26 @@ export default (appDir: string, project: string) => {
                       .map(t => {
                         const type =
                           t.valueDeclaration &&
-                          checker.getTypeOfSymbolAtLocation(t, t.valueDeclaration)
-                        if (!type) return undefined
+                          checker.getTypeOfSymbolAtLocation(t, t.valueDeclaration);
+                        if (!type) return undefined;
 
                         const typeNode =
-                          t.valueDeclaration && checker.typeToTypeNode(type, undefined, undefined)
-                        if (!typeNode) return undefined
+                          t.valueDeclaration && checker.typeToTypeNode(type, undefined, undefined);
+                        if (!typeNode) return undefined;
 
-                        return cb(t, typeNode, type)
+                        return cb(t, typeNode, type);
                       })
                       .filter((n): n is T => !!n)
                 )
-            ) || []
+            ) || [];
 
           isPromiseMethods.push(
             ...getMethodTypeNodes((symbol, typeNode, type) => {
               const handler = ts.isFunctionTypeNode(typeNode)
                 ? symbol
-                : type.getProperties().find(p => p.name === 'handler')
+                : type.getProperties().find(p => p.name === 'handler');
 
-              if (!handler) return null
+              if (!handler) return null;
 
               return handler.valueDeclaration &&
                 checker
@@ -343,15 +343,15 @@ export default (appDir: string, project: string) => {
                   .getSymbol()
                   ?.getEscapedName() === 'Promise'
                 ? symbol.name
-                : null
+                : null;
             })
-          )
+          );
 
           hasHandlerMethods.push(
             ...getMethodTypeNodes((symbol, typeNode) =>
               ts.isFunctionTypeNode(typeNode) ? null : symbol.name
             )
-          )
+          );
 
           hasValidatorsMethods.push(
             ...getMethodTypeNodes((symbol, typeNode, type) =>
@@ -360,7 +360,7 @@ export default (appDir: string, project: string) => {
                 ? symbol.name
                 : null
             )
-          )
+          );
 
           hasSchemasMethods.push(
             ...getMethodTypeNodes((symbol, typeNode, type) =>
@@ -369,15 +369,15 @@ export default (appDir: string, project: string) => {
                 ? symbol.name
                 : null
             )
-          )
+          );
 
           hasHooksMethods.push(
             ...getMethodTypeNodes((symbol, typeNode, type) => {
-              if (ts.isFunctionTypeNode(typeNode)) return null
+              if (ts.isFunctionTypeNode(typeNode)) return null;
 
-              const hooksSymbol = type.getProperties().find(p => p.name === 'hooks')
+              const hooksSymbol = type.getProperties().find(p => p.name === 'hooks');
 
-              if (!hooksSymbol?.valueDeclaration) return null
+              if (!hooksSymbol?.valueDeclaration) return null;
 
               return {
                 method: symbol.name,
@@ -391,21 +391,21 @@ export default (appDir: string, project: string) => {
                         checker.getTypeOfSymbolAtLocation(p, p.valueDeclaration),
                         undefined,
                         undefined
-                      )
+                      );
 
                     return {
                       type: p.name as HooksEvent,
                       isArray: typeNode
                         ? ts.isArrayTypeNode(typeNode) || ts.isTupleTypeNode(typeNode)
                         : false
-                    }
+                    };
                   })
-              }
+              };
             })
-          )
+          );
 
-          let ctrlHooksNode: ts.VariableDeclaration | ts.ExportSpecifier | undefined
-          let resSchemaNode: ts.VariableDeclaration | ts.ExportSpecifier | undefined
+          let ctrlHooksNode: ts.VariableDeclaration | ts.ExportSpecifier | undefined;
+          let resSchemaNode: ts.VariableDeclaration | ts.ExportSpecifier | undefined;
 
           ts.forEachChild(controllerSource, node => {
             if (
@@ -414,35 +414,35 @@ export default (appDir: string, project: string) => {
             ) {
               ctrlHooksNode =
                 node.declarationList.declarations.find(d => d.name.getText() === 'hooks') ??
-                ctrlHooksNode
+                ctrlHooksNode;
               resSchemaNode =
                 node.declarationList.declarations.find(
                   d => d.name.getText() === 'responseSchema'
-                ) ?? resSchemaNode
+                ) ?? resSchemaNode;
             } else if (ts.isExportDeclaration(node)) {
-              const { exportClause } = node
+              const { exportClause } = node;
               if (exportClause && ts.isNamedExports(exportClause)) {
                 ctrlHooksNode =
-                  exportClause.elements.find(el => el.name.text === 'hooks') ?? ctrlHooksNode
+                  exportClause.elements.find(el => el.name.text === 'hooks') ?? ctrlHooksNode;
                 resSchemaNode =
                   exportClause.elements.find(el => el.name.text === 'responseSchema') ??
-                  resSchemaNode
+                  resSchemaNode;
               }
             }
-          })
+          });
 
           if (ctrlHooksNode) {
             ctrlHooksSignature = checker.getSignaturesOfType(
               checker.getTypeAtLocation(ctrlHooksNode),
               ts.SignatureKind.Call
-            )[0]
+            )[0];
           }
 
           if (resSchemaNode) {
             resSchemaSignature = checker.getSignaturesOfType(
               checker.getTypeAtLocation(resSchemaNode),
               ts.SignatureKind.Call
-            )[0]
+            )[0];
           }
         }
 
@@ -456,20 +456,20 @@ export default (appDir: string, project: string) => {
                 checker.getTypeOfSymbolAtLocation(p, p.valueDeclaration),
                 undefined,
                 undefined
-              )
+              );
 
             return {
               type: p.name as HooksEvent,
               isArray: typeNode
                 ? ts.isArrayTypeNode(typeNode) || ts.isTupleTypeNode(typeNode)
                 : false
-            }
-          })
+            };
+          });
 
         const genHookTexts = (event: HooksEvent, methodName: string) => [
           ...hooks.reduce<string[]>((prev, h) => {
-            const ev = h.events.find(e => e.type === event)
-            return ev ? [...prev, `${ev.isArray ? '...' : ''}${h.name}.${event}`] : prev
+            const ev = h.events.find(e => e.type === event);
+            return ev ? [...prev, `${ev.isArray ? '...' : ''}${h.name}.${event}`] : prev;
           }, []),
           ...(ctrlHooksEvents?.map(e =>
             e.type === event
@@ -489,15 +489,15 @@ export default (appDir: string, project: string) => {
                 }controller${controllers.length}.${methodName}.hooks.${event}`
               ]
             : [])
-        ]
+        ];
 
         const resSchemaMethods = resSchemaSignature
           ?.getReturnType()
           .getProperties()
-          .map(p => p.name as LowerHttpMethod)
+          .map(p => p.name as LowerHttpMethod);
 
         const genResSchemaText = (method: LowerHttpMethod) =>
-          `response: responseSchema${controllers.filter(c => c[2]).length}.${method}`
+          `response: responseSchema${controllers.filter(c => c[2]).length}.${method}`;
         const getSomeTypeQueryParams = (typeName: string, query: ts.Symbol) =>
           query.valueDeclaration &&
           checker
@@ -506,24 +506,24 @@ export default (appDir: string, project: string) => {
             .map(p => {
               const typeString =
                 p.valueDeclaration &&
-                checker.typeToString(checker.getTypeOfSymbolAtLocation(p, p.valueDeclaration))
+                checker.typeToString(checker.getTypeOfSymbolAtLocation(p, p.valueDeclaration));
               return typeString === typeName || typeString === `${typeName}[]`
                 ? `['${p.name}', ${!!p.declarations?.some(d =>
                     d.getChildren().some(c => c.kind === ts.SyntaxKind.QuestionToken)
                   )}, ${typeString === `${typeName}[]`}]`
-                : null
+                : null;
             })
-            .filter(Boolean)
+            .filter(Boolean);
 
         results.push(
           methods
             .map(m => {
               const props = m.valueDeclaration
                 ? checker.getTypeOfSymbolAtLocation(m, m.valueDeclaration).getProperties()
-                : []
-              const query = props.find(p => p.name === 'query')
-              const numberTypeQueryParams = query && getSomeTypeQueryParams('number', query)
-              const booleanTypeQueryParams = query && getSomeTypeQueryParams('boolean', query)
+                : [];
+              const query = props.find(p => p.name === 'query');
+              const numberTypeQueryParams = query && getSomeTypeQueryParams('number', query);
+              const booleanTypeQueryParams = query && getSomeTypeQueryParams('boolean', query);
               const validateInfo = [
                 { name: 'query', val: query },
                 { name: 'body', val: props.find(p => p.name === 'reqBody') },
@@ -539,15 +539,15 @@ export default (appDir: string, project: string) => {
                     d => d.getChildAt(1).kind === ts.SyntaxKind.QuestionToken
                   )
                 }))
-                .filter(({ type }) => type?.isClass())
+                .filter(({ type }) => type?.isClass());
 
-              const reqFormat = props.find(p => p.name === 'reqFormat')
+              const reqFormat = props.find(p => p.name === 'reqFormat');
               const isFormData =
                 (reqFormat?.valueDeclaration &&
                   checker.typeToString(
                     checker.getTypeOfSymbolAtLocation(reqFormat, reqFormat.valueDeclaration)
-                  )) === 'FormData'
-              const reqBody = props.find(p => p.name === 'reqBody')
+                  )) === 'FormData';
+              const reqBody = props.find(p => p.name === 'reqBody');
               const hooksTexts = (
                 ['onRequest', 'preParsing', 'preValidation', 'preHandler'] as const
               )
@@ -583,7 +583,7 @@ export default (appDir: string, project: string) => {
                                   checker.getTypeOfSymbolAtLocation(p, p.valueDeclaration),
                                   undefined,
                                   undefined
-                                )
+                                );
 
                               return node && (ts.isArrayTypeNode(node) || ts.isTupleTypeNode(node))
                                 ? `['${p.name}', ${!!p.declarations?.some(d =>
@@ -591,7 +591,7 @@ export default (appDir: string, project: string) => {
                                       .getChildren()
                                       .some(c => c.kind === ts.SyntaxKind.QuestionToken)
                                   )}]`
-                                : undefined
+                                : undefined;
                             })
                             .filter(Boolean)
                             .join(', ')}])`
@@ -625,7 +625,7 @@ ${validateInfo
                             .map(p => p.split('@')[0].slice(1))
                             .join("', '")}'])`
                         : ''
-                    ].filter(Boolean)
+                    ].filter(Boolean);
 
                     return texts.length
                       ? `${key}: ${
@@ -633,17 +633,17 @@ ${validateInfo
                             ? texts[0].replace(/^\.+/, '')
                             : `[\n        ${texts.join(',\n        ')}\n      ]`
                         }`
-                      : ''
+                      : '';
                   }
 
-                  const texts = genHookTexts(key, m.name).filter(Boolean)
+                  const texts = genHookTexts(key, m.name).filter(Boolean);
                   return texts.length
                     ? `${key}: ${
                         texts.length === 1 ? texts[0].replace('...', '') : `[${texts.join(', ')}]`
                       }`
-                    : ''
+                    : '';
                 })
-                .filter(Boolean)
+                .filter(Boolean);
 
               return `  fastify.${m.name}(${
                 hooksTexts.length || resSchemaMethods?.includes(m.name as LowerHttpMethod)
@@ -658,10 +658,10 @@ ${validateInfo
               },${(() => {
                 const validatorsText = hasValidatorsMethods.includes(m.name)
                   ? `...validatorsToSchema(controller${controllers.length}.${m.name}.validators)`
-                  : null
+                  : null;
                 const schemasText = hasSchemasMethods.includes(m.name)
                   ? `...controller${controllers.length}.${m.name}.schemas`
-                  : null
+                  : null;
                 const paramsValidatorsText = paramsValidators.length
                   ? `params: ${paramsValidators
                       .map(
@@ -669,10 +669,10 @@ ${validateInfo
                         // v.isNumber ? `z.preprocess(Number, ${v.name}.params)` : `${v.name}.params`
                       )
                       .join('.and(')}${paramsValidators.length > 1 ? ')' : ''}`
-                  : null
+                  : null;
                 const resSchemaText = resSchemaMethods?.includes(m.name as LowerHttpMethod)
                   ? genResSchemaText(m.name as LowerHttpMethod)
-                  : null
+                  : null;
                 const vals = [
                   ...(validatorsText && !schemasText && !resSchemaText && !paramsValidatorsText
                     ? [`schema: ${validatorsText.slice(3)}`]
@@ -692,14 +692,14 @@ ${validateInfo
                     : []),
                   ...(validatorsText || paramsValidatorsText ? ['validatorCompiler'] : []),
                   ...hooksTexts
-                ]
+                ];
                 return vals.length > 0
                   ? `\n    {\n      ${vals.join(',\n      ')}\n    }${
                       fs.readFileSync(`${input}/$relay.ts`, 'utf8').includes('AdditionalRequest')
                         ? ' as RouteShorthandOptions'
                         : ''
                     },`
-                  : ''
+                  : '';
               })()}
     ${
       isPromiseMethods.includes(m.name) ? 'asyncMethodToHandler' : 'methodToHandler'
@@ -709,16 +709,18 @@ ${validateInfo
                 hooksTexts.length || resSchemaMethods?.includes(m.name as LowerHttpMethod)
                   ? '\n  '
                   : ''
-              })\n`
+              })\n`;
             })
             .join('\n')
-        )
+        );
 
-        controllers.push([`${input}/controller`, !!ctrlHooksEvents, !!resSchemaMethods])
+        controllers.push([`${input}/controller`, !!ctrlHooksEvents, !!resSchemaMethods]);
       }
     }
 
-    const childrenDirs = fs.readdirSync(input, { withFileTypes: true }).filter(d => d.isDirectory())
+    const childrenDirs = fs
+      .readdirSync(input, { withFileTypes: true })
+      .filter(d => d.isDirectory());
 
     if (childrenDirs.length) {
       results.push(
@@ -731,21 +733,21 @@ ${validateInfo
             ],
             []
           )
-      )
+      );
 
-      const value = childrenDirs.find(d => d.name.startsWith('_'))
+      const value = childrenDirs.find(d => d.name.startsWith('_'));
 
       if (value) {
-        results.push(...createText(path.posix.join(dirPath, value.name), hooks, paramsValidators))
+        results.push(...createText(path.posix.join(dirPath, value.name), hooks, paramsValidators));
       }
     }
 
-    return results
-  }
+    return results;
+  };
 
-  const text = createText('', [], []).join('\n')
-  const ctrlHooks = controllers.filter(c => c[1])
-  const resSchemas = controllers.filter(c => c[2])
+  const text = createText('', [], []).join('\n');
+  const ctrlHooks = controllers.filter(c => c[1]);
+  const resSchemas = controllers.filter(c => c[2]);
 
   return {
     imports: `${hooksPaths
@@ -784,5 +786,5 @@ ${validateInfo
       .map((_, i) => `  const controller${i} = controllerFn${i}(fastify)\n`)
       .join('')}`,
     controllers: text
-  }
-}
+  };
+};
