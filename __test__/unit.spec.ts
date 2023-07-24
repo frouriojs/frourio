@@ -7,19 +7,22 @@ test('createDefaultFilesIfNotExists', () => {
   fs.mkdirSync(dir);
   createDefaultFilesIfNotExists(dir, null);
 
-  expect(fs.readFileSync(`${dir}/index.ts`, 'utf8')).toBe(`export type Methods = {
+  expect(fs.readFileSync(`${dir}/index.ts`, 'utf8'))
+    .toBe(`import type { DefineMethods } from 'aspida';
+
+export type Methods = DefineMethods<{
   get: {
-    resBody: string
-  }
-}
+    resBody: string;
+  };
+}>;
 `);
 
   expect(fs.readFileSync(`${dir}/controller.ts`, 'utf8'))
-    .toBe(`import { defineController } from './$relay'
+    .toBe(`import { defineController } from './$relay';
 
 export default defineController(() => ({
   get: () => ({ status: 200, body: 'Hello' })
-}))
+}));
 `);
 
   expect(fs.existsSync(`${dir}/hooks.ts`)).toBeFalsy();
@@ -28,14 +31,14 @@ export default defineController(() => ({
   createDefaultFilesIfNotExists(dir, null);
 
   expect(fs.readFileSync(`${dir}/hooks.ts`, 'utf8')).toBe(
-    `import { defineHooks } from './$relay'
+    `import { defineHooks } from './$relay';
 
 export default defineHooks(() => ({
   onRequest: (req, reply, done) => {
-    console.log('Directory level onRequest hook:', req.url)
-    done()
+    console.log('Directory level onRequest hook:', req.url);
+    done();
   }
-}))
+}));
 `
   );
   rimraf.sync(dir);
