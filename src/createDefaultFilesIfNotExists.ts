@@ -13,9 +13,9 @@ export const createDefaultFilesIfNotExists = (dir: string, currentParam: Param |
       indexFilePath,
       `export type Methods = {
   get: {
-    resBody: string
-  }
-}
+    resBody: string;
+  };
+};
 `,
       'utf8'
     );
@@ -26,11 +26,11 @@ export const createDefaultFilesIfNotExists = (dir: string, currentParam: Param |
   if (isEmptyDir && !fs.existsSync(controllerFilePath)) {
     fs.writeFileSync(
       controllerFilePath,
-      `import { defineController } from './$relay'
+      `import { defineController } from './$relay';
 
 export default defineController(() => ({
   get: () => ({ status: 200, body: 'Hello' })
-}))
+}));
 `,
       'utf8'
     );
@@ -41,14 +41,14 @@ export default defineController(() => ({
   if (fs.existsSync(hooksFilePath) && !fs.readFileSync(hooksFilePath, 'utf8')) {
     fs.writeFileSync(
       hooksFilePath,
-      `import { defineHooks } from './$relay'
+      `import { defineHooks } from './$relay';
 
 export default defineHooks(() => ({
   onRequest: (req, reply, done) => {
-    console.log('Directory level onRequest hook:', req.url)
-    done()
+    console.log('Directory level onRequest hook:', req.url);
+    done();
   }
-}))
+}));
 `,
       'utf8'
     );
@@ -59,12 +59,12 @@ export default defineHooks(() => ({
   if (currentParam && !fs.existsSync(validatorsFilePath)) {
     fs.writeFileSync(
       validatorsFilePath,
-      `import { z } from 'zod'
-import { defineValidators } from './$relay'
+      `import { z } from 'zod';
+import { defineValidators } from './$relay';
 
 export default defineValidators(() => ({
   params: z.object({ ${currentParam[0]}: z.${currentParam[1]}() })
-}))
+}));
 `,
       'utf8'
     );
