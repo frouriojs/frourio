@@ -7,7 +7,6 @@ import { validateOrReject } from 'class-validator'
 import fastify, { FastifyInstance } from 'fastify'
 import FormData from 'form-data'
 import fs from 'fs'
-import rimraf from 'rimraf'
 import frourio from '../servers/all/$server'
 import api from '../servers/all/api/$api'
 import controller from '../servers/all/api/controller'
@@ -45,10 +44,7 @@ beforeEach(() => {
   ])
 })
 
-afterEach(() => {
-  rimraf.sync('packages/frourio/servers/all/.upload')
-  return Promise.all([server.close(), subServer.close()])
-})
+afterEach(() => Promise.all([server.close(), subServer.close()]))
 
 test('GET: 200', () =>
   Promise.all(
