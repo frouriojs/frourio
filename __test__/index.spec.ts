@@ -1,15 +1,14 @@
 /* eslint-disable jest/no-done-callback */
-import fs from 'fs'
-import rimraf from 'rimraf'
-import fastify, { FastifyInstance } from 'fastify'
-import FormData from 'form-data'
+import aspida from '@aspida/axios'
+import aspidaFetch from '@aspida/node-fetch'
 import axios from 'axios'
 import { plainToInstance } from 'class-transformer'
 import { validateOrReject } from 'class-validator'
-import aspida from '@aspida/axios'
-import aspidaFetch from '@aspida/node-fetch'
-import api from '../servers/all/api/$api'
+import fastify, { FastifyInstance } from 'fastify'
+import FormData from 'form-data'
+import fs from 'fs'
 import frourio from '../servers/all/$server'
+import api from '../servers/all/api/$api'
 import controller from '../servers/all/api/controller'
 
 const port = 11111
@@ -45,10 +44,7 @@ beforeEach(() => {
   ])
 })
 
-afterEach(() => {
-  rimraf.sync('packages/frourio/servers/all/.upload')
-  return Promise.all([server.close(), subServer.close()])
-})
+afterEach(() => Promise.all([server.close(), subServer.close()]))
 
 test('GET: 200', () =>
   Promise.all(
@@ -169,36 +165,31 @@ test('POST: formdata', async () => {
 
   const port = '3000'
   const fileName = 'tsconfig.json'
-  const res1 = await client.$post({
-    query: {
-      requiredNum: 0,
-      requiredNumArr: [],
-      id: '1',
-      disable: 'true',
-      bool: false,
-      boolArray: []
-    },
-    body: { port, file: fs.createReadStream(fileName) }
+
+  const form1 = new FormData()
+  const fileST1 = fs.createReadStream(fileName)
+  form1.append('port', port)
+  form1.append('file', fileST1)
+  const res1 = await axios.post(baseURL, form1, {
+    params: { requiredNum: 0, id: '1', disable: 'true', bool: false },
+    headers: form1.getHeaders()
   })
-  expect(res1.port).toBe(port)
-  expect(res1.fileName).toBe(fileName)
+  expect(res1.data.port).toBe(port)
+  expect(res1.data.fileName).toBe(fileName)
 
   expect(subServerPlainToInstanceCallCount).toBe(0)
   expect(subServerValidateOrRejectCallCount).toBe(0)
 
-  const res2 = await fetchClient.$post({
-    query: {
-      requiredNum: 0,
-      requiredNumArr: [],
-      id: '1',
-      disable: 'true',
-      bool: false,
-      boolArray: []
-    },
-    body: { port, file: fs.createReadStream(fileName) }
+  const form2 = new FormData()
+  const fileST2 = fs.createReadStream(fileName)
+  form2.append('port', port)
+  form2.append('file', fileST2)
+  const res2 = await axios.post(subBaseURL, form2, {
+    params: { requiredNum: 0, id: '1', disable: 'true', bool: false },
+    headers: form2.getHeaders()
   })
-  expect(res2.port).toBe(port)
-  expect(res2.fileName).toBe(fileName)
+  expect(res2.data.port).toBe(port)
+  expect(res2.data.fileName).toBe(fileName)
 
   // 2 = query + body
   expect(subServerPlainToInstanceCallCount).toBe(2)

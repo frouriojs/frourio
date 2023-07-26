@@ -11,9 +11,6 @@
   <a href="https://github.com/frouriojs/frourio/actions?query=workflow%3A%22Node.js+CI%22">
     <img src="https://github.com/frouriojs/frourio/workflows/Node.js%20CI/badge.svg?branch=main" alt="Node.js CI" />
   </a>
-  <a href="https://codecov.io/gh/frouriojs/frourio">
-    <img src="https://img.shields.io/codecov/c/github/frouriojs/frourio.svg" alt="Codecov" />
-  </a>
   <a href="https://lgtm.com/projects/g/frouriojs/frourio/context:javascript">
     <img src="https://img.shields.io/lgtm/grade/javascript/g/frouriojs/frourio.svg" alt="Language grade: JavaScript" />
   </a>

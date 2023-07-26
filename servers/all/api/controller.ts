@@ -1,6 +1,6 @@
-import { defineController, defineHooks, defineResponseSchema } from '~/$relay'
 import { depend } from 'velona'
 import { z } from 'zod'
+import { defineController, defineHooks, defineResponseSchema } from '~/$relay'
 
 const hooks = defineHooks({ print: (...args: string[]) => console.log(...args) }, ({ print }) => ({
   onRequest: depend({}, (_deps, req, _reply, done) => {

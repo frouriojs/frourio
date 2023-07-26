@@ -13,7 +13,7 @@ const hooks = defineHooks(() => ({
   ]
 }))
 
-export { hooks, AdditionalRequest }
+export { AdditionalRequest, hooks }
 
 export default defineController(() => ({
   get: async () => ({

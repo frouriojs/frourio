@@ -27,6 +27,7 @@ import controllerFn6 from './api/texts/_label@string/controller'
 import controllerFn7, { hooks as ctrlHooksFn1 } from './api/users/controller'
 import controllerFn8 from './api/users/_userId@number/controller'
 import controllerFn9 from './api/users/_userId@number/_name/controller'
+import controllerFn10 from './api/zod/controller'
 import type { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, FastifyRequest, FastifySchema, FastifySchemaCompiler, RouteShorthandOptions, onRequestHookHandler, preParsingHookHandler, preHandlerHookHandler } from 'fastify'
 
 export type FrourioOptions = {
@@ -285,6 +286,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   const controller7 = controllerFn7(fastify)
   const controller8 = controllerFn8(fastify)
   const controller9 = controllerFn9(fastify)
+  const controller10 = controllerFn10(fastify)
 
   fastify.register(multipart, { attachFieldsToBody: true, limits: { fileSize: 1024 ** 3 }, ...options.multipart })
 
@@ -473,6 +475,48 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
       preValidation: createTypedParamsHandler(['userId'])
     } as RouteShorthandOptions,
     methodToHandler(controller9.get)
+  )
+
+  fastify.get(
+    `${basePath}/zod`,
+    {
+      schema: validatorsToSchema(controller10.get.validators),
+      validatorCompiler,
+      onRequest: hooks0.onRequest,
+      preParsing: hooks0.preParsing,
+      preValidation: [
+        parseNumberTypeQueryParams([['requiredNum', false, false], ['requiredNumArr', false, true], ['optionalNum', true, false], ['optionalNumArr', true, true], ['emptyNum', true, false]]),
+        parseBooleanTypeQueryParams([['bool', false, false], ['boolArray', false, true], ['optionalBool', true, false], ['optionalBoolArray', true, true]])
+      ]
+    },
+    methodToHandler(controller10.get.handler)
+  )
+
+  fastify.post(
+    `${basePath}/zod`,
+    {
+      schema: validatorsToSchema(controller10.post.validators),
+      validatorCompiler,
+      onRequest: hooks0.onRequest,
+      preParsing: hooks0.preParsing,
+      preValidation: [
+        callParserIfExistsQuery(parseNumberTypeQueryParams([['requiredNum', false, false], ['requiredNumArr', false, true], ['optionalNum', true, false], ['optionalNumArr', true, true], ['emptyNum', true, false]])),
+        callParserIfExistsQuery(parseBooleanTypeQueryParams([['bool', false, false], ['boolArray', false, true], ['optionalBool', true, false], ['optionalBoolArray', true, true]]))
+      ]
+    },
+    methodToHandler(controller10.post.handler)
+  )
+
+  fastify.put(
+    `${basePath}/zod`,
+    {
+      schema: validatorsToSchema(controller10.put.validators),
+      validatorCompiler,
+      onRequest: hooks0.onRequest,
+      preParsing: hooks0.preParsing,
+      preValidation: formatMultipartData([['requiredArr', false], ['vals', false], ['files', false], ['optionalArr', true], ['empty', true]])
+    },
+    methodToHandler(controller10.put.handler)
   )
 
   return fastify

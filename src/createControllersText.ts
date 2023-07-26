@@ -1,9 +1,9 @@
-import path from 'path'
-import fs from 'fs'
-import ts from 'typescript'
-import { createDefaultFilesIfNotExists } from './createDefaultFilesIfNotExists'
-import type { Param } from './createDefaultFilesIfNotExists'
 import type { LowerHttpMethod } from 'aspida'
+import fs from 'fs'
+import path from 'path'
+import ts from 'typescript'
+import type { Param } from './createDefaultFilesIfNotExists'
+import { createDefaultFilesIfNotExists } from './createDefaultFilesIfNotExists'
 
 type HooksEvent = 'onRequest' | 'preParsing' | 'preValidation' | 'preHandler'
 
@@ -38,12 +38,7 @@ const initTSC = (appDir: string, project: string) => {
       )
     : undefined
 
-  const program = ts.createProgram(
-    findRootFiles(appDir),
-    compilerOptions?.options
-      ? { baseUrl: compilerOptions?.options.baseUrl, paths: compilerOptions?.options.paths }
-      : {}
-  )
+  const program = ts.createProgram(findRootFiles(appDir), compilerOptions?.options ?? {})
 
   return { program, checker: program.getTypeChecker() }
 }
@@ -498,22 +493,28 @@ export default (appDir: string, project: string) => {
 
         const genResSchemaText = (method: LowerHttpMethod) =>
           `response: responseSchema${controllers.filter(c => c[2]).length}.${method}`
-        const getSomeTypeQueryParams = (typeName: string, query: ts.Symbol) =>
-          query.valueDeclaration &&
-          checker
-            .getTypeOfSymbolAtLocation(query, query.valueDeclaration)
-            .getProperties()
+        const getSomeTypeQueryParams = (typeName: string, query: ts.Symbol) => {
+          const queryDeclaration = query.valueDeclaration ?? query.declarations?.[0]
+          const type =
+            queryDeclaration && checker.getTypeOfSymbolAtLocation(query, queryDeclaration)
+          const targetType = type?.isUnion()
+            ? type.types.find(t => checker.typeToString(t) !== 'undefined')
+            : type
+
+          return targetType
+            ?.getProperties()
             .map(p => {
-              const typeString =
-                p.valueDeclaration &&
-                checker.typeToString(checker.getTypeOfSymbolAtLocation(p, p.valueDeclaration))
-              return typeString === typeName || typeString === `${typeName}[]`
-                ? `['${p.name}', ${!!p.declarations?.some(d =>
-                    d.getChildren().some(c => c.kind === ts.SyntaxKind.QuestionToken)
-                  )}, ${typeString === `${typeName}[]`}]`
+              const declaration = p.valueDeclaration ?? p.declarations?.[0]
+              const type = declaration && checker.getTypeOfSymbolAtLocation(p, declaration)
+              const typeString = type && checker.typeToString(type).replace(' | undefined', '')
+              const isArray = typeString === `${typeName}[]`
+
+              return typeString === typeName || isArray
+                ? `['${p.name}', ${(p.flags & ts.SymbolFlags.Optional) !== 0}, ${isArray}]`
                 : null
             })
             .filter(Boolean)
+        }
 
         results.push(
           methods
@@ -530,15 +531,19 @@ export default (appDir: string, project: string) => {
                 { name: 'headers', val: props.find(p => p.name === 'reqHeaders') }
               ]
                 .filter((prop): prop is { name: string; val: ts.Symbol } => !!prop.val)
-                .map(({ name, val }) => ({
-                  name,
-                  type:
-                    val.valueDeclaration &&
-                    checker.getTypeOfSymbolAtLocation(val, val.valueDeclaration),
-                  hasQuestion: !!val.declarations?.some(
-                    d => d.getChildAt(1).kind === ts.SyntaxKind.QuestionToken
-                  )
-                }))
+                .map(({ name, val }) => {
+                  const declaration = val.valueDeclaration ?? val.declarations?.[0]
+                  const type = declaration && checker.getTypeOfSymbolAtLocation(val, declaration)
+                  const targetType = type?.isUnion()
+                    ? type.types.find(t => checker.typeToString(t) !== 'undefined')
+                    : type
+
+                  return {
+                    name,
+                    type: targetType,
+                    hasQuestion: (val.flags & ts.SymbolFlags.Optional) !== 0
+                  }
+                })
                 .filter(({ type }) => type?.isClass())
 
               const reqFormat = props.find(p => p.name === 'reqFormat')
@@ -577,20 +582,13 @@ export default (appDir: string, project: string) => {
                             .getTypeOfSymbolAtLocation(reqBody, reqBody.valueDeclaration)
                             .getProperties()
                             .map(p => {
-                              const node =
-                                p.valueDeclaration &&
-                                checker.typeToTypeNode(
-                                  checker.getTypeOfSymbolAtLocation(p, p.valueDeclaration),
-                                  undefined,
-                                  undefined
-                                )
+                              const declaration = p.valueDeclaration ?? p.declarations?.[0]
+                              const type =
+                                declaration && checker.getTypeOfSymbolAtLocation(p, declaration)
+                              const typeString = type && checker.typeToString(type)
 
-                              return node && (ts.isArrayTypeNode(node) || ts.isTupleTypeNode(node))
-                                ? `['${p.name}', ${!!p.declarations?.some(d =>
-                                    d
-                                      .getChildren()
-                                      .some(c => c.kind === ts.SyntaxKind.QuestionToken)
-                                  )}]`
+                              return typeString?.includes('[]')
+                                ? `['${p.name}', ${(p.flags & ts.SymbolFlags.Optional) !== 0}]`
                                 : undefined
                             })
                             .filter(Boolean)
