@@ -1,4 +1,4 @@
-import { Query, Body } from '../validators';
+import { Body, Query } from '../validators';
 
 export type Methods = {
   get: {

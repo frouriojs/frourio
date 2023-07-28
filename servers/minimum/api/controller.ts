@@ -1,4 +1,4 @@
-import { defineResponseSchema, defineController } from './$relay';
+import { defineController, defineResponseSchema } from './$relay';
 
 export const responseSchema = defineResponseSchema(() => ({
   get: {

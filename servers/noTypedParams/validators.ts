@@ -1,12 +1,12 @@
 import {
-  IsNumberString,
-  IsBooleanString,
-  IsPort,
-  IsInt,
-  MaxLength,
-  IsString,
   Allow,
-  ArrayNotEmpty
+  ArrayNotEmpty,
+  IsBooleanString,
+  IsInt,
+  IsNumberString,
+  IsPort,
+  IsString,
+  MaxLength
 } from 'class-validator';
 
 export class Query {

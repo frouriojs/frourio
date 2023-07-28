@@ -1,6 +1,6 @@
 import path from 'path';
-import createControllersText from './createControllersText';
 import checkRequisites from './checkRequisites';
+import createControllersText from './createControllersText';
 
 const genHandlerText = (isAsync: boolean) => `
 const ${isAsync ? 'asyncM' : 'm'}ethodToHandler = (

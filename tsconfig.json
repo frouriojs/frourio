@@ -19,6 +19,7 @@
     "sourceMap": true,
     "strict": true,
     "strictPropertyInitialization": false,
+    "exactOptionalPropertyTypes": true,
     "target": "es5"
   }
 }

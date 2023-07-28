@@ -10,6 +10,7 @@ import type { Methods as Methods6 } from './texts/sample'
 import type { Methods as Methods7 } from './users'
 import type { Methods as Methods8 } from './users/_userId@number'
 import type { Methods as Methods9 } from './users/_userId@number/_name'
+import type { Methods as Methods10 } from './zod'
 
 const api = <T>({ baseURL, fetch }: AspidaClient<T>) => {
   const prefix = (baseURL === undefined ? '' : baseURL).replace(/\/$/, '')
@@ -19,6 +20,7 @@ const api = <T>({ baseURL, fetch }: AspidaClient<T>) => {
   const PATH3 = '/texts'
   const PATH4 = '/texts/sample'
   const PATH5 = '/users'
+  const PATH6 = '/zod'
   const GET = 'GET'
   const POST = 'POST'
   const PUT = 'PUT'
@@ -109,6 +111,22 @@ const api = <T>({ baseURL, fetch }: AspidaClient<T>) => {
       $post: (option: { body: Methods7['post']['reqBody'], config?: T | undefined }) =>
         fetch(prefix, PATH5, POST, option).send().then(r => r.body),
       $path: () => `${prefix}${PATH5}`
+    },
+    zod: {
+      get: (option: { query: Methods10['get']['query'], config?: T | undefined }) =>
+        fetch<Methods10['get']['resBody']>(prefix, PATH6, GET, option).json(),
+      $get: (option: { query: Methods10['get']['query'], config?: T | undefined }) =>
+        fetch<Methods10['get']['resBody']>(prefix, PATH6, GET, option).json().then(r => r.body),
+      post: (option?: { query?: Methods10['post']['query'] | undefined, config?: T | undefined } | undefined) =>
+        fetch<Methods10['post']['resBody']>(prefix, PATH6, POST, option).json(),
+      $post: (option?: { query?: Methods10['post']['query'] | undefined, config?: T | undefined } | undefined) =>
+        fetch<Methods10['post']['resBody']>(prefix, PATH6, POST, option).json().then(r => r.body),
+      put: (option: { body: Methods10['put']['reqBody'], config?: T | undefined }) =>
+        fetch<Methods10['put']['resBody']>(prefix, PATH6, PUT, option, 'FormData').json(),
+      $put: (option: { body: Methods10['put']['reqBody'], config?: T | undefined }) =>
+        fetch<Methods10['put']['resBody']>(prefix, PATH6, PUT, option, 'FormData').json().then(r => r.body),
+      $path: (option?: { method?: 'get' | undefined; query: Methods10['get']['query'] } | { method: 'post'; query: Methods10['post']['query'] } | undefined) =>
+        `${prefix}${PATH6}${option && option.query ? `?${dataToURLString(option.query)}` : ''}`
     },
     get: (option?: { query?: Methods0['get']['query'] | undefined, config?: T | undefined } | undefined) =>
       fetch<Methods0['get']['resBody'], BasicHeaders, Methods0['get']['status']>(prefix, '', GET, option).json(),
