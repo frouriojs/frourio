@@ -1,10 +1,10 @@
 export type Methods = {
   get: {
     query: {
-      val: string
-    }
-    resBody: string
-  }
+      val: string;
+    };
+    resBody: string;
+  };
 
-  put: {}
-}
+  put: {};
+};

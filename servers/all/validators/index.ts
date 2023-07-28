@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer'
+import { Type } from 'class-transformer';
 import {
   Allow,
   ArrayNotEmpty,
@@ -13,89 +13,89 @@ import {
   IsString,
   MaxLength,
   ValidateNested
-} from 'class-validator'
-import type { ReadStream } from 'fs'
+} from 'class-validator';
+import type { ReadStream } from 'fs';
 
 export class Query {
-  requiredNum: number
-  optionalNum?: number
-  optionalNumArr?: Array<number>
+  requiredNum: number;
+  optionalNum?: number;
+  optionalNumArr?: Array<number>;
 
   @IsOptional()
   @IsInt()
-  emptyNum?: number
+  emptyNum?: number;
 
   @IsInt({ each: true })
-  requiredNumArr: number[]
+  requiredNumArr: number[];
 
   @IsNumberString()
-  id: string
+  id: string;
 
   @IsBooleanString()
-  disable: string
+  disable: string;
 
   @IsBoolean()
-  bool: boolean
+  bool: boolean;
 
   @IsOptional()
   @IsBoolean()
-  optionalBool?: boolean
+  optionalBool?: boolean;
 
   @IsBoolean({ each: true })
-  boolArray: boolean[]
+  boolArray: boolean[];
 
   @IsOptional()
   @IsBoolean({ each: true })
-  optionalBoolArray?: boolean[]
+  optionalBoolArray?: boolean[];
 }
 
 export class Body {
   @IsPort()
-  port: string
+  port: string;
 
-  file: File | ReadStream
+  file: File | ReadStream;
 }
 
 export class UserInfoLocation {
   @IsISO31661Alpha2()
-  country: string
+  country: string;
 
   @IsString()
-  stateProvince: string
+  stateProvince: string;
 }
 
 export class UserInfo {
   @IsInt()
-  id: number
+  id: number;
 
   @MaxLength(20)
-  name: string
+  name: string;
 
   // @Type decorator is required to validate nested object properly
   // @IsObject decorator is required or class-validator will not throw an error when the property is missing
   @ValidateNested()
   @IsObject()
   @Type(() => UserInfoLocation)
-  location: UserInfoLocation
+  location: UserInfoLocation;
 }
 
 export class MultiForm {
-  requiredArr: string[]
-  optionalArr?: string[]
+  requiredArr: string[];
+  optionalArr?: string[];
 
   @IsOptional()
   @IsInt({ each: true })
-  empty?: number[]
+  empty?: number[];
 
   @IsString()
-  name: string
+  name: string;
 
   @Allow()
-  icon: Blob
+  icon: Blob;
 
   @IsString({ each: true })
-  vals: string[]
+  vals: string[];
 
   @ArrayNotEmpty()
-  files: Blob[]
+  files: Blob[];
 }

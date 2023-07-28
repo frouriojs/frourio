@@ -1,6 +1,6 @@
-import { Methods } from '.'
-import { defineController } from './$relay'
-import { bodyValidator, queryValidator } from './validator'
+import { Methods } from '.';
+import { defineController } from './$relay';
+import { bodyValidator, queryValidator } from './validator';
 
 export default defineController(() => ({
   get: {
@@ -21,4 +21,4 @@ export default defineController(() => ({
       )
     })
   }
-}))
+}));

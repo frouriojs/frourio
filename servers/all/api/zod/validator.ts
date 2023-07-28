@@ -1,8 +1,8 @@
-import { BusboyFileStream } from '@fastify/busboy'
-import { MultipartFile } from '@fastify/multipart'
-import type { ReadStream } from 'fs'
-import { Readable } from 'stream'
-import { z } from 'zod'
+import { BusboyFileStream } from '@fastify/busboy';
+import { MultipartFile } from '@fastify/multipart';
+import type { ReadStream } from 'fs';
+import { Readable } from 'stream';
+import { z } from 'zod';
 
 export const queryValidator = z.object({
   requiredNum: z.number(),
@@ -16,9 +16,9 @@ export const queryValidator = z.object({
   optionalBool: z.boolean().optional(),
   boolArray: z.array(z.boolean()),
   optionalBoolArray: z.array(z.boolean()).optional()
-})
+});
 
-export type QueryValidator = z.infer<typeof queryValidator>
+export type QueryValidator = z.infer<typeof queryValidator>;
 
 const multipartValidator = z.object({
   type: z.literal('file'),
@@ -33,7 +33,7 @@ const multipartValidator = z.object({
   encoding: z.string(),
   mimetype: z.string(),
   fields: z.record(z.any())
-}) satisfies z.ZodType<MultipartFile>
+}) satisfies z.ZodType<MultipartFile>;
 
 export const bodyValidator = z.object({
   requiredArr: z.array(z.string()),
@@ -43,14 +43,14 @@ export const bodyValidator = z.object({
   icon: multipartValidator,
   vals: z.array(z.number()),
   files: z.array(multipartValidator)
-})
+});
 
 type MultipartToBlob<T extends Record<string, unknown>> = {
   [P in keyof T]: Required<T>[P] extends MultipartFile
     ? Blob | ReadStream
     : Required<T>[P] extends MultipartFile[]
     ? (Blob | ReadStream)[]
-    : T[P]
-}
+    : T[P];
+};
 
-export type BodyValidator = MultipartToBlob<z.infer<typeof bodyValidator>>
+export type BodyValidator = MultipartToBlob<z.infer<typeof bodyValidator>>;

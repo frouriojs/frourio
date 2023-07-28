@@ -1,6 +1,6 @@
-import { z } from 'zod'
-import { defineValidators } from './$relay'
+import { z } from 'zod';
+import { defineValidators } from './$relay';
 
 export default defineValidators(() => ({
   params: z.object({ name: z.string() })
-}))
+}));
