@@ -6,7 +6,7 @@ import {
   IsNumberString,
   IsPort,
   IsString,
-  MaxLength
+  MaxLength,
 } from 'class-validator';
 
 export class Query {

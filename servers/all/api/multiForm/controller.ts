@@ -7,6 +7,6 @@ export default defineController(() => ({
     body: Object.entries(body).reduce(
       (p, [key, val]) => ({ ...p, [key]: Array.isArray(val) ? val.length : -1 }),
       {} as Methods['post']['resBody']
-    )
-  })
+    ),
+  }),
 }));

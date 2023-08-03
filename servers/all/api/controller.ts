@@ -6,7 +6,7 @@ const hooks = defineHooks({ print: (...args: string[]) => console.log(...args) }
   onRequest: depend({}, (_deps, req, _reply, done) => {
     print('Controller level onRequest hook:', req.url);
     done();
-  })
+  }),
 }));
 
 const responseSchema = defineResponseSchema(() => ({
@@ -22,10 +22,10 @@ const responseSchema = defineResponseSchema(() => ({
         optionalBool: { type: 'boolean' },
         boolArray: { type: 'array', items: { type: 'boolean' } },
         optionalBoolArray: { type: 'array', items: { type: 'boolean' } },
-        disable: { type: 'string' }
-      }
-    }
-  }
+        disable: { type: 'string' },
+      },
+    },
+  },
 }));
 
 export default defineController(
@@ -33,7 +33,7 @@ export default defineController(
     log: (n: string) => {
       console.log(n);
       return Promise.resolve(n);
-    }
+    },
   },
   ({ log }) => ({
     get: async v => {
@@ -41,7 +41,7 @@ export default defineController(
     },
     post: v => ({
       status: 201,
-      body: { id: +v.query.id, port: v.body.port, fileName: v.body.file.filename }
+      body: { id: +v.query.id, port: v.body.port, fileName: v.body.file.filename },
     }),
     put: {
       validators: {
@@ -56,30 +56,30 @@ export default defineController(
           bool: z.boolean(),
           optionalBool: z.boolean().optional(),
           boolArray: z.array(z.boolean()),
-          optionalBoolArray: z.array(z.boolean()).optional()
+          optionalBoolArray: z.array(z.boolean()).optional(),
         }),
-        body: z.object({ port: z.string() })
+        body: z.object({ port: z.string() }),
       },
       schemas: {
         response: {
           201: {
             type: 'object',
-            properties: { id: { type: 'number' }, port: { type: 'string' } }
-          }
-        }
+            properties: { id: { type: 'number' }, port: { type: 'string' } },
+          },
+        },
       },
       hooks: {
         preValidation: [],
         preHandler: (req, _, done) => {
           console.log(req.method);
           done();
-        }
+        },
       },
       handler: v => ({
         status: 201,
-        body: { id: +v.query.id, port: v.body.port }
-      })
-    }
+        body: { id: +v.query.id, port: v.body.port },
+      }),
+    },
   })
 );
 

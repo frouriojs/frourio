@@ -1,4 +1,4 @@
-import aspidaBuild from 'aspida/dist/buildTemplate';
+import aspidaBuild from 'aspida/dist/cjs/buildTemplate';
 import fs from 'fs';
 import { version } from '../package.json';
 import { run } from '../src';
@@ -34,7 +34,7 @@ test('build', () => {
         baseURL: '',
         trailingSlash: false,
         outputEachDir: false,
-        outputMode: 'all'
+        outputMode: 'all',
       });
       expect(target.text).toBe(fs.readFileSync(target.filePath, 'utf8').replace(/\r/g, ''));
     });

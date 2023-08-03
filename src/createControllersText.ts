@@ -17,7 +17,7 @@ const findRootFiles = (dir: string): string[] =>
           ? findRootFiles(`${dir}/${d.name}`)
           : d.name === 'hooks.ts' || d.name === 'controller.ts'
           ? [`${dir}/${d.name}`]
-          : [])
+          : []),
       ],
       []
     );
@@ -53,13 +53,13 @@ const createRelayFile = (
   const hasAdditionals = !!additionalReqs.length;
   const hasMultiAdditionals = additionalReqs.length > 1;
   const text = `${
-    currentParam ? "import { z } from 'zod'\n" : ''
-  }import type { Injectable } from 'velona'
-import { depend } from 'velona'
-import type { FastifyInstance } from 'fastify'
-import type { Schema } from 'fast-json-stringify'
-import type { HttpStatusOk } from 'aspida'
-import type { ServerHooks, ServerMethodHandler } from '${appText}'
+    currentParam ? "import { z } from 'zod';\n" : ''
+  }import type { Injectable } from 'velona';
+import { depend } from 'velona';
+import type { FastifyInstance } from 'fastify';
+import type { Schema } from 'fast-json-stringify';
+import type { HttpStatusOk } from 'aspida';
+import type { ServerHooks, ServerMethodHandler } from '${appText}';
 ${
   hasMultiAdditionals
     ? additionalReqs
@@ -68,34 +68,34 @@ ${
             `import type { AdditionalRequest as AdditionalRequest${i} } from '${req.replace(
               /^\.\/\./,
               '.'
-            )}'\n`
+            )}';\n`
         )
         .join('')
     : hasAdditionals
-    ? `import type { AdditionalRequest } from '${additionalReqs[0]}'\n`
+    ? `import type { AdditionalRequest } from '${additionalReqs[0]}';\n`
     : ''
-}import type { Methods } from './'
+}import type { Methods } from './';
 
 ${
   hasMultiAdditionals
     ? `type AdditionalRequest = ${additionalReqs
         .map((_, i) => `AdditionalRequest${i}`)
-        .join(' & ')}\n\n`
+        .join(' & ')};\n\n`
     : ''
 }${
     params.length
-      ? `type Params = {\n${params.map(v => `  ${v[0]}: ${v[1]}`).join('\n')}\n}\n\n`
+      ? `type Params = {\n${params.map(v => `  ${v[0]}: ${v[1]};`).join('\n')}\n};\n\n`
       : ''
   }${
     currentParam
       ? `export function defineValidators(validator: (fastify: FastifyInstance) => {
-  params: z.ZodType<{ ${currentParam[0]}: ${currentParam[1]} }>
+  params: z.ZodType<{ ${currentParam[0]}: ${currentParam[1]} }>,
 }) {
-  return validator
+  return validator;
 }\n\n`
       : ''
   }export function defineResponseSchema<T extends { [U in keyof Methods]?: { [V in HttpStatusOk]?: Schema }}>(methods: () => T) {
-  return methods
+  return methods;
 }
 
 export function defineHooks<T extends ServerHooks${
@@ -109,7 +109,7 @@ export function defineHooks<T extends Record<string, unknown>>(hooks: (fastify: 
   } | T, cb?: ((deps: T, fastify: FastifyInstance) => ServerHooks${
     hasAdditionals ? '<AdditionalRequest>' : ''
   })) {
-  return cb && typeof hooks !== 'function' ? depend(hooks, cb) : hooks
+  return cb && typeof hooks !== 'function' ? depend(hooks, cb) : hooks;
 }
 
 type ServerMethods = {
@@ -117,13 +117,13 @@ type ServerMethods = {
     hasAdditionals || params.length ? ', ' : ''
   }${hasAdditionals ? `AdditionalRequest${params.length ? ' & ' : ''}` : ''}${
     params.length ? '{ params: Params }' : ''
-  }>
-}
+  }>;
+};
 
 export function defineController<M extends ServerMethods>(methods: (fastify: FastifyInstance) => M): (fastify: FastifyInstance) => M
 export function defineController<M extends ServerMethods, T extends Record<string, unknown>>(deps: T, cb: (d: T, fastify: FastifyInstance) => M): Injectable<T, [FastifyInstance], M>
 export function defineController<M extends ServerMethods, T extends Record<string, unknown>>(methods: ((fastify: FastifyInstance) => M) | T, cb?: ((deps: T, fastify: FastifyInstance) => M)) {
-  return cb && typeof methods !== 'function' ? depend(methods, cb) : methods
+  return cb && typeof methods !== 'function' ? depend(methods, cb) : methods;
 }
 `;
 
@@ -154,7 +154,7 @@ const createFiles = (
   const appText = `../${appPath}`;
   const additionalReqs = [
     ...additionalRequestPaths.map(p => `./.${p}`),
-    ...getAdditionalResPath(input, 'hooks')
+    ...getAdditionalResPath(input, 'hooks'),
   ];
 
   createDefaultFilesIfNotExists(input, currentParam);
@@ -210,8 +210,8 @@ export default (appDir: string, project: string) => {
         ...cascadingValidators,
         {
           name: `validators${validatorsPaths.length}`,
-          isNumber: dirPath.split('@')[1] === 'number'
-        }
+          isNumber: dirPath.split('@')[1] === 'number',
+        },
       ];
       validatorsPaths.push(`${input}/validators`);
     }
@@ -257,7 +257,7 @@ export default (appDir: string, project: string) => {
                             type: p.name as HooksEvent,
                             isArray: typeNode
                               ? ts.isArrayTypeNode(typeNode) || ts.isTupleTypeNode(typeNode)
-                              : false
+                              : false,
                           };
                         })
                     );
@@ -392,9 +392,9 @@ export default (appDir: string, project: string) => {
                       type: p.name as HooksEvent,
                       isArray: typeNode
                         ? ts.isArrayTypeNode(typeNode) || ts.isTupleTypeNode(typeNode)
-                        : false
+                        : false,
                     };
-                  })
+                  }),
               };
             })
           );
@@ -457,7 +457,7 @@ export default (appDir: string, project: string) => {
               type: p.name as HooksEvent,
               isArray: typeNode
                 ? ts.isArrayTypeNode(typeNode) || ts.isTupleTypeNode(typeNode)
-                : false
+                : false,
             };
           });
 
@@ -481,9 +481,9 @@ export default (appDir: string, project: string) => {
                     ?.events.find(e => e.type === event)?.isArray
                     ? '...'
                     : ''
-                }controller${controllers.length}.${methodName}.hooks.${event}`
+                }controller${controllers.length}.${methodName}.hooks.${event}`,
               ]
-            : [])
+            : []),
         ];
 
         const resSchemaMethods = resSchemaSignature
@@ -528,7 +528,7 @@ export default (appDir: string, project: string) => {
               const validateInfo = [
                 { name: 'query', val: query },
                 { name: 'body', val: props.find(p => p.name === 'reqBody') },
-                { name: 'headers', val: props.find(p => p.name === 'reqHeaders') }
+                { name: 'headers', val: props.find(p => p.name === 'reqHeaders') },
               ]
                 .filter((prop): prop is { name: string; val: ts.Symbol } => !!prop.val)
                 .map(({ name, val }) => {
@@ -541,7 +541,7 @@ export default (appDir: string, project: string) => {
                   return {
                     name,
                     type: targetType,
-                    hasQuestion: (val.flags & ts.SymbolFlags.Optional) !== 0
+                    hasQuestion: (val.flags & ts.SymbolFlags.Optional) !== 0,
                   };
                 })
                 .filter(({ type }) => type?.isClass());
@@ -611,10 +611,10 @@ ${validateInfo
           v.hasQuestion ? `Object.keys(req.${v.name} as any).length ? ` : ''
         }validateOrReject(plainToInstance(Validators.${checker.typeToString(v.type)}, req.${
           v.name
-        } as any, transformerOptions), validatorOptions)${v.hasQuestion ? ' : null' : ''}`
+        } as any, transformerOptions), validatorOptions)${v.hasQuestion ? ' : null' : ''},\n`
       : ''
   )
-  .join(',\n')}\n        ])`
+  .join('')}        ])`
                         : '',
                       dirPath.includes('@number')
                         ? `createTypedParamsHandler(['${dirPath
@@ -622,14 +622,14 @@ ${validateInfo
                             .filter(p => p.includes('@number'))
                             .map(p => p.split('@')[0].slice(1))
                             .join("', '")}'])`
-                        : ''
+                        : '',
                     ].filter(Boolean);
 
                     return texts.length
                       ? `${key}: ${
                           texts.length === 1
                             ? texts[0].replace(/^\.+/, '')
-                            : `[\n        ${texts.join(',\n        ')}\n      ]`
+                            : `[\n        ${texts.join(',\n        ')},\n      ]`
                         }`
                       : '';
                   }
@@ -682,17 +682,17 @@ ${validateInfo
                           validatorsText,
                           schemasText,
                           resSchemaText,
-                          paramsValidatorsText
+                          paramsValidatorsText,
                         ]
                           .filter(Boolean)
-                          .join(',\n        ')}\n      }`
+                          .join(',\n        ')},\n      }`,
                       ]
                     : []),
                   ...(validatorsText || paramsValidatorsText ? ['validatorCompiler'] : []),
-                  ...hooksTexts
+                  ...hooksTexts,
                 ];
                 return vals.length > 0
-                  ? `\n    {\n      ${vals.join(',\n      ')}\n    }${
+                  ? `\n    {\n      ${vals.join(',\n      ')},\n    }${
                       fs.readFileSync(`${input}/$relay.ts`, 'utf8').includes('AdditionalRequest')
                         ? ' as RouteShorthandOptions'
                         : ''
@@ -705,9 +705,9 @@ ${validateInfo
                 hasHandlerMethods.includes(m.name) ? '.handler' : ''
               }`})${
                 hooksTexts.length || resSchemaMethods?.includes(m.name as LowerHttpMethod)
-                  ? '\n  '
+                  ? ',\n  '
                   : ''
-              })\n`;
+              });\n`;
             })
             .join('\n')
         );
@@ -727,7 +727,7 @@ ${validateInfo
           .reduce<string[]>(
             (prev, d) => [
               ...prev,
-              ...createText(path.posix.join(dirPath, d.name), hooks, paramsValidators)
+              ...createText(path.posix.join(dirPath, d.name), hooks, paramsValidators),
             ],
             []
           )
@@ -751,12 +751,12 @@ ${validateInfo
     imports: `${hooksPaths
       .map(
         (m, i) =>
-          `import hooksFn${i} from '${m.replace(/^api/, './api').replace(appDir, './api')}'\n`
+          `import hooksFn${i} from '${m.replace(/^api/, './api').replace(appDir, './api')}';\n`
       )
       .join('')}${validatorsPaths
       .map(
         (m, i) =>
-          `import validatorsFn${i} from '${m.replace(/^api/, './api').replace(appDir, './api')}'\n`
+          `import validatorsFn${i} from '${m.replace(/^api/, './api').replace(appDir, './api')}';\n`
       )
       .join('')}${controllers
       .map(
@@ -769,20 +769,20 @@ ${validateInfo
                   ctrl[2] ? `responseSchema as responseSchemaFn${resSchemas.indexOf(ctrl)}` : ''
                 } }`
               : ''
-          } from '${ctrl[0].replace(/^api/, './api').replace(appDir, './api')}'\n`
+          } from '${ctrl[0].replace(/^api/, './api').replace(appDir, './api')}';\n`
       )
       .join('')}`,
     consts: `${hooksPaths
-      .map((_, i) => `  const hooks${i} = hooksFn${i}(fastify)\n`)
+      .map((_, i) => `  const hooks${i} = hooksFn${i}(fastify);\n`)
       .join('')}${ctrlHooks
-      .map((_, i) => `  const ctrlHooks${i} = ctrlHooksFn${i}(fastify)\n`)
+      .map((_, i) => `  const ctrlHooks${i} = ctrlHooksFn${i}(fastify);\n`)
       .join('')}${validatorsPaths
-      .map((_, i) => `  const validators${i} = validatorsFn${i}(fastify)\n`)
+      .map((_, i) => `  const validators${i} = validatorsFn${i}(fastify);\n`)
       .join('')}${resSchemas
-      .map((_, i) => `  const responseSchema${i} = responseSchemaFn${i}()\n`)
+      .map((_, i) => `  const responseSchema${i} = responseSchemaFn${i}();\n`)
       .join('')}${controllers
-      .map((_, i) => `  const controller${i} = controllerFn${i}(fastify)\n`)
+      .map((_, i) => `  const controller${i} = controllerFn${i}(fastify);\n`)
       .join('')}`,
-    controllers: text
+    controllers: text,
   };
 };

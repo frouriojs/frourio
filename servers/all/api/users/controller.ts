@@ -9,8 +9,8 @@ const hooks = defineHooks(() => ({
     (req, _, done) => {
       console.log('Controller level preHandler hook:', req.url);
       done();
-    }
-  ]
+    },
+  ],
 }));
 
 export { AdditionalRequest, hooks };
@@ -24,10 +24,10 @@ export default defineController(() => ({
         name: 'aa',
         location: {
           country: 'JP',
-          stateProvince: 'Tokyo'
-        }
-      }
-    ]
+          stateProvince: 'Tokyo',
+        },
+      },
+    ],
   }),
-  post: () => ({ status: 204 })
+  post: () => ({ status: 204 }),
 }));

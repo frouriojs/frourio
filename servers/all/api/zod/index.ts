@@ -1,6 +1,7 @@
+import type { DefineMethods } from 'aspida';
 import type { BodyValidator, QueryValidator } from './validator';
 
-export type Methods = {
+export type Methods = DefineMethods<{
   get: {
     query: QueryValidator;
     resBody: QueryValidator;
@@ -20,4 +21,4 @@ export type Methods = {
       files: number;
     };
   };
-};
+}>;

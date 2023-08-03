@@ -1,23 +1,23 @@
-import type { AspidaClient, BasicHeaders } from 'aspida'
-import { dataToURLString } from 'aspida'
-import type { Methods as Methods0 } from '.'
-import type { Methods as Methods1 } from './empty/noEmpty'
-import type { Methods as Methods2 } from './multiForm'
-import type { Methods as Methods3 } from './texts'
-import type { Methods as Methods4 } from './texts/sample'
-import type { Methods as Methods5 } from './users'
-import type { Methods as Methods6 } from './users/_userId@number'
+import type { AspidaClient, BasicHeaders } from 'aspida';
+import { dataToURLString } from 'aspida';
+import type { Methods as Methods0 } from '.';
+import type { Methods as Methods1 } from './empty/noEmpty';
+import type { Methods as Methods2 } from './multiForm';
+import type { Methods as Methods3 } from './texts';
+import type { Methods as Methods4 } from './texts/sample';
+import type { Methods as Methods5 } from './users';
+import type { Methods as Methods6 } from './users/_userId@number';
 
 const api = <T>({ baseURL, fetch }: AspidaClient<T>) => {
-  const prefix = (baseURL === undefined ? '' : baseURL).replace(/\/$/, '')
-  const PATH0 = '/empty/noEmpty'
-  const PATH1 = '/multiForm'
-  const PATH2 = '/texts'
-  const PATH3 = '/texts/sample'
-  const PATH4 = '/users'
-  const GET = 'GET'
-  const POST = 'POST'
-  const PUT = 'PUT'
+  const prefix = (baseURL === undefined ? '' : baseURL).replace(/\/$/, '');
+  const PATH0 = '/empty/noEmpty';
+  const PATH1 = '/multiForm';
+  const PATH2 = '/texts';
+  const PATH3 = '/texts/sample';
+  const PATH4 = '/users';
+  const GET = 'GET';
+  const POST = 'POST';
+  const PUT = 'PUT';
 
   return {
     empty: {
@@ -26,15 +26,15 @@ const api = <T>({ baseURL, fetch }: AspidaClient<T>) => {
           fetch<Methods1['get']['resBody']>(prefix, PATH0, GET, option).text(),
         $get: (option?: { config?: T | undefined } | undefined) =>
           fetch<Methods1['get']['resBody']>(prefix, PATH0, GET, option).text().then(r => r.body),
-        $path: () => `${prefix}${PATH0}`
-      }
+        $path: () => `${prefix}${PATH0}`,
+      },
     },
     multiForm: {
       post: (option: { body: Methods2['post']['reqBody'], config?: T | undefined }) =>
         fetch<Methods2['post']['resBody']>(prefix, PATH1, POST, option, 'FormData').json(),
       $post: (option: { body: Methods2['post']['reqBody'], config?: T | undefined }) =>
         fetch<Methods2['post']['resBody']>(prefix, PATH1, POST, option, 'FormData').json().then(r => r.body),
-      $path: () => `${prefix}${PATH1}`
+      $path: () => `${prefix}${PATH1}`,
     },
     texts: {
       sample: {
@@ -42,7 +42,7 @@ const api = <T>({ baseURL, fetch }: AspidaClient<T>) => {
           fetch<Methods4['put']['resBody']>(prefix, PATH3, PUT, option).json(),
         $put: (option: { body: Methods4['put']['reqBody'], config?: T | undefined }) =>
           fetch<Methods4['put']['resBody']>(prefix, PATH3, PUT, option).json().then(r => r.body),
-        $path: () => `${prefix}${PATH3}`
+        $path: () => `${prefix}${PATH3}`,
       },
       get: (option: { query: Methods3['get']['query'], config?: T | undefined }) =>
         fetch<Methods3['get']['resBody']>(prefix, PATH2, GET, option).text(),
@@ -53,19 +53,19 @@ const api = <T>({ baseURL, fetch }: AspidaClient<T>) => {
       $put: (option?: { config?: T | undefined } | undefined) =>
         fetch(prefix, PATH2, PUT, option).send().then(r => r.body),
       $path: (option?: { method?: 'get' | undefined; query: Methods3['get']['query'] } | undefined) =>
-        `${prefix}${PATH2}${option && option.query ? `?${dataToURLString(option.query)}` : ''}`
+        `${prefix}${PATH2}${option && option.query ? `?${dataToURLString(option.query)}` : ''}`,
     },
     users: {
       _userId: (val1: number) => {
-        const prefix1 = `${PATH4}/${val1}`
+        const prefix1 = `${PATH4}/${val1}`;
 
         return {
           get: (option?: { config?: T | undefined } | undefined) =>
             fetch<Methods6['get']['resBody']>(prefix, prefix1, GET, option).json(),
           $get: (option?: { config?: T | undefined } | undefined) =>
             fetch<Methods6['get']['resBody']>(prefix, prefix1, GET, option).json().then(r => r.body),
-          $path: () => `${prefix}${prefix1}`
-        }
+          $path: () => `${prefix}${prefix1}`,
+        };
       },
       get: (option?: { config?: T | undefined } | undefined) =>
         fetch<Methods5['get']['resBody']>(prefix, PATH4, GET, option).json(),
@@ -75,7 +75,7 @@ const api = <T>({ baseURL, fetch }: AspidaClient<T>) => {
         fetch(prefix, PATH4, POST, option).send(),
       $post: (option: { body: Methods5['post']['reqBody'], config?: T | undefined }) =>
         fetch(prefix, PATH4, POST, option).send().then(r => r.body),
-      $path: () => `${prefix}${PATH4}`
+      $path: () => `${prefix}${PATH4}`,
     },
     get: (option?: { query?: Methods0['get']['query'] | undefined, config?: T | undefined } | undefined) =>
       fetch<Methods0['get']['resBody'], BasicHeaders, Methods0['get']['status']>(prefix, '', GET, option).json(),
@@ -86,9 +86,9 @@ const api = <T>({ baseURL, fetch }: AspidaClient<T>) => {
     $post: (option: { body: Methods0['post']['reqBody'], query: Methods0['post']['query'], config?: T | undefined }) =>
       fetch<Methods0['post']['resBody'], BasicHeaders, Methods0['post']['status']>(prefix, '', POST, option, 'FormData').json().then(r => r.body),
     $path: (option?: { method?: 'get' | undefined; query: Methods0['get']['query'] } | { method: 'post'; query: Methods0['post']['query'] } | undefined) =>
-      `${prefix}${option && option.query ? `?${dataToURLString(option.query)}` : ''}`
-  }
-}
+      `${prefix}${option && option.query ? `?${dataToURLString(option.query)}` : ''}`,
+  };
+};
 
-export type ApiInstance = ReturnType<typeof api>
-export default api
+export type ApiInstance = ReturnType<typeof api>;
+export default api;

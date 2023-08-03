@@ -13,5 +13,5 @@ export default defineHooks(() => ({
     console.log('Added user');
     req.user = { id: 1, name: 'user name', role: 'admin' };
     done();
-  }
+  },
 }));

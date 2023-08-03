@@ -15,7 +15,7 @@ export const queryValidator = z.object({
   bool: z.boolean(),
   optionalBool: z.boolean().optional(),
   boolArray: z.array(z.boolean()),
-  optionalBoolArray: z.array(z.boolean()).optional()
+  optionalBoolArray: z.array(z.boolean()).optional(),
 });
 
 export type QueryValidator = z.infer<typeof queryValidator>;
@@ -32,7 +32,7 @@ const multipartValidator = z.object({
   filename: z.string(),
   encoding: z.string(),
   mimetype: z.string(),
-  fields: z.record(z.any())
+  fields: z.record(z.any()),
 }) satisfies z.ZodType<MultipartFile>;
 
 export const bodyValidator = z.object({
@@ -42,7 +42,7 @@ export const bodyValidator = z.object({
   name: z.string(),
   icon: multipartValidator,
   vals: z.array(z.number()),
-  files: z.array(multipartValidator)
+  files: z.array(multipartValidator),
 });
 
 type MultipartToBlob<T extends Record<string, unknown>> = {

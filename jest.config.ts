@@ -8,7 +8,6 @@ const config: Config.InitialOptions = {
   testEnvironment: 'node',
   globals: { Blob: {} },
   moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, { prefix: '<rootDir>/' }),
-  coveragePathIgnorePatterns: ['\\$api.ts', 'dist']
 };
 
 export default config;

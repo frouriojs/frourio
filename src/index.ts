@@ -1,5 +1,5 @@
-import watch from 'aspida/dist/watchInputDir';
-import write from 'aspida/dist/writeRouteFile';
+import watch from 'aspida/dist/cjs/watchInputDir';
+import write from 'aspida/dist/cjs/writeRouteFile';
 import minimist from 'minimist';
 import build from './buildServerFile';
 import cleanAll from './cleanAllStaleRoutes';
@@ -8,7 +8,7 @@ import clean from './cleanStaleRoutes';
 export const run = (args: string[]) => {
   const argv = minimist(args, {
     string: ['version', 'watch', 'project'],
-    alias: { v: 'version', w: 'watch', p: 'project' }
+    alias: { v: 'version', w: 'watch', p: 'project' },
   });
   const dir = '.';
 

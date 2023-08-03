@@ -12,7 +12,7 @@ import {
   IsPort,
   IsString,
   MaxLength,
-  ValidateNested
+  ValidateNested,
 } from 'class-validator';
 import type { ReadStream } from 'fs';
 

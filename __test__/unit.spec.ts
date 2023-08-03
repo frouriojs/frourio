@@ -21,7 +21,7 @@ export type Methods = DefineMethods<{
     .toBe(`import { defineController } from './$relay';
 
 export default defineController(() => ({
-  get: () => ({ status: 200, body: 'Hello' })
+  get: () => ({ status: 200, body: 'Hello' }),
 }));
 `);
 
@@ -37,7 +37,7 @@ export default defineHooks(() => ({
   onRequest: (req, reply, done) => {
     console.log('Directory level onRequest hook:', req.url);
     done();
-  }
+  },
 }));
 `
   );

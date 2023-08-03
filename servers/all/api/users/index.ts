@@ -1,6 +1,7 @@
+import { DefineMethods } from 'aspida';
 import { UserInfo } from 'validators';
 
-export type Methods = {
+export type Methods = DefineMethods<{
   get: {
     resBody: UserInfo[];
   };
@@ -8,4 +9,4 @@ export type Methods = {
   post: {
     reqBody: UserInfo;
   };
-};
+}>;

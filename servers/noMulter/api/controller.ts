@@ -4,7 +4,7 @@ export const hooks = defineHooks(() => ({
   onRequest: (req, _, done) => {
     console.log('Controller level onRequest hook:', req.url);
     done();
-  }
+  },
 }));
 
 export default defineController(() => ({
@@ -14,6 +14,6 @@ export default defineController(() => ({
   // @ts-expect-error
   post: v => ({
     status: 200,
-    body: { id: +v.query.id, port: v.body.port }
-  })
+    body: { id: +v.query.id, port: v.body.port },
+  }),
 }));

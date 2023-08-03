@@ -7,5 +7,5 @@ export type AdditionalRequest = {
 export default defineHooks(() => ({
   onRequest: (_req, _, done) => {
     done();
-  }
+  },
 }));
