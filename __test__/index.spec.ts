@@ -39,8 +39,8 @@ beforeEach(() => {
       validateOrReject: (instance, options): Promise<void> => {
         subServerValidateOrRejectCallCount++;
         return validateOrReject(instance, options);
-      }
-    }).listen({ port: subPort })
+      },
+    }).listen({ port: subPort }),
   ]);
 });
 
@@ -55,7 +55,7 @@ test('GET: 200', () =>
         id: '1',
         disable: 'false',
         bool: true,
-        boolArray: [false, true]
+        boolArray: [false, true],
       },
       {
         requiredNum: 2,
@@ -66,12 +66,12 @@ test('GET: 200', () =>
         bool: false,
         optionalBool: true,
         boolArray: [],
-        optionalBoolArray: [true, false, false]
-      }
+        optionalBoolArray: [true, false, false],
+      },
     ].map(query =>
       Promise.all([
         expect(client.$get({ query })).resolves.toEqual(query),
-        expect(fetchClient.$get({ query })).resolves.toEqual(query)
+        expect(fetchClient.$get({ query })).resolves.toEqual(query),
       ])
     )
   ));
@@ -113,7 +113,7 @@ test('GET: 400', () =>
         id: '1',
         disable: 'no boolean',
         bool: false,
-        boolArray: []
+        boolArray: [],
       },
       {
         requiredNum: 0,
@@ -121,7 +121,7 @@ test('GET: 400', () =>
         id: '2',
         disable: 'true',
         bool: false,
-        boolArray: ['no boolean']
+        boolArray: ['no boolean'],
       },
       {
         requiredNum: 0,
@@ -129,7 +129,7 @@ test('GET: 400', () =>
         id: '3',
         disable: 'true',
         bool: false,
-        boolArray: []
+        boolArray: [],
       },
       {
         requiredNum: 1,
@@ -137,14 +137,14 @@ test('GET: 400', () =>
         id: 'no number',
         disable: 'true',
         bool: false,
-        boolArray: []
-      }
+        boolArray: [],
+      },
     ].map(query =>
       Promise.all([
         // @ts-expect-error
         expect(client.get({ query })).rejects.toHaveProperty('response.status', 400),
         // @ts-expect-error
-        expect(fetchClient.get({ query })).rejects.toHaveProperty('response.status', 400)
+        expect(fetchClient.get({ query })).rejects.toHaveProperty('response.status', 400),
       ])
     )
   ));
@@ -172,7 +172,7 @@ test('POST: formdata', async () => {
   form1.append('file', fileST1);
   const res1 = await axios.post(baseURL, form1, {
     params: { requiredNum: 0, id: '1', disable: 'true', bool: false },
-    headers: form1.getHeaders()
+    headers: form1.getHeaders(),
   });
   expect(res1.data.port).toBe(port);
   expect(res1.data.fileName).toBe(fileName);
@@ -186,7 +186,7 @@ test('POST: formdata', async () => {
   form2.append('file', fileST2);
   const res2 = await axios.post(subBaseURL, form2, {
     params: { requiredNum: 0, id: '1', disable: 'true', bool: false },
-    headers: form2.getHeaders()
+    headers: form2.getHeaders(),
   });
   expect(res2.data.port).toBe(port);
   expect(res2.data.fileName).toBe(fileName);
@@ -208,9 +208,9 @@ test('PUT: zod validations', async () => {
           id: '1',
           disable: 'true',
           bool: false,
-          boolArray: []
+          boolArray: [],
         },
-        body: { port: 3000 as any }
+        body: { port: 3000 as any },
       })
     ).rejects.toHaveProperty('response.status', 400),
     expect(
@@ -221,11 +221,11 @@ test('PUT: zod validations', async () => {
           id: '1',
           disable: 'true',
           bool: 1 as any,
-          boolArray: []
+          boolArray: [],
         },
-        body: { port }
+        body: { port },
       })
-    ).rejects.toHaveProperty('response.status', 400)
+    ).rejects.toHaveProperty('response.status', 400),
   ]);
 
   await expect(
@@ -236,9 +236,9 @@ test('PUT: zod validations', async () => {
         id: '1',
         disable: 'true',
         bool: false,
-        boolArray: []
+        boolArray: [],
       },
-      body: { port }
+      body: { port },
     })
   ).resolves.toHaveProperty('status', 201);
 });
@@ -254,7 +254,7 @@ test('POST: multi file upload', async () => {
   form.append('files', fileST);
   form.append('files', fileST);
   const res = await axios.post(`${baseURL}/multiForm`, form, {
-    headers: form.getHeaders()
+    headers: form.getHeaders(),
   });
 
   expect(res.data).toEqual({
@@ -263,7 +263,7 @@ test('POST: multi file upload', async () => {
     name: -1,
     icon: -1,
     vals: 1,
-    files: 2
+    files: 2,
   });
 });
 
@@ -277,7 +277,7 @@ test('POST: 400', async () => {
 
   await expect(
     axios.post(`${baseURL}/multiForm`, form, {
-      headers: form.getHeaders()
+      headers: form.getHeaders(),
     })
   ).rejects.toHaveProperty('response.status', 400);
 });
@@ -289,9 +289,9 @@ test('POST: nested validation', async () => {
       name: 'foo',
       location: {
         country: 'JP',
-        stateProvince: 'Tokyo'
-      }
-    }
+        stateProvince: 'Tokyo',
+      },
+    },
   });
   expect(res1.status).toBe(204);
 
@@ -305,11 +305,11 @@ test('POST: nested validation', async () => {
         stateProvince: 'Tokyo',
         extra1: {
           extra1a: 'bar',
-          extra1b: 'baz'
-        }
+          extra1b: 'baz',
+        },
       },
-      extra2: 'qux'
-    } as any
+      extra2: 'qux',
+    } as any,
   });
   expect(res2.status).toBe(204);
 });
@@ -323,16 +323,16 @@ test('POST: 400 (nested validation)', async () => {
         name: 'foo',
         location: {
           country: 'JP',
-          stateProvince: 'Tokyo'
-        }
-      } as any
+          stateProvince: 'Tokyo',
+        },
+      } as any,
     })
   ).rejects.toHaveProperty('response.status', 400);
 
   // location is missing
   await expect(
     client.users.post({
-      body: { id: 123, name: 'foo' } as any
+      body: { id: 123, name: 'foo' } as any,
     })
   ).rejects.toHaveProperty('response.status', 400);
 
@@ -344,9 +344,9 @@ test('POST: 400 (nested validation)', async () => {
         name: 'foo',
         location: {
           country: 'XX',
-          stateProvince: 'Tokyo'
-        }
-      } as any
+          stateProvince: 'Tokyo',
+        },
+      } as any,
     })
   ).rejects.toHaveProperty('response.status', 400);
 
@@ -358,9 +358,9 @@ test('POST: 400 (nested validation)', async () => {
         name: 'foo',
         location: {
           country: 'JP',
-          stateProvince: 1234
-        }
-      } as any
+          stateProvince: 1234,
+        },
+      } as any,
     })
   ).rejects.toHaveProperty('response.status', 400);
 });
@@ -372,13 +372,13 @@ test('controller dependency injection', async () => {
     .inject({
       log: () => {
         throw new Error();
-      }
+      },
     })
     .inject(() => ({
       log: n => {
         val = +n * 2;
         return Promise.resolve(`${val}`);
-      }
+      },
     }))(server);
 
   await expect(
@@ -389,8 +389,8 @@ test('controller dependency injection', async () => {
         requiredNumArr: [0],
         disable: 'true',
         bool: false,
-        boolArray: []
-      }
+        boolArray: [],
+      },
     })
   ).resolves.toHaveProperty('body.id', `${+id * 2}`);
   expect(val).toBe(+id * 2);

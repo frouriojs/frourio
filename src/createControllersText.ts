@@ -17,7 +17,7 @@ const findRootFiles = (dir: string): string[] =>
           ? findRootFiles(`${dir}/${d.name}`)
           : d.name === 'hooks.ts' || d.name === 'controller.ts'
           ? [`${dir}/${d.name}`]
-          : [])
+          : []),
       ],
       []
     );
@@ -154,7 +154,7 @@ const createFiles = (
   const appText = `../${appPath}`;
   const additionalReqs = [
     ...additionalRequestPaths.map(p => `./.${p}`),
-    ...getAdditionalResPath(input, 'hooks')
+    ...getAdditionalResPath(input, 'hooks'),
   ];
 
   createDefaultFilesIfNotExists(input, currentParam);
@@ -210,8 +210,8 @@ export default (appDir: string, project: string) => {
         ...cascadingValidators,
         {
           name: `validators${validatorsPaths.length}`,
-          isNumber: dirPath.split('@')[1] === 'number'
-        }
+          isNumber: dirPath.split('@')[1] === 'number',
+        },
       ];
       validatorsPaths.push(`${input}/validators`);
     }
@@ -257,7 +257,7 @@ export default (appDir: string, project: string) => {
                             type: p.name as HooksEvent,
                             isArray: typeNode
                               ? ts.isArrayTypeNode(typeNode) || ts.isTupleTypeNode(typeNode)
-                              : false
+                              : false,
                           };
                         })
                     );
@@ -392,9 +392,9 @@ export default (appDir: string, project: string) => {
                       type: p.name as HooksEvent,
                       isArray: typeNode
                         ? ts.isArrayTypeNode(typeNode) || ts.isTupleTypeNode(typeNode)
-                        : false
+                        : false,
                     };
-                  })
+                  }),
               };
             })
           );
@@ -457,7 +457,7 @@ export default (appDir: string, project: string) => {
               type: p.name as HooksEvent,
               isArray: typeNode
                 ? ts.isArrayTypeNode(typeNode) || ts.isTupleTypeNode(typeNode)
-                : false
+                : false,
             };
           });
 
@@ -481,9 +481,9 @@ export default (appDir: string, project: string) => {
                     ?.events.find(e => e.type === event)?.isArray
                     ? '...'
                     : ''
-                }controller${controllers.length}.${methodName}.hooks.${event}`
+                }controller${controllers.length}.${methodName}.hooks.${event}`,
               ]
-            : [])
+            : []),
         ];
 
         const resSchemaMethods = resSchemaSignature
@@ -528,7 +528,7 @@ export default (appDir: string, project: string) => {
               const validateInfo = [
                 { name: 'query', val: query },
                 { name: 'body', val: props.find(p => p.name === 'reqBody') },
-                { name: 'headers', val: props.find(p => p.name === 'reqHeaders') }
+                { name: 'headers', val: props.find(p => p.name === 'reqHeaders') },
               ]
                 .filter((prop): prop is { name: string; val: ts.Symbol } => !!prop.val)
                 .map(({ name, val }) => {
@@ -541,7 +541,7 @@ export default (appDir: string, project: string) => {
                   return {
                     name,
                     type: targetType,
-                    hasQuestion: (val.flags & ts.SymbolFlags.Optional) !== 0
+                    hasQuestion: (val.flags & ts.SymbolFlags.Optional) !== 0,
                   };
                 })
                 .filter(({ type }) => type?.isClass());
@@ -622,7 +622,7 @@ ${validateInfo
                             .filter(p => p.includes('@number'))
                             .map(p => p.split('@')[0].slice(1))
                             .join("', '")}'])`
-                        : ''
+                        : '',
                     ].filter(Boolean);
 
                     return texts.length
@@ -682,14 +682,14 @@ ${validateInfo
                           validatorsText,
                           schemasText,
                           resSchemaText,
-                          paramsValidatorsText
+                          paramsValidatorsText,
                         ]
                           .filter(Boolean)
-                          .join(',\n        ')}\n      }`
+                          .join(',\n        ')}\n      }`,
                       ]
                     : []),
                   ...(validatorsText || paramsValidatorsText ? ['validatorCompiler'] : []),
-                  ...hooksTexts
+                  ...hooksTexts,
                 ];
                 return vals.length > 0
                   ? `\n    {\n      ${vals.join(',\n      ')}\n    }${
@@ -727,7 +727,7 @@ ${validateInfo
           .reduce<string[]>(
             (prev, d) => [
               ...prev,
-              ...createText(path.posix.join(dirPath, d.name), hooks, paramsValidators)
+              ...createText(path.posix.join(dirPath, d.name), hooks, paramsValidators),
             ],
             []
           )
@@ -783,6 +783,6 @@ ${validateInfo
       .join('')}${controllers
       .map((_, i) => `  const controller${i} = controllerFn${i}(fastify)\n`)
       .join('')}`,
-    controllers: text
+    controllers: text,
   };
 };

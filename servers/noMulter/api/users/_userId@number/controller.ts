@@ -1,5 +1,5 @@
 import { defineController } from './$relay';
 
 export default defineController(() => ({
-  get: ({ params }) => ({ status: 200, body: { id: params.userId, name: 'bbb' } })
+  get: ({ params }) => ({ status: 200, body: { id: params.userId, name: 'bbb' } }),
 }));

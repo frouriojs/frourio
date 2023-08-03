@@ -34,7 +34,7 @@ test('build', () => {
         baseURL: '',
         trailingSlash: false,
         outputEachDir: false,
-        outputMode: 'all'
+        outputMode: 'all',
       });
       expect(target.text).toBe(fs.readFileSync(target.filePath, 'utf8').replace(/\r/g, ''));
     });

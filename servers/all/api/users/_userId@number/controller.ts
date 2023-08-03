@@ -9,7 +9,7 @@ export default defineController(() => ({
     hooks: {
       preHandler: (req, _, done) => {
         !req.name && done();
-      }
+      },
     },
     handler: ({ params }) => ({
       status: 200,
@@ -18,9 +18,9 @@ export default defineController(() => ({
         name: 'bbb',
         location: {
           country: 'JP',
-          stateProvince: 'Tokyo'
-        }
-      }
-    })
-  }
+          stateProvince: 'Tokyo',
+        },
+      },
+    }),
+  },
 }));

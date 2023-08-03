@@ -6,13 +6,13 @@ export const responseSchema = defineResponseSchema(() => ({
       type: 'object',
       properties: {
         hello: {
-          type: 'string'
-        }
-      }
-    }
-  }
+          type: 'string',
+        },
+      },
+    },
+  },
 }));
 
 export default defineController(() => ({
-  get: () => ({ status: 200, body: { hello: 'world' } })
+  get: () => ({ status: 200, body: { hello: 'world' } }),
 }));

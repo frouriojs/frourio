@@ -8,7 +8,7 @@ import clean from './cleanStaleRoutes';
 export const run = (args: string[]) => {
   const argv = minimist(args, {
     string: ['version', 'watch', 'project'],
-    alias: { v: 'version', w: 'watch', p: 'project' }
+    alias: { v: 'version', w: 'watch', p: 'project' },
   });
   const dir = '.';
 

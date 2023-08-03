@@ -60,10 +60,8 @@
   },
   "prettier": {
     "printWidth": 100,
-    "semi": true,
     "arrowParens": "avoid",
     "singleQuote": true,
-    "trailingComma": "none",
     "overrides": [
       {
         "files": [

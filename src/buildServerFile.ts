@@ -357,6 +357,6 @@ ${
   return fastify
 }
 `,
-    filePath: path.posix.join(input, '$server.ts')
+    filePath: path.posix.join(input, '$server.ts'),
   };
 };
