@@ -1,3 +1,3 @@
-import type { DefineMethods } from 'aspida'
+import { DefineMethods } from 'aspida';
 
-export type Methods = DefineMethods<{}>
+export type Methods = DefineMethods<{}>;

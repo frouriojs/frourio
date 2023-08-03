@@ -1,12 +1,12 @@
-import type { DefineMethods } from 'aspida'
+import type { DefineMethods } from 'aspida';
 
 export type Methods = DefineMethods<{
   put: {
     reqBody: {
-      id: string
-    } | null
+      id: string;
+    } | null;
     resBody: {
-      id: string
-    } | null
-  }
-}>
+      id: string;
+    } | null;
+  };
+}>;

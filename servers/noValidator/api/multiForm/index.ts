@@ -1,16 +1,16 @@
-import type { DefineMethods } from 'aspida'
-import { MultiForm } from '../../validators'
+import type { DefineMethods } from 'aspida';
+import type { MultiForm } from '../../validators';
 
 export type Methods = DefineMethods<{
   post: {
-    reqFormat: FormData
-    reqBody: MultiForm
+    reqFormat: FormData;
+    reqBody: MultiForm;
     resBody: {
-      empty: number
-      name: number
-      icon: number
-      vals: number
-      files: number
-    }
-  }
-}>
+      empty: number;
+      name: number;
+      icon: number;
+      vals: number;
+      files: number;
+    };
+  };
+}>;

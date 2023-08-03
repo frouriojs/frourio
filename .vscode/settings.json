@@ -1,10 +1,11 @@
 {
   "eslint.run": "onSave",
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true
-  },
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnSave": true,
-  "files.insertFinalNewline": true,
-  "typescript.tsdk": "node_modules/typescript/lib"
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": { "source.fixAll.eslint": true },
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.referencesCodeLens.enabled": true,
+  "files.eol": "\n",
+  "editor.tabSize": 2,
+  "prettier.prettierPath": "node_modules/prettier"
 }

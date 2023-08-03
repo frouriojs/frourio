@@ -1,7 +1,7 @@
-import type { DefineMethods } from 'aspida'
+import { DefineMethods } from 'aspida';
 
 export type Methods = DefineMethods<{
   get: {
-    resBody: string
-  }
-}>
+    resBody: string;
+  };
+}>;

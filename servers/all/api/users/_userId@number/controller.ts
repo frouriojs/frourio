@@ -1,19 +1,26 @@
-import { defineController } from './$relay'
+import { defineController } from './$relay';
 
 export type AdditionalRequest = {
-  name: string
-}
+  name: string;
+};
 
 export default defineController(() => ({
-  get: ({ params }) => ({
-    status: 200,
-    body: {
-      id: params.userId,
-      name: 'bbb',
-      location: {
-        country: 'JP',
-        stateProvince: 'Tokyo'
-      }
-    }
-  })
-}))
+  get: {
+    hooks: {
+      preHandler: (req, _, done) => {
+        !req.name && done();
+      },
+    },
+    handler: ({ params }) => ({
+      status: 200,
+      body: {
+        id: params.userId,
+        name: 'bbb',
+        location: {
+          country: 'JP',
+          stateProvince: 'Tokyo',
+        },
+      },
+    }),
+  },
+}));

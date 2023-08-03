@@ -1,5 +1,5 @@
-import { defineController } from './$relay'
+import { defineController } from './$relay';
 
 export default defineController(() => ({
-  get: ({ params }) => ({ status: 200, body: params.label })
-}))
+  get: ({ params }) => ({ status: 200, body: params.label }),
+}));

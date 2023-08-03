@@ -1,5 +1,5 @@
-import { defineController } from './$relay'
+import { defineController } from './$relay';
 
 export default defineController(() => ({
-  get: () => Promise.resolve({ status: 200, body: 'sample' })
-}))
+  get: () => Promise.resolve({ status: 200, body: 'sample' }),
+}));

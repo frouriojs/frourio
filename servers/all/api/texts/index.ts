@@ -1,13 +1,13 @@
-import type { DefineMethods } from 'aspida'
+import type { DefineMethods } from 'aspida';
 
 export type Methods = DefineMethods<{
   get: {
     query?: {
-      val: string
-      limit?: number
-    }
-    resBody: string
-  }
+      val: string;
+      limit?: number;
+    };
+    resBody: string;
+  };
 
-  put: {}
-}>
+  put: {};
+}>;

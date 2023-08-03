@@ -1,7 +1,7 @@
-import { defineController } from './$relay'
+import { defineController } from './$relay';
 
 export default defineController(() => ({
   get: () => {
-    throw new Error('500 error test')
-  }
-}))
+    throw new Error('500 error test');
+  },
+}));

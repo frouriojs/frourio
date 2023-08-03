@@ -1,50 +1,50 @@
 import {
-  IsNumberString,
-  IsBooleanString,
-  IsPort,
-  IsInt,
-  MaxLength,
-  IsString,
   Allow,
-  ArrayNotEmpty
-} from 'class-validator'
+  ArrayNotEmpty,
+  IsBooleanString,
+  IsInt,
+  IsNumberString,
+  IsPort,
+  IsString,
+  MaxLength,
+} from 'class-validator';
 
 export class Query {
   @IsNumberString()
-  id: string
+  id: string;
 
   @IsBooleanString()
-  disable: string
+  disable: string;
 }
 
 export class Body {
   @IsPort()
-  port: string
+  port: string;
 
-  file: File
+  file: File;
 }
 
 export class UserInfo {
   @IsInt()
-  id: number
+  id: number;
 
   @MaxLength(20)
-  name: string
+  name: string;
 }
 
 export class MultiForm {
   @IsInt({ each: true })
-  empty: number[]
+  empty: number[];
 
   @IsString()
-  name: string
+  name: string;
 
   @Allow()
-  icon: Blob
+  icon: Blob;
 
   @IsString({ each: true })
-  vals: string[]
+  vals: string[];
 
   @ArrayNotEmpty()
-  files: Blob[]
+  files: Blob[];
 }
