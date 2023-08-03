@@ -1,5 +1,5 @@
-import watch from 'aspida/dist/watchInputDir';
-import write from 'aspida/dist/writeRouteFile';
+import watch from 'aspida/dist/cjs/watchInputDir';
+import write from 'aspida/dist/cjs/writeRouteFile';
 import minimist from 'minimist';
 import build from './buildServerFile';
 import cleanAll from './cleanAllStaleRoutes';

@@ -1,4 +1,4 @@
-import aspidaBuild from 'aspida/dist/buildTemplate';
+import aspidaBuild from 'aspida/dist/cjs/buildTemplate';
 import fs from 'fs';
 import { version } from '../package.json';
 import { run } from '../src';

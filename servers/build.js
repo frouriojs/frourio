@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const write = require('aspida/dist/writeRouteFile').default;
+const write = require('aspida/dist/cjs/writeRouteFile').default;
 const build = require('../dist/buildServerFile').default;
 
 fs.readdirSync(__dirname, { withFileTypes: true }).forEach(dir => {
