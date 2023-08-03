@@ -4,14 +4,14 @@ import createControllersText from './createControllersText';
 
 const genHandlerText = (isAsync: boolean) => `
 const ${isAsync ? 'asyncM' : 'm'}ethodToHandler = (
-  methodCallback: ServerHandler${isAsync ? 'Promise' : ''}<any, any>
+  methodCallback: ServerHandler${isAsync ? 'Promise' : ''}<any, any>,
 ): RouteHandlerMethod => ${isAsync ? 'async ' : ''}(req, reply) => {
-  const data = ${isAsync ? 'await ' : ''}methodCallback(req as any) as any
+  const data = ${isAsync ? 'await ' : ''}methodCallback(req as any) as any;
 
-  if (data.headers) reply.headers(data.headers)
+  if (data.headers) reply.headers(data.headers);
 
-  reply.code(data.status).send(data.body)
-}
+  reply.code(data.status).send(data.body);
+};
 `;
 
 export default (input: string, project?: string) => {
@@ -50,61 +50,61 @@ export default (input: string, project?: string) => {
     );
 
     headImports.push(
-      "import 'reflect-metadata'",
-      "import type { ClassTransformOptions } from 'class-transformer'",
-      "import { plainToInstance as defaultPlainToInstance } from 'class-transformer'",
-      "import type { ValidatorOptions } from 'class-validator'",
-      "import { validateOrReject as defaultValidateOrReject } from 'class-validator'"
+      "import 'reflect-metadata';",
+      "import type { ClassTransformOptions } from 'class-transformer';",
+      "import { plainToInstance as defaultPlainToInstance } from 'class-transformer';",
+      "import type { ValidatorOptions } from 'class-validator';",
+      "import { validateOrReject as defaultValidateOrReject } from 'class-validator';"
     );
   }
 
   if (hasMultipart) {
     headImports.push(
-      "import type { FastifyMultipartAttachFieldsToBodyOptions, Multipart, MultipartFile } from '@fastify/multipart'",
-      "import multipart from '@fastify/multipart'"
+      "import type { FastifyMultipartAttachFieldsToBodyOptions, Multipart, MultipartFile } from '@fastify/multipart';",
+      "import multipart from '@fastify/multipart';"
     );
   }
 
   if (hasValidator) {
-    headImports.push("import * as Validators from './validators'");
+    headImports.push("import * as Validators from './validators';");
   }
 
   if (hasMultipart) {
-    headImports.push("import type { ReadStream } from 'fs'");
+    headImports.push("import type { ReadStream } from 'fs';");
   }
 
-  headImports.push("import type { HttpStatusOk, AspidaMethodParams } from 'aspida'");
+  headImports.push("import type { HttpStatusOk, AspidaMethodParams } from 'aspida';");
 
   return {
     text: `${headImports.join('\n')}
-import type { Schema } from 'fast-json-stringify'
-import type { z } from 'zod'
+import type { Schema } from 'fast-json-stringify';
+import type { z } from 'zod';
 ${imports}import type { FastifyInstance, RouteHandlerMethod, preValidationHookHandler${
       hasValidator ? ', FastifyRequest' : ''
     }${hasValidatorCompiler ? ', FastifySchema, FastifySchemaCompiler' : ''}${
       hasRouteShorthandOptions ? ', RouteShorthandOptions' : ''
-    }, onRequestHookHandler, preParsingHookHandler, preHandlerHookHandler } from 'fastify'
+    }, onRequestHookHandler, preParsingHookHandler, preHandlerHookHandler } from 'fastify';
 
 export type FrourioOptions = {
-  basePath?: string
+  basePath?: string;
 ${
   hasValidator
-    ? '  transformer?: ClassTransformOptions\n' +
-      '  validator?: ValidatorOptions\n' +
-      '  plainToInstance?: (cls: new (...args: any[]) => object, object: unknown, options: ClassTransformOptions) => object\n' +
-      '  validateOrReject?: (instance: object, options: ValidatorOptions) => Promise<void>\n'
+    ? '  transformer?: ClassTransformOptions;\n' +
+      '  validator?: ValidatorOptions;\n' +
+      '  plainToInstance?: (cls: new (...args: any[]) => object, object: unknown, options: ClassTransformOptions) => object;\n' +
+      '  validateOrReject?: (instance: object, options: ValidatorOptions) => Promise<void>;\n'
     : ''
-}${hasMultipart ? '  multipart?: FastifyMultipartAttachFieldsToBodyOptions\n' : ''}}
+}${hasMultipart ? '  multipart?: FastifyMultipartAttachFieldsToBodyOptions;\n' : ''}};
 
-type HttpStatusNoOk = 301 | 302 | 400 | 401 | 402 | 403 | 404 | 405 | 406 | 409 | 500 | 501 | 502 | 503 | 504 | 505
+type HttpStatusNoOk = 301 | 302 | 400 | 401 | 402 | 403 | 404 | 405 | 406 | 409 | 500 | 501 | 502 | 503 | 504 | 505;
 
-type PartiallyPartial<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>
+type PartiallyPartial<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
 type BaseResponse<T, U, V> = {
-  status: V extends number ? V : HttpStatusOk
-  body: T
-  headers: U
-}
+  status: V extends number ? V : HttpStatusOk;
+  body: T;
+  headers: U;
+};
 
 type ServerResponse<K extends AspidaMethodParams> =
   | (K extends { resBody: K['resBody']; resHeaders: K['resHeaders'] }
@@ -117,7 +117,7 @@ type ServerResponse<K extends AspidaMethodParams> =
       BaseResponse<K['resBody'], K['resHeaders'], K['status']>,
       'body' | 'headers'
     >)
-  | PartiallyPartial<BaseResponse<any, any, HttpStatusNoOk>, 'body' | 'headers'>
+  | PartiallyPartial<BaseResponse<any, any, HttpStatusNoOk>, 'body' | 'headers'>;
 ${
   hasMultipart
     ? `
@@ -129,210 +129,210 @@ type BlobToFile<T extends AspidaMethodParams> = T['reqFormat'] extends FormData
         ? MultipartFile[]
         : T['reqBody'][P]
     }
-  : T['reqBody']
+  : T['reqBody'];
 `
     : ''
 }
 type RequestParams<T extends AspidaMethodParams> = Pick<{
-  query: T['query']
-  body: ${hasMultipart ? 'BlobToFile<T>' : "T['reqBody']"}
-  headers: T['reqHeaders']
+  query: T['query'];
+  body: ${hasMultipart ? 'BlobToFile<T>' : "T['reqBody']"};
+  headers: T['reqHeaders'];
 }, {
-  query: Required<T>['query'] extends {} | null ? 'query' : never
-  body: Required<T>['reqBody'] extends {} | null ? 'body' : never
-  headers: Required<T>['reqHeaders'] extends {} | null ? 'headers' : never
-}['query' | 'body' | 'headers']>
+  query: Required<T>['query'] extends {} | null ? 'query' : never;
+  body: Required<T>['reqBody'] extends {} | null ? 'body' : never;
+  headers: Required<T>['reqHeaders'] extends {} | null ? 'headers' : never;
+}['query' | 'body' | 'headers']>;
 
 type ServerHandler<T extends AspidaMethodParams, U extends Record<string, unknown> = {}> = (
-  req: RequestParams<T> & U
-) => ServerResponse<T>
+  req: RequestParams<T> & U,
+) => ServerResponse<T>;
 
 type ServerHandlerPromise<T extends AspidaMethodParams, U extends Record<string, unknown> = {}> = (
-  req: RequestParams<T> & U
-) => Promise<ServerResponse<T>>
+  req: RequestParams<T> & U,
+) => Promise<ServerResponse<T>>;
 
-type AddedHandler<T, R extends Record<string, unknown>> = T extends (req: infer U, ...args: infer V) => infer W ? (req: U & Partial<R>, ...args: V) => W : never
+type AddedHandler<T, R extends Record<string, unknown>> = T extends (req: infer U, ...args: infer V) => infer W ? (req: U & Partial<R>, ...args: V) => W : never;
 
 export type ServerHooks<R extends Record<string, unknown> = {}> = {
-  onRequest?: AddedHandler<onRequestHookHandler, R> | AddedHandler<onRequestHookHandler, R>[]
-  preParsing?: AddedHandler<preParsingHookHandler, R> | AddedHandler<preParsingHookHandler, R>[]
-  preValidation?: AddedHandler<preValidationHookHandler, R> | AddedHandler<preValidationHookHandler, R>[]
-  preHandler?: AddedHandler<preHandlerHookHandler, R> | AddedHandler<preHandlerHookHandler, R>[]
-}
+  onRequest?: AddedHandler<onRequestHookHandler, R> | AddedHandler<onRequestHookHandler, R>[];
+  preParsing?: AddedHandler<preParsingHookHandler, R> | AddedHandler<preParsingHookHandler, R>[];
+  preValidation?: AddedHandler<preValidationHookHandler, R> | AddedHandler<preValidationHookHandler, R>[];
+  preHandler?: AddedHandler<preHandlerHookHandler, R> | AddedHandler<preHandlerHookHandler, R>[];
+};
 
 export type ServerMethodHandler<T extends AspidaMethodParams,  U extends Record<string, unknown> = {}> = ServerHandler<T, U> | ServerHandlerPromise<T, U> | {
-  validators?: { [Key in keyof RequestParams<T>]?: z.ZodType<RequestParams<T>[Key]>}
-  schemas?: { response?: { [V in HttpStatusOk]?: Schema }}
-  hooks?: ServerHooks<U>
-  handler: ServerHandler<T, U> | ServerHandlerPromise<T, U>
-}
+  validators?: { [Key in keyof RequestParams<T>]?: z.ZodType<RequestParams<T>[Key]>};
+  schemas?: { response?: { [V in HttpStatusOk]?: Schema }};
+  hooks?: ServerHooks<U>;
+  handler: ServerHandler<T, U> | ServerHandlerPromise<T, U>;
+};
 ${
   hasNumberTypeQuery
     ? `
 const parseNumberTypeQueryParams = (numberTypeParams: [string, boolean, boolean][]): preValidationHookHandler => (req, reply, done) => {
-  const query: any = req.query
+  const query: any = req.query;
 
   for (const [key, isOptional, isArray] of numberTypeParams) {
-    const param = isArray ? (query[\`\${key}[]\`] ?? query[key]) : query[key]
+    const param = isArray ? (query[\`\${key}[]\`] ?? query[key]) : query[key];
 
     if (isArray) {
       if (!isOptional && param === undefined) {
-        query[key] = []
+        query[key] = [];
       } else if (!isOptional || param !== undefined) {
-        const vals = (Array.isArray(param) ? param : [param]).map(Number)
+        const vals = (Array.isArray(param) ? param : [param]).map(Number);
 
         if (vals.some(isNaN)) {
-          reply.code(400).send()
-          return
+          reply.code(400).send();
+          return;
         }
 
-        query[key] = vals as any
+        query[key] = vals as any;
       }
 
-      delete query[\`\${key}[]\`]
+      delete query[\`\${key}[]\`];
     } else if (!isOptional || param !== undefined) {
-      const val = Number(param)
+      const val = Number(param);
 
       if (isNaN(val)) {
-        reply.code(400).send()
-        return
+        reply.code(400).send();
+        return;
       }
 
-      query[key] = val as any
+      query[key] = val as any;
     }
   }
 
-  done()
-}
+  done();
+};
 `
     : ''
 }${
       hasBooleanTypeQuery
         ? `
 const parseBooleanTypeQueryParams = (booleanTypeParams: [string, boolean, boolean][]): preValidationHookHandler => (req, reply, done) => {
-  const query: any = req.query
+  const query: any = req.query;
 
   for (const [key, isOptional, isArray] of booleanTypeParams) {
-    const param = isArray ? (query[\`\${key}[]\`] ?? query[key]) : query[key]
+    const param = isArray ? (query[\`\${key}[]\`] ?? query[key]) : query[key];
 
     if (isArray) {
       if (!isOptional && param === undefined) {
-        query[key] = []
+        query[key] = [];
       } else if (!isOptional || param !== undefined) {
-        const vals = (Array.isArray(param) ? param : [param]).map(p => p === 'true' ? true : p === 'false' ? false : null)
+        const vals = (Array.isArray(param) ? param : [param]).map(p => p === 'true' ? true : p === 'false' ? false : null);
 
         if (vals.some(v => v === null)) {
-          reply.code(400).send()
-          return
+          reply.code(400).send();
+          return;
         }
 
-        query[key] = vals as any
+        query[key] = vals as any;
       }
 
-      delete query[\`\${key}[]\`]
+      delete query[\`\${key}[]\`];
     } else if (!isOptional || param !== undefined) {
-      const val = param === 'true' ? true : param === 'false' ? false : null
+      const val = param === 'true' ? true : param === 'false' ? false : null;
 
       if (val === null) {
-        reply.code(400).send()
-        return
+        reply.code(400).send();
+        return;
       }
 
-      query[key] = val as any
+      query[key] = val as any;
     }
   }
 
-  done()
-}
+  done();
+};
 `
         : ''
     }${
       hasOptionalQuery
         ? `
 const callParserIfExistsQuery = (parser: OmitThisParameter<preValidationHookHandler>): preValidationHookHandler => (req, reply, done) =>
-  Object.keys(req.query as any).length ? parser(req, reply, done) : done()
+  Object.keys(req.query as any).length ? parser(req, reply, done) : done();
 `
         : ''
     }${
       hasNormalizeQuery
         ? `
 const normalizeQuery: preValidationHookHandler = (req, _, done) => {
-  req.query = JSON.parse(JSON.stringify(req.query))
-  done()
-}
+  req.query = JSON.parse(JSON.stringify(req.query));
+  done();
+};
 `
         : ''
     }${
       hasTypedParams
         ? `
 const createTypedParamsHandler = (numberTypeParams: string[]): preValidationHookHandler => (req, reply, done) => {
-  const params = req.params as Record<string, string | number>
+  const params = req.params as Record<string, string | number>;
 
   for (const key of numberTypeParams) {
-    const val = Number(params[key])
+    const val = Number(params[key]);
 
     if (isNaN(val)) {
-      reply.code(400).send()
-      return
+      reply.code(400).send();
+      return;
     }
 
-    params[key] = val
+    params[key] = val;
   }
 
-  done()
-}
+  done();
+};
 `
         : ''
     }${
       hasValidator
         ? `
 const createValidateHandler = (validators: (req: FastifyRequest) => (Promise<void> | null)[]): preValidationHookHandler =>
-  (req, reply) => Promise.all(validators(req)).catch(err => reply.code(400).send(err))
+  (req, reply) => Promise.all(validators(req)).catch(err => reply.code(400).send(err));
 `
         : ''
     }${
       hasMultipart
         ? `
 const formatMultipartData = (arrayTypeKeys: [string, boolean][]): preValidationHookHandler => (req, _, done) => {
-  const body: any = req.body
+  const body: any = req.body;
 
   for (const [key] of arrayTypeKeys) {
-    if (body[key] === undefined) body[key] = []
+    if (body[key] === undefined) body[key] = [];
     else if (!Array.isArray(body[key])) {
-      body[key] = [body[key]]
+      body[key] = [body[key]];
     }
   }
 
   Object.entries(body).forEach(([key, val]) => {
     if (Array.isArray(val)) {
-      body[key] = (val as Multipart[]).map(v => 'file' in v ? v : (v as any).value)
+      body[key] = (val as Multipart[]).map(v => 'file' in v ? v : (v as any).value);
     } else {
-      body[key] = 'file' in (val as Multipart) ? val : (val as any).value
+      body[key] = 'file' in (val as Multipart) ? val : (val as any).value;
     }
-  })
+  });
 
   for (const [key, isOptional] of arrayTypeKeys) {
-    if (!body[key].length && isOptional) delete body[key]
+    if (!body[key].length && isOptional) delete body[key];
   }
 
-  done()
-}
+  done();
+};
 `
         : ''
     }${
       hasValidatorCompiler
         ? `
 const validatorCompiler: FastifySchemaCompiler<FastifySchema> = ({ schema }) => (data: unknown) => {
-  const result = (schema as z.ZodType<unknown>).safeParse(data)
-  return result.success ? { value: result.data } : { error: result.error }
-}${
+  const result = (schema as z.ZodType<unknown>).safeParse(data);
+  return result.success ? { value: result.data } : { error: result.error };
+};${
             hasValidatorsToSchema
               ? `
 
 const validatorsToSchema = ({ query, ...validators }: { query?: unknown; body?: unknown; headers?: unknown }): FastifySchema => ({
   ...(query ? { querystring: query } : {}),
-  ...validators
-})`
+  ...validators,
+});`
               : ''
           }
 `
@@ -341,21 +341,21 @@ const validatorsToSchema = ({ query, ...validators }: { query?: unknown; body?: 
       hasAsyncMethodToHandler ? genHandlerText(true) : ''
     }
 export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
-  const basePath = options.basePath ?? ''
+  const basePath = options.basePath ?? '';
 ${
   hasValidator
-    ? '  const transformerOptions: ClassTransformOptions = { enableCircularCheck: true, ...options.transformer }\n' +
-      '  const validatorOptions: ValidatorOptions = { validationError: { target: false }, ...options.validator }\n' +
-      '  const { plainToInstance = defaultPlainToInstance as NonNullable<FrourioOptions["plainToInstance"]>, validateOrReject = defaultValidateOrReject as NonNullable<FrourioOptions["validateOrReject"]> } = options\n'
+    ? '  const transformerOptions: ClassTransformOptions = { enableCircularCheck: true, ...options.transformer };\n' +
+      '  const validatorOptions: ValidatorOptions = { validationError: { target: false }, ...options.validator };\n' +
+      '  const { plainToInstance = defaultPlainToInstance as NonNullable<FrourioOptions["plainToInstance"]>, validateOrReject = defaultValidateOrReject as NonNullable<FrourioOptions["validateOrReject"]> } = options;\n'
     : ''
 }${consts}
 ${
   hasMultipart
-    ? '  fastify.register(multipart, { attachFieldsToBody: true, limits: { fileSize: 1024 ** 3 }, ...options.multipart })\n\n'
+    ? '  fastify.register(multipart, { attachFieldsToBody: true, limits: { fileSize: 1024 ** 3 }, ...options.multipart });\n\n'
     : ''
 }${controllers}
-  return fastify
-}
+  return fastify;
+};
 `,
     filePath: path.posix.join(input, '$server.ts'),
   };

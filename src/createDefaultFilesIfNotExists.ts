@@ -31,7 +31,7 @@ export type Methods = DefineMethods<{
       `import { defineController } from './$relay';
 
 export default defineController(() => ({
-  get: () => ({ status: 200, body: 'Hello' })
+  get: () => ({ status: 200, body: 'Hello' }),
 }));
 `,
       'utf8'
@@ -49,7 +49,7 @@ export default defineHooks(() => ({
   onRequest: (req, reply, done) => {
     console.log('Directory level onRequest hook:', req.url);
     done();
-  }
+  },
 }));
 `,
       'utf8'
@@ -65,7 +65,7 @@ export default defineHooks(() => ({
 import { defineValidators } from './$relay';
 
 export default defineValidators(() => ({
-  params: z.object({ ${currentParam[0]}: z.${currentParam[1]}() })
+  params: z.object({ ${currentParam[0]}: z.${currentParam[1]}() }),
 }));
 `,
       'utf8'
