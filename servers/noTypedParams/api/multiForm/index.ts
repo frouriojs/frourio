@@ -1,6 +1,7 @@
-import { MultiForm } from '../../validators';
+import type { DefineMethods } from 'aspida';
+import type { MultiForm } from '../../validators';
 
-export type Methods = {
+export type Methods = DefineMethods<{
   post: {
     reqFormat: FormData;
     reqBody: MultiForm;
@@ -12,4 +13,4 @@ export type Methods = {
       files: number;
     };
   };
-};
+}>;

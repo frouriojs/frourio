@@ -1,5 +1,5 @@
-import { DefineMethods } from 'aspida';
-import { Body, Query } from 'validators';
+import type { DefineMethods } from 'aspida';
+import type { Body, Query } from 'validators';
 
 export type Methods = DefineMethods<{
   get: {

@@ -1,6 +1,7 @@
-import { Body, Query } from '../validators';
+import type { DefineMethods } from 'aspida';
+import type { Body, Query } from '../validators';
 
-export type Methods = {
+export type Methods = DefineMethods<{
   get: {
     query?: Query;
     status: 200;
@@ -18,4 +19,4 @@ export type Methods = {
       fileName: string;
     };
   };
-};
+}>;

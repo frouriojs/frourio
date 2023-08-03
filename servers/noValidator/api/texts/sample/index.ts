@@ -1,4 +1,6 @@
-export type Methods = {
+import type { DefineMethods } from 'aspida';
+
+export type Methods = DefineMethods<{
   put: {
     reqBody: {
       id: string;
@@ -7,4 +9,4 @@ export type Methods = {
       id: string;
     } | null;
   };
-};
+}>;
