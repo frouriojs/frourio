@@ -127,7 +127,7 @@ type BlobToFile<T extends AspidaMethodParams> = T['reqFormat'] extends FormData
         ? MultipartFile
         : Required<T['reqBody']>[P] extends (Blob | ReadStream)[]
         ? MultipartFile[]
-        : T['reqBody'][P]
+        : T['reqBody'][P];
     }
   : T['reqBody'];
 `
