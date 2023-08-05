@@ -75,8 +75,8 @@
     ]
   },
   "dependencies": {
-    "aspida": "^1.13.1",
-    "velona": "^0.7.0",
+    "aspida": "^1.13.3",
+    "velona": "^0.8.0",
     "zod": "^3.21.4"
   },
   "devDependencies": {
