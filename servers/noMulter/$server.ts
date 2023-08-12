@@ -113,7 +113,7 @@ const methodToHandler = (
 ): RouteHandlerMethod => (req, reply) => {
   const data = methodCallback(req as any) as any;
 
-  if (data.headers) reply.headers(data.headers);
+  if (data.headers !== undefined) reply.headers(data.headers);
 
   reply.code(data.status).send(data.body);
 };
@@ -123,7 +123,7 @@ const asyncMethodToHandler = (
 ): RouteHandlerMethod => async (req, reply) => {
   const data = await methodCallback(req as any) as any;
 
-  if (data.headers) reply.headers(data.headers);
+  if (data.headers !== undefined) reply.headers(data.headers);
 
   reply.code(data.status).send(data.body);
 };

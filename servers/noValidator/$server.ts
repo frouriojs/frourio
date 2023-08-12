@@ -136,7 +136,7 @@ const validatorCompiler: FastifySchemaCompiler<FastifySchema> = ({ schema }) => 
 };
 
 const validatorsToSchema = ({ query, ...validators }: { query?: unknown; body?: unknown; headers?: unknown }): FastifySchema => ({
-  ...(query ? { querystring: query } : {}),
+  ...(query !== undefined ? { querystring: query } : {}),
   ...validators,
 });
 
@@ -145,7 +145,7 @@ const methodToHandler = (
 ): RouteHandlerMethod => (req, reply) => {
   const data = methodCallback(req as any) as any;
 
-  if (data.headers) reply.headers(data.headers);
+  if (data.headers !== undefined) reply.headers(data.headers);
 
   reply.code(data.status).send(data.body);
 };
@@ -155,7 +155,7 @@ const asyncMethodToHandler = (
 ): RouteHandlerMethod => async (req, reply) => {
   const data = await methodCallback(req as any) as any;
 
-  if (data.headers) reply.headers(data.headers);
+  if (data.headers !== undefined) reply.headers(data.headers);
 
   reply.code(data.status).send(data.body);
 };
