@@ -17,7 +17,7 @@ import hooksFn3 from './api/users/_userId@number/_name/hooks';
 import validatorsFn0 from './api/texts/_label@string/validators';
 import validatorsFn1 from './api/users/_userId@number/validators';
 import validatorsFn2 from './api/users/_userId@number/_name/validators';
-import controllerFn0, { hooks as ctrlHooksFn0, responseSchema as responseSchemaFn0 } from './api/controller';
+import controllerFn0, { hooks as ctrlHooksFn0 } from './api/controller';
 import controllerFn1 from './api/500/controller';
 import controllerFn2 from './api/empty/noEmpty/controller';
 import controllerFn3 from './api/multiForm/controller';
@@ -275,7 +275,6 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   const validators0 = validatorsFn0(fastify);
   const validators1 = validatorsFn1(fastify);
   const validators2 = validatorsFn2(fastify);
-  const responseSchema0 = responseSchemaFn0();
   const controller0 = controllerFn0(fastify);
   const controller1 = controllerFn1(fastify);
   const controller2 = controllerFn2(fastify);
@@ -293,9 +292,6 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   fastify.get(
     basePath || '/',
     {
-      schema: {
-        response: responseSchema0.get,
-      },
       onRequest: [...hooks0.onRequest, ctrlHooks0.onRequest],
       preParsing: hooks0.preParsing,
       preValidation: [

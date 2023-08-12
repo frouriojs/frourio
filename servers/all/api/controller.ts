@@ -1,31 +1,12 @@
 import { depend } from 'velona';
 import { z } from 'zod';
-import { defineController, defineHooks, defineResponseSchema } from '~/$relay';
+import { defineController, defineHooks } from '~/$relay';
 
 const hooks = defineHooks({ print: (...args: string[]) => console.log(...args) }, ({ print }) => ({
   onRequest: depend({}, (_deps, req, _reply, done) => {
     print('Controller level onRequest hook:', req.url);
     done();
   }),
-}));
-
-const responseSchema = defineResponseSchema(() => ({
-  get: {
-    200: {
-      type: 'object',
-      properties: {
-        id: { type: 'string' },
-        emptyNum: { type: 'number' },
-        requiredNum: { type: 'number' },
-        requiredNumArr: { type: 'array', items: { type: 'number' } },
-        bool: { type: 'boolean' },
-        optionalBool: { type: 'boolean' },
-        boolArray: { type: 'array', items: { type: 'boolean' } },
-        optionalBoolArray: { type: 'array', items: { type: 'boolean' } },
-        disable: { type: 'string' },
-      },
-    },
-  },
 }));
 
 export default defineController(
@@ -83,4 +64,4 @@ export default defineController(
   })
 );
 
-export { hooks, responseSchema };
+export { hooks };

@@ -1,7 +1,7 @@
 import type { HttpStatusOk, AspidaMethodParams } from 'aspida';
 import type { Schema } from 'fast-json-stringify';
 import type { z } from 'zod';
-import controllerFn0, { responseSchema as responseSchemaFn0 } from './api/controller';
+import controllerFn0 from './api/controller';
 import type { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, onRequestHookHandler, preParsingHookHandler, preHandlerHookHandler } from 'fastify';
 
 export type FrourioOptions = {
@@ -77,18 +77,9 @@ const methodToHandler = (
 
 export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   const basePath = options.basePath ?? '';
-  const responseSchema0 = responseSchemaFn0();
   const controller0 = controllerFn0(fastify);
 
-  fastify.get(
-    basePath || '/',
-    {
-      schema: {
-        response: responseSchema0.get,
-      },
-    },
-    methodToHandler(controller0.get),
-  );
+  fastify.get(basePath || '/', methodToHandler(controller0.get));
 
   return fastify;
 };

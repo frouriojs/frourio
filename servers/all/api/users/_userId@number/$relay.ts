@@ -2,8 +2,6 @@ import { z } from 'zod';
 import type { Injectable } from 'velona';
 import { depend } from 'velona';
 import type { FastifyInstance } from 'fastify';
-import type { Schema } from 'fast-json-stringify';
-import type { HttpStatusOk } from 'aspida';
 import type { ServerHooks, ServerMethodHandler } from '../../../$server';
 import type { AdditionalRequest as AdditionalRequest0 } from '../hooks';
 import type { AdditionalRequest as AdditionalRequest1 } from './controller';
@@ -19,10 +17,6 @@ export function defineValidators(validator: (fastify: FastifyInstance) => {
   params: z.ZodType<{ userId: number }>,
 }) {
   return validator;
-}
-
-export function defineResponseSchema<T extends { [U in keyof Methods]?: { [V in HttpStatusOk]?: Schema }}>(methods: () => T) {
-  return methods;
 }
 
 export function defineHooks<T extends ServerHooks<AdditionalRequest>>(hooks: (fastify: FastifyInstance) => T): (fastify: FastifyInstance) => T
