@@ -10,11 +10,11 @@ import type { z } from 'zod';
 import hooksFn0 from './api/hooks';
 import hooksFn1 from './api/users/hooks';
 import validatorsFn0 from './api/users/_userId@number/validators';
-import controllerFn0, { hooks as ctrlHooksFn0 } from './api/controller';
+import controllerFn0 from './api/controller';
 import controllerFn1 from './api/empty/noEmpty/controller';
 import controllerFn2 from './api/texts/controller';
 import controllerFn3 from './api/texts/sample/controller';
-import controllerFn4, { hooks as ctrlHooksFn1 } from './api/users/controller';
+import controllerFn4 from './api/users/controller';
 import controllerFn5 from './api/users/_userId@number/controller';
 import type { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, FastifyRequest, FastifySchema, FastifySchemaCompiler, RouteShorthandOptions, onRequestHookHandler, preParsingHookHandler, preHandlerHookHandler } from 'fastify';
 
@@ -135,8 +135,6 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   const { plainToInstance = defaultPlainToInstance as NonNullable<FrourioOptions["plainToInstance"]>, validateOrReject = defaultValidateOrReject as NonNullable<FrourioOptions["validateOrReject"]> } = options;
   const hooks0 = hooksFn0(fastify);
   const hooks1 = hooksFn1(fastify);
-  const ctrlHooks0 = ctrlHooksFn0(fastify);
-  const ctrlHooks1 = ctrlHooksFn1(fastify);
   const validators0 = validatorsFn0(fastify);
   const controller0 = controllerFn0(fastify);
   const controller1 = controllerFn1(fastify);
@@ -148,7 +146,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   fastify.get(
     basePath || '/',
     {
-      onRequest: [hooks0.onRequest, ctrlHooks0.onRequest],
+      onRequest: hooks0.onRequest,
       preValidation: createValidateHandler(req => [
           Object.keys(req.query as any).length ? validateOrReject(plainToInstance(Validators.Query, req.query as any, transformerOptions), validatorOptions) : null,
         ]),
@@ -160,7 +158,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   fastify.post(
     basePath || '/',
     {
-      onRequest: [hooks0.onRequest, ctrlHooks0.onRequest],
+      onRequest: hooks0.onRequest,
       preValidation: createValidateHandler(req => [
           validateOrReject(plainToInstance(Validators.Query, req.query as any, transformerOptions), validatorOptions),
           validateOrReject(plainToInstance(Validators.Body, req.body as any, transformerOptions), validatorOptions),
@@ -208,7 +206,6 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
     `${basePath}/users`,
     {
       onRequest: [hooks0.onRequest, hooks1.onRequest],
-      preHandler: ctrlHooks1.preHandler,
     } as RouteShorthandOptions,
     asyncMethodToHandler(controller4.get),
   );
@@ -220,7 +217,6 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
       preValidation: createValidateHandler(req => [
           validateOrReject(plainToInstance(Validators.UserInfo, req.body as any, transformerOptions), validatorOptions),
         ]),
-      preHandler: ctrlHooks1.preHandler,
     } as RouteShorthandOptions,
     methodToHandler(controller4.post),
   );

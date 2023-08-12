@@ -32,12 +32,6 @@ export default (input: string, project?: string) => {
 
   checkRequisites({ hasValidator });
 
-  if (controllers.includes('ctrlHooks0.')) {
-    console.warn(
-      `frourio: 'defineHooks in controller.ts' is deprecated. Specify hooks in controller instead.`
-    );
-  }
-
   if (hasValidator) {
     console.warn(
       `frourio: 'class-validator' is deprecated. Specify validators in controller instead. ref: https://frourio.com/docs/reference/validation/zod`

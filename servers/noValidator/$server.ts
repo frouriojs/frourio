@@ -7,12 +7,12 @@ import type { z } from 'zod';
 import hooksFn0 from './api/hooks';
 import hooksFn1 from './api/users/hooks';
 import validatorsFn0 from './api/users/_userId@number/validators';
-import controllerFn0, { hooks as ctrlHooksFn0 } from './api/controller';
+import controllerFn0 from './api/controller';
 import controllerFn1 from './api/empty/noEmpty/controller';
 import controllerFn2 from './api/multiForm/controller';
 import controllerFn3 from './api/texts/controller';
 import controllerFn4 from './api/texts/sample/controller';
-import controllerFn5, { hooks as ctrlHooksFn1 } from './api/users/controller';
+import controllerFn5 from './api/users/controller';
 import controllerFn6 from './api/users/_userId@number/controller';
 import type { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, FastifySchema, FastifySchemaCompiler, RouteShorthandOptions, onRequestHookHandler, preParsingHookHandler, preHandlerHookHandler } from 'fastify';
 
@@ -164,8 +164,6 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   const basePath = options.basePath ?? '';
   const hooks0 = hooksFn0(fastify);
   const hooks1 = hooksFn1(fastify);
-  const ctrlHooks0 = ctrlHooksFn0(fastify);
-  const ctrlHooks1 = ctrlHooksFn1(fastify);
   const validators0 = validatorsFn0(fastify);
   const controller0 = controllerFn0(fastify);
   const controller1 = controllerFn1(fastify);
@@ -183,7 +181,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
       // @ts-expect-error
       schema: validatorsToSchema(controller0.get.validators),
       validatorCompiler,
-      onRequest: [hooks0.onRequest, ctrlHooks0.onRequest],
+      onRequest: hooks0.onRequest,
     },
     // @ts-expect-error
     asyncMethodToHandler(controller0.get.handler),
@@ -192,7 +190,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   fastify.post(
     basePath || '/',
     {
-      onRequest: [hooks0.onRequest, ctrlHooks0.onRequest],
+      onRequest: hooks0.onRequest,
       preValidation: formatMultipartData([]),
     },
     // @ts-expect-error
@@ -246,7 +244,6 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
     `${basePath}/users`,
     {
       onRequest: [hooks0.onRequest, hooks1.onRequest],
-      preHandler: ctrlHooks1.preHandler,
     } as RouteShorthandOptions,
     asyncMethodToHandler(controller5.get),
   );
@@ -255,7 +252,6 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
     `${basePath}/users`,
     {
       onRequest: [hooks0.onRequest, hooks1.onRequest],
-      preHandler: ctrlHooks1.preHandler,
     } as RouteShorthandOptions,
     methodToHandler(controller5.post.handler),
   );

@@ -17,14 +17,14 @@ import hooksFn3 from './api/users/_userId@number/_name/hooks';
 import validatorsFn0 from './api/texts/_label@string/validators';
 import validatorsFn1 from './api/users/_userId@number/validators';
 import validatorsFn2 from './api/users/_userId@number/_name/validators';
-import controllerFn0, { hooks as ctrlHooksFn0 } from './api/controller';
+import controllerFn0 from './api/controller';
 import controllerFn1 from './api/500/controller';
 import controllerFn2 from './api/empty/noEmpty/controller';
 import controllerFn3 from './api/multiForm/controller';
 import controllerFn4 from './api/texts/controller';
 import controllerFn5 from './api/texts/sample/controller';
 import controllerFn6 from './api/texts/_label@string/controller';
-import controllerFn7, { hooks as ctrlHooksFn1 } from './api/users/controller';
+import controllerFn7 from './api/users/controller';
 import controllerFn8 from './api/users/_userId@number/controller';
 import controllerFn9 from './api/users/_userId@number/_name/controller';
 import controllerFn10 from './api/zod/controller';
@@ -270,8 +270,6 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   const hooks1 = hooksFn1(fastify);
   const hooks2 = hooksFn2(fastify);
   const hooks3 = hooksFn3(fastify);
-  const ctrlHooks0 = ctrlHooksFn0(fastify);
-  const ctrlHooks1 = ctrlHooksFn1(fastify);
   const validators0 = validatorsFn0(fastify);
   const validators1 = validatorsFn1(fastify);
   const validators2 = validatorsFn2(fastify);
@@ -292,7 +290,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   fastify.get(
     basePath || '/',
     {
-      onRequest: [...hooks0.onRequest, ctrlHooks0.onRequest],
+      onRequest: hooks0.onRequest,
       preParsing: hooks0.preParsing,
       preValidation: [
         callParserIfExistsQuery(parseNumberTypeQueryParams([['requiredNum', false, false], ['optionalNum', true, false], ['optionalNumArr', true, true], ['emptyNum', true, false], ['requiredNumArr', false, true]])),
@@ -309,7 +307,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   fastify.post(
     basePath || '/',
     {
-      onRequest: [...hooks0.onRequest, ctrlHooks0.onRequest],
+      onRequest: hooks0.onRequest,
       preParsing: hooks0.preParsing,
       preValidation: [
         parseNumberTypeQueryParams([['requiredNum', false, false], ['optionalNum', true, false], ['optionalNumArr', true, true], ['emptyNum', true, false], ['requiredNumArr', false, true]]),
@@ -333,7 +331,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
         ...controller0.put.schemas,
       },
       validatorCompiler,
-      onRequest: [...hooks0.onRequest, ctrlHooks0.onRequest],
+      onRequest: hooks0.onRequest,
       preParsing: hooks0.preParsing,
       preValidation: [
         parseNumberTypeQueryParams([['requiredNum', false, false], ['optionalNum', true, false], ['optionalNumArr', true, true], ['emptyNum', true, false], ['requiredNumArr', false, true]]),
@@ -427,7 +425,6 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
     {
       onRequest: [...hooks0.onRequest, hooks2.onRequest],
       preParsing: hooks0.preParsing,
-      preHandler: ctrlHooks1.preHandler,
     } as RouteShorthandOptions,
     asyncMethodToHandler(controller7.get),
   );
@@ -440,7 +437,6 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
       preValidation: createValidateHandler(req => [
           validateOrReject(plainToInstance(Validators.UserInfo, req.body as any, transformerOptions), validatorOptions),
         ]),
-      preHandler: ctrlHooks1.preHandler,
     } as RouteShorthandOptions,
     methodToHandler(controller7.post),
   );

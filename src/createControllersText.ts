@@ -185,7 +185,7 @@ export default (appDir: string, project: string) => {
   const { program, checker } = initTSC(appDir, project);
   const hooksPaths: string[] = [];
   const validatorsPaths: string[] = [];
-  const controllers: [string, boolean][] = [];
+  const controllerPaths: string[] = [];
   const createText = (
     dirPath: string,
     cascadingHooks: { name: string; events: { type: HooksEvent; isArray: boolean }[] }[],
@@ -276,7 +276,6 @@ export default (appDir: string, project: string) => {
           method: string;
           events: { type: HooksEvent; isArray: boolean }[];
         }[] = [];
-        let ctrlHooksSignature: ts.Signature | undefined;
 
         if (controllerSource) {
           const getMethodTypeNodes = <T>(
@@ -390,64 +389,13 @@ export default (appDir: string, project: string) => {
               };
             })
           );
-
-          let ctrlHooksNode: ts.VariableDeclaration | ts.ExportSpecifier | undefined;
-
-          ts.forEachChild(controllerSource, node => {
-            if (
-              ts.isVariableStatement(node) &&
-              node.modifiers?.some(m => m.kind === ts.SyntaxKind.ExportKeyword)
-            ) {
-              ctrlHooksNode =
-                node.declarationList.declarations.find(d => d.name.getText() === 'hooks') ??
-                ctrlHooksNode;
-            } else if (ts.isExportDeclaration(node)) {
-              const { exportClause } = node;
-              if (exportClause && ts.isNamedExports(exportClause)) {
-                ctrlHooksNode =
-                  exportClause.elements.find(el => el.name.text === 'hooks') ?? ctrlHooksNode;
-              }
-            }
-          });
-
-          if (ctrlHooksNode) {
-            ctrlHooksSignature = checker.getSignaturesOfType(
-              checker.getTypeAtLocation(ctrlHooksNode),
-              ts.SignatureKind.Call
-            )[0];
-          }
         }
-
-        const ctrlHooksEvents = ctrlHooksSignature
-          ?.getReturnType()
-          .getProperties()
-          .map(p => {
-            const typeNode =
-              p.valueDeclaration &&
-              checker.typeToTypeNode(
-                checker.getTypeOfSymbolAtLocation(p, p.valueDeclaration),
-                undefined,
-                undefined
-              );
-
-            return {
-              type: p.name as HooksEvent,
-              isArray: typeNode
-                ? ts.isArrayTypeNode(typeNode) || ts.isTupleTypeNode(typeNode)
-                : false,
-            };
-          });
 
         const genHookTexts = (event: HooksEvent, methodName: string) => [
           ...hooks.reduce<string[]>((prev, h) => {
             const ev = h.events.find(e => e.type === event);
             return ev ? [...prev, `${ev.isArray ? '...' : ''}${h.name}.${event}`] : prev;
           }, []),
-          ...(ctrlHooksEvents?.map(e =>
-            e.type === event
-              ? `${e.isArray ? '...' : ''}ctrlHooks${controllers.filter(c => c[1]).length}.${event}`
-              : ''
-          ) ?? []),
           ...(hasHooksMethods.some(
             m => m.method === methodName && m.events.some(e => e.type === event)
           )
@@ -458,7 +406,7 @@ export default (appDir: string, project: string) => {
                     ?.events.find(e => e.type === event)?.isArray
                     ? '...'
                     : ''
-                }controller${controllers.length}.${methodName}.hooks.${event}`,
+                }controller${controllerPaths.length}.${methodName}.hooks.${event}`,
               ]
             : []),
         ];
@@ -621,10 +569,10 @@ ${validateInfo
                   : "basePath || '/'"
               },${(() => {
                 const validatorsText = hasValidatorsMethods.includes(m.name)
-                  ? `...validatorsToSchema(controller${controllers.length}.${m.name}.validators)`
+                  ? `...validatorsToSchema(controller${controllerPaths.length}.${m.name}.validators)`
                   : null;
                 const schemasText = hasSchemasMethods.includes(m.name)
-                  ? `...controller${controllers.length}.${m.name}.schemas`
+                  ? `...controller${controllerPaths.length}.${m.name}.schemas`
                   : null;
                 const paramsValidatorsText = paramsValidators.length
                   ? `params: ${paramsValidators
@@ -658,14 +606,14 @@ ${validateInfo
                   : '';
               })()}${hooksTexts.length > 0 ? '\n    ' : ' '}${
                 isPromiseMethods.includes(m.name) ? 'asyncMethodToHandler' : 'methodToHandler'
-              }(controller${controllers.length}.${m.name}${
+              }(controller${controllerPaths.length}.${m.name}${
                 hasHandlerMethods.includes(m.name) ? '.handler' : ''
               })${hooksTexts.length > 0 ? ',\n  ' : ''});\n`;
             })
             .join('\n')
         );
 
-        controllers.push([`${input}/controller`, !!ctrlHooksEvents]);
+        controllerPaths.push(input);
       }
     }
 
@@ -697,7 +645,6 @@ ${validateInfo
   };
 
   const text = createText('', [], []).join('\n');
-  const ctrlHooks = controllers.filter(c => c[1]);
 
   return {
     imports: `${hooksPaths
@@ -710,23 +657,19 @@ ${validateInfo
         (m, i) =>
           `import validatorsFn${i} from '${m.replace(/^api/, './api').replace(appDir, './api')}';\n`
       )
-      .join('')}${controllers
+      .join('')}${controllerPaths
       .map(
         (ctrl, i) =>
-          `import controllerFn${i}${
-            ctrl[1]
-              ? `, { ${ctrl[1] ? `hooks as ctrlHooksFn${ctrlHooks.indexOf(ctrl)}` : ''} }`
-              : ''
-          } from '${ctrl[0].replace(/^api/, './api').replace(appDir, './api')}';\n`
+          `import controllerFn${i} from '${ctrl
+            .replace(/^api/, './api')
+            .replace(appDir, './api')}/controller';\n`
       )
       .join('')}`,
     consts: `${hooksPaths
       .map((_, i) => `  const hooks${i} = hooksFn${i}(fastify);\n`)
-      .join('')}${ctrlHooks
-      .map((_, i) => `  const ctrlHooks${i} = ctrlHooksFn${i}(fastify);\n`)
       .join('')}${validatorsPaths
       .map((_, i) => `  const validators${i} = validatorsFn${i}(fastify);\n`)
-      .join('')}${controllers
+      .join('')}${controllerPaths
       .map((_, i) => `  const controller${i} = controllerFn${i}(fastify);\n`)
       .join('')}`,
     controllers: text,
