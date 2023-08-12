@@ -416,13 +416,14 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
     `${basePath}/texts/:label`,
     {
       schema: {
+        ...validatorsToSchema(controller6.get.validators),
         params: validators0.params,
       },
       validatorCompiler,
       onRequest: hooks0.onRequest,
       preParsing: hooks0.preParsing,
     },
-    methodToHandler(controller6.get),
+    methodToHandler(controller6.get.handler),
   );
 
   fastify.get(
