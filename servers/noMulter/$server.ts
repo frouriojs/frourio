@@ -1,3 +1,5 @@
+import type { MultipartFile } from '@fastify/multipart';
+import type { ReadStream } from 'fs';
 import type { HttpStatusOk, AspidaMethodParams } from 'aspida';
 import type { Schema } from 'fast-json-stringify';
 import type { z } from 'zod';
@@ -38,6 +40,14 @@ type ServerResponse<K extends AspidaMethodParams> =
       'body' | 'headers'
     >)
   | PartiallyPartial<BaseResponse<any, any, HttpStatusNoOk>, 'body' | 'headers'>;
+
+export type MultipartFileToBlob<T extends Record<string, unknown>> = {
+  [P in keyof T]: Required<T>[P] extends MultipartFile
+    ? Blob | ReadStream
+    : Required<T>[P] extends MultipartFile[]
+    ? (Blob | ReadStream)[]
+    : T[P];
+};
 
 type RequestParams<T extends AspidaMethodParams> = Pick<{
   query: T['query'];

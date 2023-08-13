@@ -32,13 +32,14 @@ export default (input: string, project?: string) => {
       "import type { FastifyMultipartAttachFieldsToBodyOptions, Multipart, MultipartFile } from '@fastify/multipart';",
       "import multipart from '@fastify/multipart';"
     );
+  } else {
+    headImports.push("import type { MultipartFile } from '@fastify/multipart';");
   }
 
-  if (hasMultipart) {
-    headImports.push("import type { ReadStream } from 'fs';");
-  }
-
-  headImports.push("import type { HttpStatusOk, AspidaMethodParams } from 'aspida';");
+  headImports.push(
+    "import type { ReadStream } from 'fs';",
+    "import type { HttpStatusOk, AspidaMethodParams } from 'aspida';"
+  );
 
   return {
     text: `${headImports.join('\n')}
@@ -76,6 +77,14 @@ type ServerResponse<K extends AspidaMethodParams> =
       'body' | 'headers'
     >)
   | PartiallyPartial<BaseResponse<any, any, HttpStatusNoOk>, 'body' | 'headers'>;
+
+export type MultipartFileToBlob<T extends Record<string, unknown>> = {
+  [P in keyof T]: Required<T>[P] extends MultipartFile
+    ? Blob | ReadStream
+    : Required<T>[P] extends MultipartFile[]
+    ? (Blob | ReadStream)[]
+    : T[P];
+};
 ${
   hasMultipart
     ? `

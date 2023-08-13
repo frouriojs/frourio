@@ -1,7 +1,6 @@
 import { z } from 'zod';
-import { multipartValidator } from '~/zod/validator';
 import { Methods } from './';
-import { defineController } from './$relay';
+import { defineController, multipartFileValidator } from './$relay';
 
 export default defineController(() => ({
   post: {
@@ -11,9 +10,9 @@ export default defineController(() => ({
         optionalArr: z.array(z.string()).optional(),
         empty: z.array(z.number()).optional(),
         name: z.string(),
-        icon: multipartValidator,
+        icon: multipartFileValidator(),
         vals: z.array(z.string()),
-        files: z.array(multipartValidator),
+        files: z.array(multipartFileValidator()),
       }),
     },
     handler: ({ body }) => ({
