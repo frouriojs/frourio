@@ -4,24 +4,24 @@ import type { ReadStream } from 'fs';
 import type { HttpStatusOk, AspidaMethodParams } from 'aspida';
 import type { Schema } from 'fast-json-stringify';
 import type { z } from 'zod';
-import hooksFn0 from './api/hooks';
-import hooksFn1 from './api/empty/hooks';
-import hooksFn2 from './api/users/hooks';
-import hooksFn3 from './api/users/_userId@number/_name/hooks';
-import validatorsFn0 from './api/texts/_label@string/validators';
-import validatorsFn1 from './api/users/_userId@number/validators';
-import validatorsFn2 from './api/users/_userId@number/_name/validators';
-import controllerFn0 from './api/controller';
-import controllerFn1 from './api/500/controller';
-import controllerFn2 from './api/empty/noEmpty/controller';
-import controllerFn3 from './api/multiForm/controller';
-import controllerFn4 from './api/texts/controller';
-import controllerFn5 from './api/texts/sample/controller';
-import controllerFn6 from './api/texts/_label@string/controller';
-import controllerFn7 from './api/users/controller';
-import controllerFn8 from './api/users/_userId@number/controller';
-import controllerFn9 from './api/users/_userId@number/_name/controller';
-import controllerFn10 from './api/zod/controller';
+import hooksFn_gx3glp from './api/hooks';
+import hooksFn_1mq914j from './api/empty/hooks';
+import hooksFn_3zqb7e from './api/users/hooks';
+import hooksFn_1xe76mo from './api/users/_userId@number/_name/hooks';
+import validatorsFn_1etvysi from './api/texts/_label@string/validators';
+import validatorsFn_ia9y8g from './api/users/_userId@number/validators';
+import validatorsFn_bsbcs3 from './api/users/_userId@number/_name/validators';
+import controllerFn_14i7wcv from './api/controller';
+import controllerFn_50cggr from './api/500/controller';
+import controllerFn_a01vkg from './api/empty/noEmpty/controller';
+import controllerFn_17nfdm3 from './api/multiForm/controller';
+import controllerFn_1gxm9v2 from './api/texts/controller';
+import controllerFn_1bjhajh from './api/texts/sample/controller';
+import controllerFn_iyz1e5 from './api/texts/_label@string/controller';
+import controllerFn_g6e9u2 from './api/users/controller';
+import controllerFn_1y88f1f from './api/users/_userId@number/controller';
+import controllerFn_1pjj81w from './api/users/_userId@number/_name/controller';
+import controllerFn_iyk7j5 from './api/zod/controller';
 import type { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, FastifySchema, FastifySchemaCompiler, RouteShorthandOptions, onRequestHookHandler, preParsingHookHandler, preHandlerHookHandler } from 'fastify';
 
 export type FrourioOptions = {
@@ -253,239 +253,239 @@ const asyncMethodToHandler = (
 
 export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   const basePath = options.basePath ?? '';
-  const hooks0 = hooksFn0(fastify);
-  const hooks1 = hooksFn1(fastify);
-  const hooks2 = hooksFn2(fastify);
-  const hooks3 = hooksFn3(fastify);
-  const validators0 = validatorsFn0(fastify);
-  const validators1 = validatorsFn1(fastify);
-  const validators2 = validatorsFn2(fastify);
-  const controller0 = controllerFn0(fastify);
-  const controller1 = controllerFn1(fastify);
-  const controller2 = controllerFn2(fastify);
-  const controller3 = controllerFn3(fastify);
-  const controller4 = controllerFn4(fastify);
-  const controller5 = controllerFn5(fastify);
-  const controller6 = controllerFn6(fastify);
-  const controller7 = controllerFn7(fastify);
-  const controller8 = controllerFn8(fastify);
-  const controller9 = controllerFn9(fastify);
-  const controller10 = controllerFn10(fastify);
+  const hooks_gx3glp = hooksFn_gx3glp(fastify);
+  const hooks_1mq914j = hooksFn_1mq914j(fastify);
+  const hooks_3zqb7e = hooksFn_3zqb7e(fastify);
+  const hooks_1xe76mo = hooksFn_1xe76mo(fastify);
+  const validators_1etvysi = validatorsFn_1etvysi(fastify);
+  const validators_ia9y8g = validatorsFn_ia9y8g(fastify);
+  const validators_bsbcs3 = validatorsFn_bsbcs3(fastify);
+  const controller_14i7wcv = controllerFn_14i7wcv(fastify);
+  const controller_50cggr = controllerFn_50cggr(fastify);
+  const controller_a01vkg = controllerFn_a01vkg(fastify);
+  const controller_17nfdm3 = controllerFn_17nfdm3(fastify);
+  const controller_1gxm9v2 = controllerFn_1gxm9v2(fastify);
+  const controller_1bjhajh = controllerFn_1bjhajh(fastify);
+  const controller_iyz1e5 = controllerFn_iyz1e5(fastify);
+  const controller_g6e9u2 = controllerFn_g6e9u2(fastify);
+  const controller_1y88f1f = controllerFn_1y88f1f(fastify);
+  const controller_1pjj81w = controllerFn_1pjj81w(fastify);
+  const controller_iyk7j5 = controllerFn_iyk7j5(fastify);
 
   fastify.register(multipart, { attachFieldsToBody: true, limits: { fileSize: 1024 ** 3 }, ...options.multipart });
 
   fastify.get(
     basePath || '/',
     {
-      schema: validatorsToSchema(controller0.get.validators),
+      schema: validatorsToSchema(controller_14i7wcv.get.validators),
       validatorCompiler,
-      onRequest: hooks0.onRequest,
-      preParsing: hooks0.preParsing,
+      onRequest: hooks_gx3glp.onRequest,
+      preParsing: hooks_gx3glp.preParsing,
       preValidation: [
         callParserIfExistsQuery(parseNumberTypeQueryParams([['requiredNum', false, false], ['optionalNum', true, false], ['optionalNumArr', true, true], ['emptyNum', true, false], ['requiredNumArr', false, true]])),
         callParserIfExistsQuery(parseBooleanTypeQueryParams([['bool', false, false], ['optionalBool', true, false], ['boolArray', false, true], ['optionalBoolArray', true, true]])),
       ],
     },
-    asyncMethodToHandler(controller0.get.handler),
+    asyncMethodToHandler(controller_14i7wcv.get.handler),
   );
 
   fastify.post(
     basePath || '/',
     {
-      onRequest: hooks0.onRequest,
-      preParsing: hooks0.preParsing,
+      onRequest: hooks_gx3glp.onRequest,
+      preParsing: hooks_gx3glp.preParsing,
       preValidation: [
         parseNumberTypeQueryParams([['requiredNum', false, false], ['optionalNum', true, false], ['optionalNumArr', true, true], ['emptyNum', true, false], ['requiredNumArr', false, true]]),
         parseBooleanTypeQueryParams([['bool', false, false], ['optionalBool', true, false], ['boolArray', false, true], ['optionalBoolArray', true, true]]),
         formatMultipartData([]),
       ],
     },
-    methodToHandler(controller0.post),
+    methodToHandler(controller_14i7wcv.post),
   );
 
   fastify.put(
     basePath || '/',
     {
       schema: {
-        ...validatorsToSchema(controller0.put.validators),
-        ...controller0.put.schemas,
+        ...validatorsToSchema(controller_14i7wcv.put.validators),
+        ...controller_14i7wcv.put.schemas,
       },
       validatorCompiler,
-      onRequest: hooks0.onRequest,
-      preParsing: hooks0.preParsing,
+      onRequest: hooks_gx3glp.onRequest,
+      preParsing: hooks_gx3glp.preParsing,
       preValidation: [
         parseNumberTypeQueryParams([['requiredNum', false, false], ['optionalNum', true, false], ['optionalNumArr', true, true], ['emptyNum', true, false], ['requiredNumArr', false, true]]),
         parseBooleanTypeQueryParams([['bool', false, false], ['optionalBool', true, false], ['boolArray', false, true], ['optionalBoolArray', true, true]]),
-        ...controller0.put.hooks.preValidation,
+        ...controller_14i7wcv.put.hooks.preValidation,
       ],
-      preHandler: controller0.put.hooks.preHandler,
+      preHandler: controller_14i7wcv.put.hooks.preHandler,
     },
-    methodToHandler(controller0.put.handler),
+    methodToHandler(controller_14i7wcv.put.handler),
   );
 
   fastify.get(
     `${basePath}/500`,
     {
-      onRequest: hooks0.onRequest,
-      preParsing: hooks0.preParsing,
+      onRequest: hooks_gx3glp.onRequest,
+      preParsing: hooks_gx3glp.preParsing,
     },
-    methodToHandler(controller1.get),
+    methodToHandler(controller_50cggr.get),
   );
 
   fastify.get(
     `${basePath}/empty/noEmpty`,
     {
-      onRequest: [...hooks0.onRequest, ...hooks1.onRequest],
-      preParsing: [hooks0.preParsing, hooks1.preParsing],
+      onRequest: [...hooks_gx3glp.onRequest, ...hooks_1mq914j.onRequest],
+      preParsing: [hooks_gx3glp.preParsing, hooks_1mq914j.preParsing],
     },
-    asyncMethodToHandler(controller2.get),
+    asyncMethodToHandler(controller_a01vkg.get),
   );
 
   fastify.post(
     `${basePath}/multiForm`,
     {
-      schema: validatorsToSchema(controller3.post.validators),
+      schema: validatorsToSchema(controller_17nfdm3.post.validators),
       validatorCompiler,
-      onRequest: hooks0.onRequest,
-      preParsing: hooks0.preParsing,
+      onRequest: hooks_gx3glp.onRequest,
+      preParsing: hooks_gx3glp.preParsing,
       preValidation: formatMultipartData([['requiredArr', false], ['optionalArr', true], ['empty', true], ['vals', false], ['files', false]]),
     },
-    methodToHandler(controller3.post.handler),
+    methodToHandler(controller_17nfdm3.post.handler),
   );
 
   fastify.get(
     `${basePath}/texts`,
     {
-      onRequest: hooks0.onRequest,
-      preParsing: hooks0.preParsing,
+      onRequest: hooks_gx3glp.onRequest,
+      preParsing: hooks_gx3glp.preParsing,
       preValidation: callParserIfExistsQuery(parseNumberTypeQueryParams([['limit', true, false]])),
     },
     // @ts-expect-error
-    methodToHandler(controller4.get),
+    methodToHandler(controller_1gxm9v2.get),
   );
 
   fastify.put(
     `${basePath}/texts`,
     {
-      onRequest: hooks0.onRequest,
-      preParsing: hooks0.preParsing,
+      onRequest: hooks_gx3glp.onRequest,
+      preParsing: hooks_gx3glp.preParsing,
     },
     // @ts-expect-error
-    methodToHandler(controller4.put),
+    methodToHandler(controller_1gxm9v2.put),
   );
 
   fastify.put(
     `${basePath}/texts/sample`,
     {
-      onRequest: hooks0.onRequest,
-      preParsing: hooks0.preParsing,
+      onRequest: hooks_gx3glp.onRequest,
+      preParsing: hooks_gx3glp.preParsing,
     },
-    methodToHandler(controller5.put),
+    methodToHandler(controller_1bjhajh.put),
   );
 
   fastify.get(
     `${basePath}/texts/:label`,
     {
       schema: {
-        ...validatorsToSchema(controller6.get.validators),
-        params: validators0.params,
+        ...validatorsToSchema(controller_iyz1e5.get.validators),
+        params: validators_1etvysi.params,
       },
       validatorCompiler,
-      onRequest: hooks0.onRequest,
-      preParsing: hooks0.preParsing,
+      onRequest: hooks_gx3glp.onRequest,
+      preParsing: hooks_gx3glp.preParsing,
     },
-    methodToHandler(controller6.get.handler),
+    methodToHandler(controller_iyz1e5.get.handler),
   );
 
   fastify.get(
     `${basePath}/users`,
     {
-      onRequest: [...hooks0.onRequest, hooks2.onRequest],
-      preParsing: hooks0.preParsing,
+      onRequest: [...hooks_gx3glp.onRequest, hooks_3zqb7e.onRequest],
+      preParsing: hooks_gx3glp.preParsing,
     } as RouteShorthandOptions,
-    asyncMethodToHandler(controller7.get),
+    asyncMethodToHandler(controller_g6e9u2.get),
   );
 
   fastify.post(
     `${basePath}/users`,
     {
-      schema: validatorsToSchema(controller7.post.validators),
+      schema: validatorsToSchema(controller_g6e9u2.post.validators),
       validatorCompiler,
-      onRequest: [...hooks0.onRequest, hooks2.onRequest],
-      preParsing: hooks0.preParsing,
+      onRequest: [...hooks_gx3glp.onRequest, hooks_3zqb7e.onRequest],
+      preParsing: hooks_gx3glp.preParsing,
     } as RouteShorthandOptions,
-    methodToHandler(controller7.post.handler),
+    methodToHandler(controller_g6e9u2.post.handler),
   );
 
   fastify.get(
     `${basePath}/users/:userId`,
     {
       schema: {
-        params: validators1.params,
+        params: validators_ia9y8g.params,
       },
       validatorCompiler,
-      onRequest: [...hooks0.onRequest, hooks2.onRequest],
-      preParsing: hooks0.preParsing,
+      onRequest: [...hooks_gx3glp.onRequest, hooks_3zqb7e.onRequest],
+      preParsing: hooks_gx3glp.preParsing,
       preValidation: createTypedParamsHandler(['userId']),
-      preHandler: controller8.get.hooks.preHandler,
+      preHandler: controller_1y88f1f.get.hooks.preHandler,
     } as RouteShorthandOptions,
-    methodToHandler(controller8.get.handler),
+    methodToHandler(controller_1y88f1f.get.handler),
   );
 
   fastify.get(
     `${basePath}/users/:userId/:name`,
     {
       schema: {
-        params: validators1.params.and(validators2.params),
+        params: validators_ia9y8g.params.and(validators_bsbcs3.params),
       },
       validatorCompiler,
-      onRequest: [...hooks0.onRequest, hooks2.onRequest, hooks3.onRequest],
-      preParsing: hooks0.preParsing,
+      onRequest: [...hooks_gx3glp.onRequest, hooks_3zqb7e.onRequest, hooks_1xe76mo.onRequest],
+      preParsing: hooks_gx3glp.preParsing,
       preValidation: createTypedParamsHandler(['userId']),
     } as RouteShorthandOptions,
-    methodToHandler(controller9.get),
+    methodToHandler(controller_1pjj81w.get),
   );
 
   fastify.get(
     `${basePath}/zod`,
     {
-      schema: validatorsToSchema(controller10.get.validators),
+      schema: validatorsToSchema(controller_iyk7j5.get.validators),
       validatorCompiler,
-      onRequest: hooks0.onRequest,
-      preParsing: hooks0.preParsing,
+      onRequest: hooks_gx3glp.onRequest,
+      preParsing: hooks_gx3glp.preParsing,
       preValidation: [
         parseNumberTypeQueryParams([['requiredNum', false, false], ['requiredNumArr', false, true], ['optionalNum', true, false], ['optionalNumArr', true, true], ['emptyNum', true, false]]),
         parseBooleanTypeQueryParams([['bool', false, false], ['boolArray', false, true], ['optionalBool', true, false], ['optionalBoolArray', true, true]]),
       ],
     },
-    methodToHandler(controller10.get.handler),
+    methodToHandler(controller_iyk7j5.get.handler),
   );
 
   fastify.post(
     `${basePath}/zod`,
     {
-      schema: validatorsToSchema(controller10.post.validators),
+      schema: validatorsToSchema(controller_iyk7j5.post.validators),
       validatorCompiler,
-      onRequest: hooks0.onRequest,
-      preParsing: hooks0.preParsing,
+      onRequest: hooks_gx3glp.onRequest,
+      preParsing: hooks_gx3glp.preParsing,
       preValidation: [
         callParserIfExistsQuery(parseNumberTypeQueryParams([['requiredNum', false, false], ['requiredNumArr', false, true], ['optionalNum', true, false], ['optionalNumArr', true, true], ['emptyNum', true, false]])),
         callParserIfExistsQuery(parseBooleanTypeQueryParams([['bool', false, false], ['boolArray', false, true], ['optionalBool', true, false], ['optionalBoolArray', true, true]])),
       ],
     },
-    methodToHandler(controller10.post.handler),
+    methodToHandler(controller_iyk7j5.post.handler),
   );
 
   fastify.put(
     `${basePath}/zod`,
     {
-      schema: validatorsToSchema(controller10.put.validators),
+      schema: validatorsToSchema(controller_iyk7j5.put.validators),
       validatorCompiler,
-      onRequest: hooks0.onRequest,
-      preParsing: hooks0.preParsing,
+      onRequest: hooks_gx3glp.onRequest,
+      preParsing: hooks_gx3glp.preParsing,
       preValidation: formatMultipartData([['requiredArr', false], ['vals', false], ['files', false], ['optionalArr', true], ['empty', true]]),
     },
-    methodToHandler(controller10.put.handler),
+    methodToHandler(controller_iyk7j5.put.handler),
   );
 
   return fastify;

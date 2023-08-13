@@ -3,6 +3,7 @@ import path from 'path';
 import ts from 'typescript';
 import type { Param } from './createDefaultFilesIfNotExists';
 import { createDefaultFilesIfNotExists } from './createDefaultFilesIfNotExists';
+import { createHash } from './createHash';
 
 type HooksEvent = 'onRequest' | 'preParsing' | 'preValidation' | 'preHandler';
 
@@ -192,13 +193,15 @@ const createFiles = (
   });
 };
 
+type PathItem = { importName: string; name: string; path: string };
+
 export default (appDir: string, project: string) => {
   createFiles(appDir, '', [], null, '$server', []);
 
   const { program, checker } = initTSC(appDir, project);
-  const hooksPaths: string[] = [];
-  const validatorsPaths: string[] = [];
-  const controllerPaths: string[] = [];
+  const hooksPaths: PathItem[] = [];
+  const validatorsPaths: PathItem[] = [];
+  const controllerPaths: PathItem[] = [];
   const createText = (
     dirPath: string,
     cascadingHooks: { name: string; events: { type: HooksEvent; isArray: boolean }[] }[],
@@ -210,16 +213,20 @@ export default (appDir: string, project: string) => {
     let hooks = cascadingHooks;
     let paramsValidators = cascadingValidators;
 
+    const nameToPath = (fileType: string): PathItem => {
+      const path = `${input}/${fileType}`.replace(appDir, './api');
+      const hash = createHash(path);
+      return { importName: `${fileType}Fn_${hash}`, name: `${fileType}_${hash}`, path };
+    };
+
     const validatorsFilePath = path.join(input, 'validators.ts');
     if (fs.existsSync(validatorsFilePath)) {
+      const validatorPath = nameToPath('validators');
       paramsValidators = [
         ...cascadingValidators,
-        {
-          name: `validators${validatorsPaths.length}`,
-          isNumber: dirPath.split('@')[1] === 'number',
-        },
+        { name: validatorPath.name, isNumber: dirPath.split('@')[1] === 'number' },
       ];
-      validatorsPaths.push(`${input}/validators`);
+      validatorsPaths.push(validatorPath);
     }
 
     if (source) {
@@ -274,8 +281,9 @@ export default (appDir: string, project: string) => {
         });
 
         if (events) {
-          hooks = [...cascadingHooks, { name: `hooks${hooksPaths.length}`, events }];
-          hooksPaths.push(`${input}/hooks`);
+          const hooksPath = nameToPath('hooks');
+          hooks = [...cascadingHooks, { name: hooksPath.name, events }];
+          hooksPaths.push(hooksPath);
         }
       }
 
@@ -404,6 +412,8 @@ export default (appDir: string, project: string) => {
           );
         }
 
+        const controllerPath = nameToPath('controller');
+
         const genHookTexts = (event: HooksEvent, methodName: string) => [
           ...hooks.reduce<string[]>((prev, h) => {
             const ev = h.events.find(e => e.type === event);
@@ -419,7 +429,7 @@ export default (appDir: string, project: string) => {
                     ?.events.find(e => e.type === event)?.isArray
                     ? '...'
                     : ''
-                }controller${controllerPaths.length}.${methodName}.hooks.${event}`,
+                }${controllerPath.name}.${methodName}.hooks.${event}`,
               ]
             : []),
         ];
@@ -540,10 +550,10 @@ export default (appDir: string, project: string) => {
                   : "basePath || '/'"
               },${(() => {
                 const validatorsText = hasValidatorsMethods.includes(m.name)
-                  ? `...validatorsToSchema(controller${controllerPaths.length}.${m.name}.validators)`
+                  ? `...validatorsToSchema(${controllerPath.name}.${m.name}.validators)`
                   : null;
                 const schemasText = hasSchemasMethods.includes(m.name)
-                  ? `...controller${controllerPaths.length}.${m.name}.schemas`
+                  ? `...${controllerPath.name}.${m.name}.schemas`
                   : null;
                 const paramsValidatorsText = paramsValidators.length
                   ? `params: ${paramsValidators
@@ -577,14 +587,14 @@ export default (appDir: string, project: string) => {
                   : '';
               })()}${hooksTexts.length > 0 ? '\n    ' : ' '}${
                 isPromiseMethods.includes(m.name) ? 'asyncMethodToHandler' : 'methodToHandler'
-              }(controller${controllerPaths.length}.${m.name}${
+              }(${controllerPath.name}.${m.name}${
                 hasHandlerMethods.includes(m.name) ? '.handler' : ''
               })${hooksTexts.length > 0 ? ',\n  ' : ''});\n`;
             })
             .join('\n')
         );
 
-        controllerPaths.push(input);
+        controllerPaths.push(controllerPath);
       }
     }
 
@@ -619,29 +629,16 @@ export default (appDir: string, project: string) => {
 
   return {
     imports: `${hooksPaths
-      .map(
-        (m, i) =>
-          `import hooksFn${i} from '${m.replace(/^api/, './api').replace(appDir, './api')}';\n`
-      )
+      .map(h => `import ${h.importName} from '${h.path}';\n`)
       .join('')}${validatorsPaths
-      .map(
-        (m, i) =>
-          `import validatorsFn${i} from '${m.replace(/^api/, './api').replace(appDir, './api')}';\n`
-      )
-      .join('')}${controllerPaths
-      .map(
-        (ctrl, i) =>
-          `import controllerFn${i} from '${ctrl
-            .replace(/^api/, './api')
-            .replace(appDir, './api')}/controller';\n`
-      )
-      .join('')}`,
+      .map(v => `import ${v.importName} from '${v.path}';\n`)
+      .join('')}${controllerPaths.map(c => `import ${c.importName} from '${c.path}';\n`).join('')}`,
     consts: `${hooksPaths
-      .map((_, i) => `  const hooks${i} = hooksFn${i}(fastify);\n`)
+      .map(h => `  const ${h.name} = ${h.importName}(fastify);\n`)
       .join('')}${validatorsPaths
-      .map((_, i) => `  const validators${i} = validatorsFn${i}(fastify);\n`)
+      .map(v => `  const ${v.name} = ${v.importName}(fastify);\n`)
       .join('')}${controllerPaths
-      .map((_, i) => `  const controller${i} = controllerFn${i}(fastify);\n`)
+      .map(c => `  const ${c.name} = ${c.importName}(fastify);\n`)
       .join('')}`,
     controllers: text,
   };

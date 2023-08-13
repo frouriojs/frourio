@@ -3,7 +3,7 @@ import type { ReadStream } from 'fs';
 import type { HttpStatusOk, AspidaMethodParams } from 'aspida';
 import type { Schema } from 'fast-json-stringify';
 import type { z } from 'zod';
-import controllerFn0 from './api/controller';
+import controllerFn_14i7wcv from './api/controller';
 import type { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, onRequestHookHandler, preParsingHookHandler, preHandlerHookHandler } from 'fastify';
 
 export type FrourioOptions = {
@@ -87,9 +87,9 @@ const methodToHandler = (
 
 export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   const basePath = options.basePath ?? '';
-  const controller0 = controllerFn0(fastify);
+  const controller_14i7wcv = controllerFn_14i7wcv(fastify);
 
-  fastify.get(basePath || '/', methodToHandler(controller0.get));
+  fastify.get(basePath || '/', methodToHandler(controller_14i7wcv.get));
 
   return fastify;
 };
