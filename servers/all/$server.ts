@@ -1,11 +1,5 @@
-import 'reflect-metadata';
-import type { ClassTransformOptions } from 'class-transformer';
-import { plainToInstance as defaultPlainToInstance } from 'class-transformer';
-import type { ValidatorOptions } from 'class-validator';
-import { validateOrReject as defaultValidateOrReject } from 'class-validator';
 import type { FastifyMultipartAttachFieldsToBodyOptions, Multipart, MultipartFile } from '@fastify/multipart';
 import multipart from '@fastify/multipart';
-import * as Validators from './validators';
 import type { ReadStream } from 'fs';
 import type { HttpStatusOk, AspidaMethodParams } from 'aspida';
 import type { Schema } from 'fast-json-stringify';
@@ -28,14 +22,10 @@ import controllerFn7 from './api/users/controller';
 import controllerFn8 from './api/users/_userId@number/controller';
 import controllerFn9 from './api/users/_userId@number/_name/controller';
 import controllerFn10 from './api/zod/controller';
-import type { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, FastifyRequest, FastifySchema, FastifySchemaCompiler, RouteShorthandOptions, onRequestHookHandler, preParsingHookHandler, preHandlerHookHandler } from 'fastify';
+import type { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, FastifySchema, FastifySchemaCompiler, RouteShorthandOptions, onRequestHookHandler, preParsingHookHandler, preHandlerHookHandler } from 'fastify';
 
 export type FrourioOptions = {
   basePath?: string;
-  transformer?: ClassTransformOptions;
-  validator?: ValidatorOptions;
-  plainToInstance?: (cls: new (...args: any[]) => object, object: unknown, options: ClassTransformOptions) => object;
-  validateOrReject?: (instance: object, options: ValidatorOptions) => Promise<void>;
   multipart?: FastifyMultipartAttachFieldsToBodyOptions;
 };
 
@@ -181,11 +171,6 @@ const parseBooleanTypeQueryParams = (booleanTypeParams: [string, boolean, boolea
 const callParserIfExistsQuery = (parser: OmitThisParameter<preValidationHookHandler>): preValidationHookHandler => (req, reply, done) =>
   Object.keys(req.query as any).length ? parser(req, reply, done) : done();
 
-const normalizeQuery: preValidationHookHandler = (req, _, done) => {
-  req.query = JSON.parse(JSON.stringify(req.query));
-  done();
-};
-
 const createTypedParamsHandler = (numberTypeParams: string[]): preValidationHookHandler => (req, reply, done) => {
   const params = req.params as Record<string, string | number>;
 
@@ -202,9 +187,6 @@ const createTypedParamsHandler = (numberTypeParams: string[]): preValidationHook
 
   done();
 };
-
-const createValidateHandler = (validators: (req: FastifyRequest) => (Promise<void> | null)[]): preValidationHookHandler =>
-  (req, reply) => Promise.all(validators(req)).catch(err => reply.code(400).send(err));
 
 const formatMultipartData = (arrayTypeKeys: [string, boolean][]): preValidationHookHandler => (req, _, done) => {
   const body: any = req.body;
@@ -263,9 +245,6 @@ const asyncMethodToHandler = (
 
 export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   const basePath = options.basePath ?? '';
-  const transformerOptions: ClassTransformOptions = { enableCircularCheck: true, ...options.transformer };
-  const validatorOptions: ValidatorOptions = { validationError: { target: false }, ...options.validator };
-  const { plainToInstance = defaultPlainToInstance as NonNullable<FrourioOptions["plainToInstance"]>, validateOrReject = defaultValidateOrReject as NonNullable<FrourioOptions["validateOrReject"]> } = options;
   const hooks0 = hooksFn0(fastify);
   const hooks1 = hooksFn1(fastify);
   const hooks2 = hooksFn2(fastify);
@@ -290,18 +269,16 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   fastify.get(
     basePath || '/',
     {
+      schema: validatorsToSchema(controller0.get.validators),
+      validatorCompiler,
       onRequest: hooks0.onRequest,
       preParsing: hooks0.preParsing,
       preValidation: [
         callParserIfExistsQuery(parseNumberTypeQueryParams([['requiredNum', false, false], ['optionalNum', true, false], ['optionalNumArr', true, true], ['emptyNum', true, false], ['requiredNumArr', false, true]])),
         callParserIfExistsQuery(parseBooleanTypeQueryParams([['bool', false, false], ['optionalBool', true, false], ['boolArray', false, true], ['optionalBoolArray', true, true]])),
-        normalizeQuery,
-        createValidateHandler(req => [
-          Object.keys(req.query as any).length ? validateOrReject(plainToInstance(Validators.Query, req.query as any, transformerOptions), validatorOptions) : null,
-        ]),
       ],
     },
-    asyncMethodToHandler(controller0.get),
+    asyncMethodToHandler(controller0.get.handler),
   );
 
   fastify.post(
@@ -313,11 +290,6 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
         parseNumberTypeQueryParams([['requiredNum', false, false], ['optionalNum', true, false], ['optionalNumArr', true, true], ['emptyNum', true, false], ['requiredNumArr', false, true]]),
         parseBooleanTypeQueryParams([['bool', false, false], ['optionalBool', true, false], ['boolArray', false, true], ['optionalBoolArray', true, true]]),
         formatMultipartData([]),
-        normalizeQuery,
-        createValidateHandler(req => [
-          validateOrReject(plainToInstance(Validators.Query, req.query as any, transformerOptions), validatorOptions),
-          validateOrReject(plainToInstance(Validators.Body, req.body as any, transformerOptions), validatorOptions),
-        ]),
       ],
     },
     methodToHandler(controller0.post),
@@ -364,16 +336,13 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   fastify.post(
     `${basePath}/multiForm`,
     {
+      schema: validatorsToSchema(controller3.post.validators),
+      validatorCompiler,
       onRequest: hooks0.onRequest,
       preParsing: hooks0.preParsing,
-      preValidation: [
-        formatMultipartData([['requiredArr', false], ['optionalArr', true], ['empty', true], ['vals', false], ['files', false]]),
-        createValidateHandler(req => [
-          validateOrReject(plainToInstance(Validators.MultiForm, req.body as any, transformerOptions), validatorOptions),
-        ]),
-      ],
+      preValidation: formatMultipartData([['requiredArr', false], ['optionalArr', true], ['empty', true], ['vals', false], ['files', false]]),
     },
-    methodToHandler(controller3.post),
+    methodToHandler(controller3.post.handler),
   );
 
   fastify.get(
@@ -432,13 +401,12 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   fastify.post(
     `${basePath}/users`,
     {
+      schema: validatorsToSchema(controller7.post.validators),
+      validatorCompiler,
       onRequest: [...hooks0.onRequest, hooks2.onRequest],
       preParsing: hooks0.preParsing,
-      preValidation: createValidateHandler(req => [
-          validateOrReject(plainToInstance(Validators.UserInfo, req.body as any, transformerOptions), validatorOptions),
-        ]),
     } as RouteShorthandOptions,
-    methodToHandler(controller7.post),
+    methodToHandler(controller7.post.handler),
   );
 
   fastify.get(

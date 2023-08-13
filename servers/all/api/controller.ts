@@ -1,3 +1,4 @@
+import { queryValidator } from 'validators';
 import { z } from 'zod';
 import { defineController } from '~/$relay';
 
@@ -9,8 +10,11 @@ export default defineController(
     },
   },
   ({ log }) => ({
-    get: async v => {
-      return { status: 200, body: v.query && { ...v.query, id: await log(v.query.id) } };
+    get: {
+      validators: { query: queryValidator },
+      handler: async v => {
+        return { status: 200, body: v.query && { ...v.query, id: await log(v.query.id) } };
+      },
     },
     post: v => ({
       status: 201,

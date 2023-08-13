@@ -1,3 +1,4 @@
+import { userInfoValidator } from 'validators';
 import { defineController } from './$relay';
 
 type AdditionalRequest = {
@@ -20,5 +21,5 @@ export default defineController(() => ({
       },
     ],
   }),
-  post: () => ({ status: 204 }),
+  post: { validators: { body: userInfoValidator }, handler: () => ({ status: 204 }) },
 }));

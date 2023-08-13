@@ -20,7 +20,7 @@ export const queryValidator = z.object({
 
 export type QueryValidator = z.infer<typeof queryValidator>;
 
-const multipartValidator = z.object({
+export const multipartValidator: z.ZodType<MultipartFile> = z.object({
   type: z.literal('file'),
   toBuffer: z.function().returns(z.promise(z.instanceof(Buffer))),
   file: z
@@ -33,7 +33,7 @@ const multipartValidator = z.object({
   encoding: z.string(),
   mimetype: z.string(),
   fields: z.record(z.any()),
-}) satisfies z.ZodType<MultipartFile>;
+});
 
 export const bodyValidator = z.object({
   requiredArr: z.array(z.string()),

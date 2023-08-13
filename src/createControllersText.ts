@@ -443,27 +443,6 @@ export default (appDir: string, project: string) => {
               const query = props.find(p => p.name === 'query');
               const numberTypeQueryParams = query && getSomeTypeQueryParams('number', query);
               const booleanTypeQueryParams = query && getSomeTypeQueryParams('boolean', query);
-              const validateInfo = [
-                { name: 'query', val: query },
-                { name: 'body', val: props.find(p => p.name === 'reqBody') },
-                { name: 'headers', val: props.find(p => p.name === 'reqHeaders') },
-              ]
-                .filter((prop): prop is { name: string; val: ts.Symbol } => !!prop.val)
-                .map(({ name, val }) => {
-                  const declaration = val.valueDeclaration ?? val.declarations?.[0];
-                  const type = declaration && checker.getTypeOfSymbolAtLocation(val, declaration);
-                  const targetType = type?.isUnion()
-                    ? type.types.find(t => checker.typeToString(t) !== 'undefined')
-                    : type;
-
-                  return {
-                    name,
-                    type: targetType,
-                    hasQuestion: (val.flags & ts.SymbolFlags.Optional) !== 0,
-                  };
-                })
-                .filter(({ type }) => type?.isClass());
-
               const reqFormat = props.find(p => p.name === 'reqFormat');
               const isFormData =
                 (reqFormat?.valueDeclaration &&
@@ -513,27 +492,6 @@ export default (appDir: string, project: string) => {
                             .join(', ')}])`
                         : '',
                       ...genHookTexts('preValidation', m.name),
-                      ...(query &&
-                      [...(numberTypeQueryParams ?? []), ...(booleanTypeQueryParams ?? [])].some(
-                        t => t?.endsWith('true]')
-                      ) &&
-                      validateInfo.length
-                        ? ['normalizeQuery']
-                        : []),
-                      validateInfo.length
-                        ? `createValidateHandler(req => [
-${validateInfo
-  .map(v =>
-    v.type
-      ? `          ${
-          v.hasQuestion ? `Object.keys(req.${v.name} as any).length ? ` : ''
-        }validateOrReject(plainToInstance(Validators.${checker.typeToString(v.type)}, req.${
-          v.name
-        } as any, transformerOptions), validatorOptions)${v.hasQuestion ? ' : null' : ''},\n`
-      : ''
-  )
-  .join('')}        ])`
-                        : '',
                       dirPath.includes('@number')
                         ? `createTypedParamsHandler(['${dirPath
                             .split('/')
