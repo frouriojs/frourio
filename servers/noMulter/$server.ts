@@ -1,29 +1,22 @@
-import 'reflect-metadata';
-import type { ClassTransformOptions } from 'class-transformer';
-import { plainToInstance as defaultPlainToInstance } from 'class-transformer';
-import type { ValidatorOptions } from 'class-validator';
-import { validateOrReject as defaultValidateOrReject } from 'class-validator';
-import * as Validators from './validators';
+import type { FastifyMultipartAttachFieldsToBodyOptions, MultipartFile } from '@fastify/multipart';
+import type { ReadStream } from 'fs';
 import type { HttpStatusOk, AspidaMethodParams } from 'aspida';
 import type { Schema } from 'fast-json-stringify';
 import type { z } from 'zod';
-import hooksFn0 from './api/hooks';
-import hooksFn1 from './api/users/hooks';
-import validatorsFn0 from './api/users/_userId@number/validators';
-import controllerFn0, { hooks as ctrlHooksFn0 } from './api/controller';
-import controllerFn1 from './api/empty/noEmpty/controller';
-import controllerFn2 from './api/texts/controller';
-import controllerFn3 from './api/texts/sample/controller';
-import controllerFn4, { hooks as ctrlHooksFn1 } from './api/users/controller';
-import controllerFn5 from './api/users/_userId@number/controller';
-import type { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, FastifyRequest, FastifySchema, FastifySchemaCompiler, RouteShorthandOptions, onRequestHookHandler, preParsingHookHandler, preHandlerHookHandler } from 'fastify';
+import hooksFn_gx3glp from './api/hooks';
+import hooksFn_3zqb7e from './api/users/hooks';
+import validatorsFn_ia9y8g from './api/users/_userId@number/validators';
+import controllerFn_14i7wcv from './api/controller';
+import controllerFn_a01vkg from './api/empty/noEmpty/controller';
+import controllerFn_1gxm9v2 from './api/texts/controller';
+import controllerFn_1bjhajh from './api/texts/sample/controller';
+import controllerFn_g6e9u2 from './api/users/controller';
+import controllerFn_1y88f1f from './api/users/_userId@number/controller';
+import type { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, FastifySchema, FastifySchemaCompiler, RouteShorthandOptions, onRequestHookHandler, preParsingHookHandler, preHandlerHookHandler } from 'fastify';
 
 export type FrourioOptions = {
   basePath?: string;
-  transformer?: ClassTransformOptions;
-  validator?: ValidatorOptions;
-  plainToInstance?: (cls: new (...args: any[]) => object, object: unknown, options: ClassTransformOptions) => object;
-  validateOrReject?: (instance: object, options: ValidatorOptions) => Promise<void>;
+  multipart?: FastifyMultipartAttachFieldsToBodyOptions;
 };
 
 type HttpStatusNoOk = 301 | 302 | 400 | 401 | 402 | 403 | 404 | 405 | 406 | 409 | 500 | 501 | 502 | 503 | 504 | 505;
@@ -49,9 +42,27 @@ type ServerResponse<K extends AspidaMethodParams> =
     >)
   | PartiallyPartial<BaseResponse<any, any, HttpStatusNoOk>, 'body' | 'headers'>;
 
+export type MultipartFileToBlob<T extends Record<string, unknown>> = {
+  [P in keyof T]: Required<T>[P] extends MultipartFile
+    ? Blob | ReadStream
+    : Required<T>[P] extends MultipartFile[]
+    ? (Blob | ReadStream)[]
+    : T[P];
+};
+
+type BlobToFile<T extends AspidaMethodParams> = T['reqFormat'] extends FormData
+  ? {
+      [P in keyof T['reqBody']]: Required<T['reqBody']>[P] extends Blob | ReadStream
+        ? MultipartFile
+        : Required<T['reqBody']>[P] extends (Blob | ReadStream)[]
+        ? MultipartFile[]
+        : T['reqBody'][P];
+    }
+  : T['reqBody'];
+
 type RequestParams<T extends AspidaMethodParams> = Pick<{
   query: T['query'];
-  body: T['reqBody'];
+  body: BlobToFile<T>;
   headers: T['reqHeaders'];
 }, {
   query: Required<T>['query'] extends {} | null ? 'query' : never;
@@ -100,9 +111,6 @@ const createTypedParamsHandler = (numberTypeParams: string[]): preValidationHook
   done();
 };
 
-const createValidateHandler = (validators: (req: FastifyRequest) => (Promise<void> | null)[]): preValidationHookHandler =>
-  (req, reply) => Promise.all(validators(req)).catch(err => reply.code(400).send(err));
-
 const validatorCompiler: FastifySchemaCompiler<FastifySchema> = ({ schema }) => (data: unknown) => {
   const result = (schema as z.ZodType<unknown>).safeParse(data);
   return result.success ? { value: result.data } : { error: result.error };
@@ -113,7 +121,7 @@ const methodToHandler = (
 ): RouteHandlerMethod => (req, reply) => {
   const data = methodCallback(req as any) as any;
 
-  if (data.headers) reply.headers(data.headers);
+  if (data.headers !== undefined) reply.headers(data.headers);
 
   reply.code(data.status).send(data.body);
 };
@@ -123,119 +131,102 @@ const asyncMethodToHandler = (
 ): RouteHandlerMethod => async (req, reply) => {
   const data = await methodCallback(req as any) as any;
 
-  if (data.headers) reply.headers(data.headers);
+  if (data.headers !== undefined) reply.headers(data.headers);
 
   reply.code(data.status).send(data.body);
 };
 
 export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   const basePath = options.basePath ?? '';
-  const transformerOptions: ClassTransformOptions = { enableCircularCheck: true, ...options.transformer };
-  const validatorOptions: ValidatorOptions = { validationError: { target: false }, ...options.validator };
-  const { plainToInstance = defaultPlainToInstance as NonNullable<FrourioOptions["plainToInstance"]>, validateOrReject = defaultValidateOrReject as NonNullable<FrourioOptions["validateOrReject"]> } = options;
-  const hooks0 = hooksFn0(fastify);
-  const hooks1 = hooksFn1(fastify);
-  const ctrlHooks0 = ctrlHooksFn0(fastify);
-  const ctrlHooks1 = ctrlHooksFn1(fastify);
-  const validators0 = validatorsFn0(fastify);
-  const controller0 = controllerFn0(fastify);
-  const controller1 = controllerFn1(fastify);
-  const controller2 = controllerFn2(fastify);
-  const controller3 = controllerFn3(fastify);
-  const controller4 = controllerFn4(fastify);
-  const controller5 = controllerFn5(fastify);
+  const hooks_gx3glp = hooksFn_gx3glp(fastify);
+  const hooks_3zqb7e = hooksFn_3zqb7e(fastify);
+  const validators_ia9y8g = validatorsFn_ia9y8g(fastify);
+  const controller_14i7wcv = controllerFn_14i7wcv(fastify);
+  const controller_a01vkg = controllerFn_a01vkg(fastify);
+  const controller_1gxm9v2 = controllerFn_1gxm9v2(fastify);
+  const controller_1bjhajh = controllerFn_1bjhajh(fastify);
+  const controller_g6e9u2 = controllerFn_g6e9u2(fastify);
+  const controller_1y88f1f = controllerFn_1y88f1f(fastify);
 
   fastify.get(
     basePath || '/',
     {
-      onRequest: [hooks0.onRequest, ctrlHooks0.onRequest],
-      preValidation: createValidateHandler(req => [
-          Object.keys(req.query as any).length ? validateOrReject(plainToInstance(Validators.Query, req.query as any, transformerOptions), validatorOptions) : null,
-        ]),
+      onRequest: hooks_gx3glp.onRequest,
     },
     // @ts-expect-error
-    asyncMethodToHandler(controller0.get),
+    asyncMethodToHandler(controller_14i7wcv.get),
   );
 
   fastify.post(
     basePath || '/',
     {
-      onRequest: [hooks0.onRequest, ctrlHooks0.onRequest],
-      preValidation: createValidateHandler(req => [
-          validateOrReject(plainToInstance(Validators.Query, req.query as any, transformerOptions), validatorOptions),
-          validateOrReject(plainToInstance(Validators.Body, req.body as any, transformerOptions), validatorOptions),
-        ]),
+      onRequest: hooks_gx3glp.onRequest,
     },
     // @ts-expect-error
-    methodToHandler(controller0.post),
+    methodToHandler(controller_14i7wcv.post),
   );
 
   fastify.get(
     `${basePath}/empty/noEmpty`,
     {
-      onRequest: hooks0.onRequest,
+      onRequest: hooks_gx3glp.onRequest,
     },
-    methodToHandler(controller1.get),
+    methodToHandler(controller_a01vkg.get),
   );
 
   fastify.get(
     `${basePath}/texts`,
     {
-      onRequest: hooks0.onRequest,
+      onRequest: hooks_gx3glp.onRequest,
     },
     // @ts-expect-error
-    methodToHandler(controller2.get),
+    methodToHandler(controller_1gxm9v2.get),
   );
 
   fastify.put(
     `${basePath}/texts`,
     {
-      onRequest: hooks0.onRequest,
+      onRequest: hooks_gx3glp.onRequest,
     },
     // @ts-expect-error
-    methodToHandler(controller2.put),
+    methodToHandler(controller_1gxm9v2.put),
   );
 
   fastify.put(
     `${basePath}/texts/sample`,
     {
-      onRequest: hooks0.onRequest,
+      onRequest: hooks_gx3glp.onRequest,
     },
-    methodToHandler(controller3.put),
+    methodToHandler(controller_1bjhajh.put),
   );
 
   fastify.get(
     `${basePath}/users`,
     {
-      onRequest: [hooks0.onRequest, hooks1.onRequest],
-      preHandler: ctrlHooks1.preHandler,
+      onRequest: [hooks_gx3glp.onRequest, hooks_3zqb7e.onRequest],
     } as RouteShorthandOptions,
-    asyncMethodToHandler(controller4.get),
+    asyncMethodToHandler(controller_g6e9u2.get),
   );
 
   fastify.post(
     `${basePath}/users`,
     {
-      onRequest: [hooks0.onRequest, hooks1.onRequest],
-      preValidation: createValidateHandler(req => [
-          validateOrReject(plainToInstance(Validators.UserInfo, req.body as any, transformerOptions), validatorOptions),
-        ]),
-      preHandler: ctrlHooks1.preHandler,
+      onRequest: [hooks_gx3glp.onRequest, hooks_3zqb7e.onRequest],
     } as RouteShorthandOptions,
-    methodToHandler(controller4.post),
+    methodToHandler(controller_g6e9u2.post),
   );
 
   fastify.get(
     `${basePath}/users/:userId`,
     {
       schema: {
-        params: validators0.params,
+        params: validators_ia9y8g.params,
       },
       validatorCompiler,
-      onRequest: [hooks0.onRequest, hooks1.onRequest],
+      onRequest: [hooks_gx3glp.onRequest, hooks_3zqb7e.onRequest],
       preValidation: createTypedParamsHandler(['userId']),
     } as RouteShorthandOptions,
-    methodToHandler(controller5.get),
+    methodToHandler(controller_1y88f1f.get),
   );
 
   return fastify;

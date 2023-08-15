@@ -1,32 +1,6 @@
-import { depend } from 'velona';
+import { queryValidator } from 'validators';
 import { z } from 'zod';
-import { defineController, defineHooks, defineResponseSchema } from '~/$relay';
-
-const hooks = defineHooks({ print: (...args: string[]) => console.log(...args) }, ({ print }) => ({
-  onRequest: depend({}, (_deps, req, _reply, done) => {
-    print('Controller level onRequest hook:', req.url);
-    done();
-  }),
-}));
-
-const responseSchema = defineResponseSchema(() => ({
-  get: {
-    200: {
-      type: 'object',
-      properties: {
-        id: { type: 'string' },
-        emptyNum: { type: 'number' },
-        requiredNum: { type: 'number' },
-        requiredNumArr: { type: 'array', items: { type: 'number' } },
-        bool: { type: 'boolean' },
-        optionalBool: { type: 'boolean' },
-        boolArray: { type: 'array', items: { type: 'boolean' } },
-        optionalBoolArray: { type: 'array', items: { type: 'boolean' } },
-        disable: { type: 'string' },
-      },
-    },
-  },
-}));
+import { defineController } from '~/$relay';
 
 export default defineController(
   {
@@ -36,8 +10,11 @@ export default defineController(
     },
   },
   ({ log }) => ({
-    get: async v => {
-      return { status: 200, body: v.query && { ...v.query, id: await log(v.query.id) } };
+    get: {
+      validators: { query: queryValidator },
+      handler: async v => {
+        return { status: 200, body: v.query && { ...v.query, id: await log(v.query.id) } };
+      },
     },
     post: v => ({
       status: 201,
@@ -82,5 +59,3 @@ export default defineController(
     },
   })
 );
-
-export { hooks, responseSchema };

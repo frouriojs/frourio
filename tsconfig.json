@@ -3,8 +3,6 @@
     "declaration": true,
     "declarationMap": true,
     "downlevelIteration": true,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
@@ -18,7 +16,6 @@
     },
     "sourceMap": true,
     "strict": true,
-    "strictPropertyInitialization": false,
     "exactOptionalPropertyTypes": true,
     "target": "es5"
   }

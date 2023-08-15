@@ -1,9 +1,9 @@
-import type { LowerHttpMethod } from 'aspida';
 import fs from 'fs';
 import path from 'path';
 import ts from 'typescript';
 import type { Param } from './createDefaultFilesIfNotExists';
 import { createDefaultFilesIfNotExists } from './createDefaultFilesIfNotExists';
+import { createHash } from './createHash';
 
 type HooksEvent = 'onRequest' | 'preParsing' | 'preValidation' | 'preHandler';
 
@@ -52,13 +52,12 @@ const createRelayFile = (
 ) => {
   const hasAdditionals = !!additionalReqs.length;
   const hasMultiAdditionals = additionalReqs.length > 1;
-  const text = `${
-    currentParam ? "import { z } from 'zod';\n" : ''
-  }import type { Injectable } from 'velona';
+  const text = `import { Readable } from 'stream';
 import { depend } from 'velona';
+import { z } from 'zod';
+import type { Injectable } from 'velona';
+import type { MultipartFile } from '@fastify/multipart';
 import type { FastifyInstance } from 'fastify';
-import type { Schema } from 'fast-json-stringify';
-import type { HttpStatusOk } from 'aspida';
 import type { ServerHooks, ServerMethodHandler } from '${appText}';
 ${
   hasMultiAdditionals
@@ -94,11 +93,7 @@ ${
   return validator;
 }\n\n`
       : ''
-  }export function defineResponseSchema<T extends { [U in keyof Methods]?: { [V in HttpStatusOk]?: Schema }}>(methods: () => T) {
-  return methods;
-}
-
-export function defineHooks<T extends ServerHooks${
+  }export function defineHooks<T extends ServerHooks${
     hasAdditionals ? '<AdditionalRequest>' : ''
   }>(hooks: (fastify: FastifyInstance) => T): (fastify: FastifyInstance) => T
 export function defineHooks<T extends Record<string, unknown>, U extends ServerHooks${
@@ -125,6 +120,18 @@ export function defineController<M extends ServerMethods, T extends Record<strin
 export function defineController<M extends ServerMethods, T extends Record<string, unknown>>(methods: ((fastify: FastifyInstance) => M) | T, cb?: ((deps: T, fastify: FastifyInstance) => M)) {
   return cb && typeof methods !== 'function' ? depend(methods, cb) : methods;
 }
+
+export const multipartFileValidator = (): z.ZodType<MultipartFile> =>
+  z.object({
+    type: z.literal('file'),
+    toBuffer: z.function().returns(z.promise(z.instanceof(Buffer))),
+    file: z.instanceof(Readable).and(z.object({ truncated: z.boolean(), bytesRead: z.number() })),
+    fieldname: z.string(),
+    filename: z.string(),
+    encoding: z.string(),
+    mimetype: z.string(),
+    fields: z.record(z.any()),
+  });
 `;
 
   fs.writeFileSync(
@@ -186,13 +193,15 @@ const createFiles = (
   });
 };
 
+type PathItem = { importName: string; name: string; path: string };
+
 export default (appDir: string, project: string) => {
   createFiles(appDir, '', [], null, '$server', []);
 
   const { program, checker } = initTSC(appDir, project);
-  const hooksPaths: string[] = [];
-  const validatorsPaths: string[] = [];
-  const controllers: [string, boolean, boolean][] = [];
+  const hooksPaths: PathItem[] = [];
+  const validatorsPaths: PathItem[] = [];
+  const controllerPaths: PathItem[] = [];
   const createText = (
     dirPath: string,
     cascadingHooks: { name: string; events: { type: HooksEvent; isArray: boolean }[] }[],
@@ -204,16 +213,20 @@ export default (appDir: string, project: string) => {
     let hooks = cascadingHooks;
     let paramsValidators = cascadingValidators;
 
+    const nameToPath = (fileType: string): PathItem => {
+      const path = `${input}/${fileType}`.replace(appDir, './api');
+      const hash = createHash(path);
+      return { importName: `${fileType}Fn_${hash}`, name: `${fileType}_${hash}`, path };
+    };
+
     const validatorsFilePath = path.join(input, 'validators.ts');
     if (fs.existsSync(validatorsFilePath)) {
+      const validatorPath = nameToPath('validators');
       paramsValidators = [
         ...cascadingValidators,
-        {
-          name: `validators${validatorsPaths.length}`,
-          isNumber: dirPath.split('@')[1] === 'number',
-        },
+        { name: validatorPath.name, isNumber: dirPath.split('@')[1] === 'number' },
       ];
-      validatorsPaths.push(`${input}/validators`);
+      validatorsPaths.push(validatorPath);
     }
 
     if (source) {
@@ -268,8 +281,9 @@ export default (appDir: string, project: string) => {
         });
 
         if (events) {
-          hooks = [...cascadingHooks, { name: `hooks${hooksPaths.length}`, events }];
-          hooksPaths.push(`${input}/hooks`);
+          const hooksPath = nameToPath('hooks');
+          hooks = [...cascadingHooks, { name: hooksPath.name, events }];
+          hooksPaths.push(hooksPath);
         }
       }
 
@@ -283,8 +297,6 @@ export default (appDir: string, project: string) => {
           method: string;
           events: { type: HooksEvent; isArray: boolean }[];
         }[] = [];
-        let ctrlHooksSignature: ts.Signature | undefined;
-        let resSchemaSignature: ts.Signature | undefined;
 
         if (controllerSource) {
           const getMethodTypeNodes = <T>(
@@ -398,79 +410,15 @@ export default (appDir: string, project: string) => {
               };
             })
           );
-
-          let ctrlHooksNode: ts.VariableDeclaration | ts.ExportSpecifier | undefined;
-          let resSchemaNode: ts.VariableDeclaration | ts.ExportSpecifier | undefined;
-
-          ts.forEachChild(controllerSource, node => {
-            if (
-              ts.isVariableStatement(node) &&
-              node.modifiers?.some(m => m.kind === ts.SyntaxKind.ExportKeyword)
-            ) {
-              ctrlHooksNode =
-                node.declarationList.declarations.find(d => d.name.getText() === 'hooks') ??
-                ctrlHooksNode;
-              resSchemaNode =
-                node.declarationList.declarations.find(
-                  d => d.name.getText() === 'responseSchema'
-                ) ?? resSchemaNode;
-            } else if (ts.isExportDeclaration(node)) {
-              const { exportClause } = node;
-              if (exportClause && ts.isNamedExports(exportClause)) {
-                ctrlHooksNode =
-                  exportClause.elements.find(el => el.name.text === 'hooks') ?? ctrlHooksNode;
-                resSchemaNode =
-                  exportClause.elements.find(el => el.name.text === 'responseSchema') ??
-                  resSchemaNode;
-              }
-            }
-          });
-
-          if (ctrlHooksNode) {
-            ctrlHooksSignature = checker.getSignaturesOfType(
-              checker.getTypeAtLocation(ctrlHooksNode),
-              ts.SignatureKind.Call
-            )[0];
-          }
-
-          if (resSchemaNode) {
-            resSchemaSignature = checker.getSignaturesOfType(
-              checker.getTypeAtLocation(resSchemaNode),
-              ts.SignatureKind.Call
-            )[0];
-          }
         }
 
-        const ctrlHooksEvents = ctrlHooksSignature
-          ?.getReturnType()
-          .getProperties()
-          .map(p => {
-            const typeNode =
-              p.valueDeclaration &&
-              checker.typeToTypeNode(
-                checker.getTypeOfSymbolAtLocation(p, p.valueDeclaration),
-                undefined,
-                undefined
-              );
-
-            return {
-              type: p.name as HooksEvent,
-              isArray: typeNode
-                ? ts.isArrayTypeNode(typeNode) || ts.isTupleTypeNode(typeNode)
-                : false,
-            };
-          });
+        const controllerPath = nameToPath('controller');
 
         const genHookTexts = (event: HooksEvent, methodName: string) => [
           ...hooks.reduce<string[]>((prev, h) => {
             const ev = h.events.find(e => e.type === event);
             return ev ? [...prev, `${ev.isArray ? '...' : ''}${h.name}.${event}`] : prev;
           }, []),
-          ...(ctrlHooksEvents?.map(e =>
-            e.type === event
-              ? `${e.isArray ? '...' : ''}ctrlHooks${controllers.filter(c => c[1]).length}.${event}`
-              : ''
-          ) ?? []),
           ...(hasHooksMethods.some(
             m => m.method === methodName && m.events.some(e => e.type === event)
           )
@@ -481,18 +429,11 @@ export default (appDir: string, project: string) => {
                     ?.events.find(e => e.type === event)?.isArray
                     ? '...'
                     : ''
-                }controller${controllers.length}.${methodName}.hooks.${event}`,
+                }${controllerPath.name}.${methodName}.hooks.${event}`,
               ]
             : []),
         ];
 
-        const resSchemaMethods = resSchemaSignature
-          ?.getReturnType()
-          .getProperties()
-          .map(p => p.name as LowerHttpMethod);
-
-        const genResSchemaText = (method: LowerHttpMethod) =>
-          `response: responseSchema${controllers.filter(c => c[2]).length}.${method}`;
         const getSomeTypeQueryParams = (typeName: string, query: ts.Symbol) => {
           const queryDeclaration = query.valueDeclaration ?? query.declarations?.[0];
           const type =
@@ -525,27 +466,6 @@ export default (appDir: string, project: string) => {
               const query = props.find(p => p.name === 'query');
               const numberTypeQueryParams = query && getSomeTypeQueryParams('number', query);
               const booleanTypeQueryParams = query && getSomeTypeQueryParams('boolean', query);
-              const validateInfo = [
-                { name: 'query', val: query },
-                { name: 'body', val: props.find(p => p.name === 'reqBody') },
-                { name: 'headers', val: props.find(p => p.name === 'reqHeaders') },
-              ]
-                .filter((prop): prop is { name: string; val: ts.Symbol } => !!prop.val)
-                .map(({ name, val }) => {
-                  const declaration = val.valueDeclaration ?? val.declarations?.[0];
-                  const type = declaration && checker.getTypeOfSymbolAtLocation(val, declaration);
-                  const targetType = type?.isUnion()
-                    ? type.types.find(t => checker.typeToString(t) !== 'undefined')
-                    : type;
-
-                  return {
-                    name,
-                    type: targetType,
-                    hasQuestion: (val.flags & ts.SymbolFlags.Optional) !== 0,
-                  };
-                })
-                .filter(({ type }) => type?.isClass());
-
               const reqFormat = props.find(p => p.name === 'reqFormat');
               const isFormData =
                 (reqFormat?.valueDeclaration &&
@@ -595,27 +515,6 @@ export default (appDir: string, project: string) => {
                             .join(', ')}])`
                         : '',
                       ...genHookTexts('preValidation', m.name),
-                      ...(query &&
-                      [...(numberTypeQueryParams ?? []), ...(booleanTypeQueryParams ?? [])].some(
-                        t => t?.endsWith('true]')
-                      ) &&
-                      validateInfo.length
-                        ? ['normalizeQuery']
-                        : []),
-                      validateInfo.length
-                        ? `createValidateHandler(req => [
-${validateInfo
-  .map(v =>
-    v.type
-      ? `          ${
-          v.hasQuestion ? `Object.keys(req.${v.name} as any).length ? ` : ''
-        }validateOrReject(plainToInstance(Validators.${checker.typeToString(v.type)}, req.${
-          v.name
-        } as any, transformerOptions), validatorOptions)${v.hasQuestion ? ' : null' : ''},\n`
-      : ''
-  )
-  .join('')}        ])`
-                        : '',
                       dirPath.includes('@number')
                         ? `createTypedParamsHandler(['${dirPath
                             .split('/')
@@ -643,11 +542,7 @@ ${validateInfo
                 })
                 .filter(Boolean);
 
-              return `  fastify.${m.name}(${
-                hooksTexts.length || resSchemaMethods?.includes(m.name as LowerHttpMethod)
-                  ? '\n    '
-                  : ''
-              }${
+              return `  fastify.${m.name}(${hooksTexts.length > 0 ? '\n    ' : ''}${
                 dirPath
                   ? `\`\${basePath}${`/${dirPath}`
                       .replace(/\/_/g, '/:')
@@ -655,10 +550,10 @@ ${validateInfo
                   : "basePath || '/'"
               },${(() => {
                 const validatorsText = hasValidatorsMethods.includes(m.name)
-                  ? `...validatorsToSchema(controller${controllers.length}.${m.name}.validators)`
+                  ? `...validatorsToSchema(${controllerPath.name}.${m.name}.validators)`
                   : null;
                 const schemasText = hasSchemasMethods.includes(m.name)
-                  ? `...controller${controllers.length}.${m.name}.schemas`
+                  ? `...${controllerPath.name}.${m.name}.schemas`
                   : null;
                 const paramsValidatorsText = paramsValidators.length
                   ? `params: ${paramsValidators
@@ -668,22 +563,14 @@ ${validateInfo
                       )
                       .join('.and(')}${paramsValidators.length > 1 ? ')' : ''}`
                   : null;
-                const resSchemaText = resSchemaMethods?.includes(m.name as LowerHttpMethod)
-                  ? genResSchemaText(m.name as LowerHttpMethod)
-                  : null;
                 const vals = [
-                  ...(validatorsText && !schemasText && !resSchemaText && !paramsValidatorsText
+                  ...(validatorsText && !schemasText && !paramsValidatorsText
                     ? [`schema: ${validatorsText.slice(3)}`]
-                    : schemasText && !validatorsText && !resSchemaText && !paramsValidatorsText
+                    : schemasText && !validatorsText && !paramsValidatorsText
                     ? [`schema: ${schemasText.slice(3)}`]
-                    : validatorsText || schemasText || resSchemaText || paramsValidatorsText
+                    : validatorsText || schemasText || paramsValidatorsText
                     ? [
-                        `schema: {\n        ${[
-                          validatorsText,
-                          schemasText,
-                          resSchemaText,
-                          paramsValidatorsText,
-                        ]
+                        `schema: {\n        ${[validatorsText, schemasText, paramsValidatorsText]
                           .filter(Boolean)
                           .join(',\n        ')},\n      }`,
                       ]
@@ -698,21 +585,16 @@ ${validateInfo
                         : ''
                     },`
                   : '';
-              })()}
-    ${
-      isPromiseMethods.includes(m.name) ? 'asyncMethodToHandler' : 'methodToHandler'
-    }(${`controller${controllers.length}.${m.name}${
+              })()}${hooksTexts.length > 0 ? '\n    ' : ' '}${
+                isPromiseMethods.includes(m.name) ? 'asyncMethodToHandler' : 'methodToHandler'
+              }(${controllerPath.name}.${m.name}${
                 hasHandlerMethods.includes(m.name) ? '.handler' : ''
-              }`})${
-                hooksTexts.length || resSchemaMethods?.includes(m.name as LowerHttpMethod)
-                  ? ',\n  '
-                  : ''
-              });\n`;
+              })${hooksTexts.length > 0 ? ',\n  ' : ''});\n`;
             })
             .join('\n')
         );
 
-        controllers.push([`${input}/controller`, !!ctrlHooksEvents, !!resSchemaMethods]);
+        controllerPaths.push(controllerPath);
       }
     }
 
@@ -744,44 +626,19 @@ ${validateInfo
   };
 
   const text = createText('', [], []).join('\n');
-  const ctrlHooks = controllers.filter(c => c[1]);
-  const resSchemas = controllers.filter(c => c[2]);
 
   return {
     imports: `${hooksPaths
-      .map(
-        (m, i) =>
-          `import hooksFn${i} from '${m.replace(/^api/, './api').replace(appDir, './api')}';\n`
-      )
+      .map(h => `import ${h.importName} from '${h.path}';\n`)
       .join('')}${validatorsPaths
-      .map(
-        (m, i) =>
-          `import validatorsFn${i} from '${m.replace(/^api/, './api').replace(appDir, './api')}';\n`
-      )
-      .join('')}${controllers
-      .map(
-        (ctrl, i) =>
-          `import controllerFn${i}${
-            ctrl[1] || ctrl[2]
-              ? `, { ${ctrl[1] ? `hooks as ctrlHooksFn${ctrlHooks.indexOf(ctrl)}` : ''}${
-                  ctrl[1] && ctrl[2] ? ', ' : ''
-                }${
-                  ctrl[2] ? `responseSchema as responseSchemaFn${resSchemas.indexOf(ctrl)}` : ''
-                } }`
-              : ''
-          } from '${ctrl[0].replace(/^api/, './api').replace(appDir, './api')}';\n`
-      )
-      .join('')}`,
+      .map(v => `import ${v.importName} from '${v.path}';\n`)
+      .join('')}${controllerPaths.map(c => `import ${c.importName} from '${c.path}';\n`).join('')}`,
     consts: `${hooksPaths
-      .map((_, i) => `  const hooks${i} = hooksFn${i}(fastify);\n`)
-      .join('')}${ctrlHooks
-      .map((_, i) => `  const ctrlHooks${i} = ctrlHooksFn${i}(fastify);\n`)
+      .map(h => `  const ${h.name} = ${h.importName}(fastify);\n`)
       .join('')}${validatorsPaths
-      .map((_, i) => `  const validators${i} = validatorsFn${i}(fastify);\n`)
-      .join('')}${resSchemas
-      .map((_, i) => `  const responseSchema${i} = responseSchemaFn${i}();\n`)
-      .join('')}${controllers
-      .map((_, i) => `  const controller${i} = controllerFn${i}(fastify);\n`)
+      .map(v => `  const ${v.name} = ${v.importName}(fastify);\n`)
+      .join('')}${controllerPaths
+      .map(c => `  const ${c.name} = ${c.importName}(fastify);\n`)
       .join('')}`,
     controllers: text,
   };

@@ -1,11 +1,14 @@
+import type { FastifyMultipartAttachFieldsToBodyOptions, MultipartFile } from '@fastify/multipart';
+import type { ReadStream } from 'fs';
 import type { HttpStatusOk, AspidaMethodParams } from 'aspida';
 import type { Schema } from 'fast-json-stringify';
 import type { z } from 'zod';
-import controllerFn0, { responseSchema as responseSchemaFn0 } from './api/controller';
+import controllerFn_14i7wcv from './api/controller';
 import type { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, onRequestHookHandler, preParsingHookHandler, preHandlerHookHandler } from 'fastify';
 
 export type FrourioOptions = {
   basePath?: string;
+  multipart?: FastifyMultipartAttachFieldsToBodyOptions;
 };
 
 type HttpStatusNoOk = 301 | 302 | 400 | 401 | 402 | 403 | 404 | 405 | 406 | 409 | 500 | 501 | 502 | 503 | 504 | 505;
@@ -31,9 +34,27 @@ type ServerResponse<K extends AspidaMethodParams> =
     >)
   | PartiallyPartial<BaseResponse<any, any, HttpStatusNoOk>, 'body' | 'headers'>;
 
+export type MultipartFileToBlob<T extends Record<string, unknown>> = {
+  [P in keyof T]: Required<T>[P] extends MultipartFile
+    ? Blob | ReadStream
+    : Required<T>[P] extends MultipartFile[]
+    ? (Blob | ReadStream)[]
+    : T[P];
+};
+
+type BlobToFile<T extends AspidaMethodParams> = T['reqFormat'] extends FormData
+  ? {
+      [P in keyof T['reqBody']]: Required<T['reqBody']>[P] extends Blob | ReadStream
+        ? MultipartFile
+        : Required<T['reqBody']>[P] extends (Blob | ReadStream)[]
+        ? MultipartFile[]
+        : T['reqBody'][P];
+    }
+  : T['reqBody'];
+
 type RequestParams<T extends AspidaMethodParams> = Pick<{
   query: T['query'];
-  body: T['reqBody'];
+  body: BlobToFile<T>;
   headers: T['reqHeaders'];
 }, {
   query: Required<T>['query'] extends {} | null ? 'query' : never;
@@ -70,25 +91,16 @@ const methodToHandler = (
 ): RouteHandlerMethod => (req, reply) => {
   const data = methodCallback(req as any) as any;
 
-  if (data.headers) reply.headers(data.headers);
+  if (data.headers !== undefined) reply.headers(data.headers);
 
   reply.code(data.status).send(data.body);
 };
 
 export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   const basePath = options.basePath ?? '';
-  const responseSchema0 = responseSchemaFn0();
-  const controller0 = controllerFn0(fastify);
+  const controller_14i7wcv = controllerFn_14i7wcv(fastify);
 
-  fastify.get(
-    basePath || '/',
-    {
-      schema: {
-        response: responseSchema0.get,
-      },
-    },
-    methodToHandler(controller0.get),
-  );
+  fastify.get(basePath || '/', methodToHandler(controller_14i7wcv.get));
 
   return fastify;
 };

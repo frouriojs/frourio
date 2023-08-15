@@ -1,5 +1,4 @@
 import path from 'path';
-import checkRequisites from './checkRequisites';
 import createControllersText from './createControllersText';
 
 const genHandlerText = (isAsync: boolean) => `
@@ -8,7 +7,7 @@ const ${isAsync ? 'asyncM' : 'm'}ethodToHandler = (
 ): RouteHandlerMethod => ${isAsync ? 'async ' : ''}(req, reply) => {
   const data = ${isAsync ? 'await ' : ''}methodCallback(req as any) as any;
 
-  if (data.headers) reply.headers(data.headers);
+  if (data.headers !== undefined) reply.headers(data.headers);
 
   reply.code(data.status).send(data.body);
 };
@@ -19,9 +18,7 @@ export default (input: string, project?: string) => {
   const hasNumberTypeQuery = controllers.includes('parseNumberTypeQueryParams(');
   const hasBooleanTypeQuery = controllers.includes('parseBooleanTypeQueryParams(');
   const hasOptionalQuery = controllers.includes(' callParserIfExistsQuery(');
-  const hasNormalizeQuery = controllers.includes(' normalizeQuery');
   const hasTypedParams = controllers.includes(' createTypedParamsHandler(');
-  const hasValidator = controllers.includes(' validateOrReject(');
   const hasMultipart = controllers.includes(' formatMultipartData(');
   const hasMethodToHandler = controllers.includes(' methodToHandler(');
   const hasAsyncMethodToHandler = controllers.includes(' asyncMethodToHandler(');
@@ -30,71 +27,35 @@ export default (input: string, project?: string) => {
   const hasValidatorsToSchema = controllers.includes('validatorsToSchema(');
   const headImports: string[] = [];
 
-  checkRequisites({ hasValidator });
-
-  if (controllers.includes('response: responseSchema')) {
-    console.warn(
-      `frourio: 'responseSchema' is deprecated. Specify schemas.response in controller instead.`
-    );
-  }
-
-  if (controllers.includes('ctrlHooks0.')) {
-    console.warn(
-      `frourio: 'defineHooks in controller.ts' is deprecated. Specify hooks in controller instead.`
-    );
-  }
-
-  if (hasValidator) {
-    console.warn(
-      `frourio: 'class-validator' is deprecated. Specify validators in controller instead. ref: https://frourio.com/docs/reference/validation/zod`
-    );
-
-    headImports.push(
-      "import 'reflect-metadata';",
-      "import type { ClassTransformOptions } from 'class-transformer';",
-      "import { plainToInstance as defaultPlainToInstance } from 'class-transformer';",
-      "import type { ValidatorOptions } from 'class-validator';",
-      "import { validateOrReject as defaultValidateOrReject } from 'class-validator';"
-    );
-  }
-
   if (hasMultipart) {
-    headImports.push(
-      "import type { FastifyMultipartAttachFieldsToBodyOptions, Multipart, MultipartFile } from '@fastify/multipart';",
-      "import multipart from '@fastify/multipart';"
-    );
+    headImports.push("import multipart from '@fastify/multipart';");
   }
 
-  if (hasValidator) {
-    headImports.push("import * as Validators from './validators';");
-  }
+  headImports.push(
+    `import type { FastifyMultipartAttachFieldsToBodyOptions, ${
+      hasMultipart ? 'Multipart, ' : ''
+    }MultipartFile } from '@fastify/multipart';`
+  );
 
-  if (hasMultipart) {
-    headImports.push("import type { ReadStream } from 'fs';");
-  }
-
-  headImports.push("import type { HttpStatusOk, AspidaMethodParams } from 'aspida';");
+  headImports.push(
+    "import type { ReadStream } from 'fs';",
+    "import type { HttpStatusOk, AspidaMethodParams } from 'aspida';"
+  );
 
   return {
     text: `${headImports.join('\n')}
 import type { Schema } from 'fast-json-stringify';
 import type { z } from 'zod';
 ${imports}import type { FastifyInstance, RouteHandlerMethod, preValidationHookHandler${
-      hasValidator ? ', FastifyRequest' : ''
-    }${hasValidatorCompiler ? ', FastifySchema, FastifySchemaCompiler' : ''}${
+      hasValidatorCompiler ? ', FastifySchema, FastifySchemaCompiler' : ''
+    }${
       hasRouteShorthandOptions ? ', RouteShorthandOptions' : ''
     }, onRequestHookHandler, preParsingHookHandler, preHandlerHookHandler } from 'fastify';
 
 export type FrourioOptions = {
   basePath?: string;
-${
-  hasValidator
-    ? '  transformer?: ClassTransformOptions;\n' +
-      '  validator?: ValidatorOptions;\n' +
-      '  plainToInstance?: (cls: new (...args: any[]) => object, object: unknown, options: ClassTransformOptions) => object;\n' +
-      '  validateOrReject?: (instance: object, options: ValidatorOptions) => Promise<void>;\n'
-    : ''
-}${hasMultipart ? '  multipart?: FastifyMultipartAttachFieldsToBodyOptions;\n' : ''}};
+  multipart?: FastifyMultipartAttachFieldsToBodyOptions;
+};
 
 type HttpStatusNoOk = 301 | 302 | 400 | 401 | 402 | 403 | 404 | 405 | 406 | 409 | 500 | 501 | 502 | 503 | 504 | 505;
 
@@ -118,9 +79,15 @@ type ServerResponse<K extends AspidaMethodParams> =
       'body' | 'headers'
     >)
   | PartiallyPartial<BaseResponse<any, any, HttpStatusNoOk>, 'body' | 'headers'>;
-${
-  hasMultipart
-    ? `
+
+export type MultipartFileToBlob<T extends Record<string, unknown>> = {
+  [P in keyof T]: Required<T>[P] extends MultipartFile
+    ? Blob | ReadStream
+    : Required<T>[P] extends MultipartFile[]
+    ? (Blob | ReadStream)[]
+    : T[P];
+};
+
 type BlobToFile<T extends AspidaMethodParams> = T['reqFormat'] extends FormData
   ? {
       [P in keyof T['reqBody']]: Required<T['reqBody']>[P] extends Blob | ReadStream
@@ -130,12 +97,10 @@ type BlobToFile<T extends AspidaMethodParams> = T['reqFormat'] extends FormData
         : T['reqBody'][P];
     }
   : T['reqBody'];
-`
-    : ''
-}
+
 type RequestParams<T extends AspidaMethodParams> = Pick<{
   query: T['query'];
-  body: ${hasMultipart ? 'BlobToFile<T>' : "T['reqBody']"};
+  body: BlobToFile<T>;
   headers: T['reqHeaders'];
 }, {
   query: Required<T>['query'] extends {} | null ? 'query' : never;
@@ -254,15 +219,6 @@ const callParserIfExistsQuery = (parser: OmitThisParameter<preValidationHookHand
 `
         : ''
     }${
-      hasNormalizeQuery
-        ? `
-const normalizeQuery: preValidationHookHandler = (req, _, done) => {
-  req.query = JSON.parse(JSON.stringify(req.query));
-  done();
-};
-`
-        : ''
-    }${
       hasTypedParams
         ? `
 const createTypedParamsHandler = (numberTypeParams: string[]): preValidationHookHandler => (req, reply, done) => {
@@ -281,13 +237,6 @@ const createTypedParamsHandler = (numberTypeParams: string[]): preValidationHook
 
   done();
 };
-`
-        : ''
-    }${
-      hasValidator
-        ? `
-const createValidateHandler = (validators: (req: FastifyRequest) => (Promise<void> | null)[]): preValidationHookHandler =>
-  (req, reply) => Promise.all(validators(req)).catch(err => reply.code(400).send(err));
 `
         : ''
     }${
@@ -330,7 +279,7 @@ const validatorCompiler: FastifySchemaCompiler<FastifySchema> = ({ schema }) => 
               ? `
 
 const validatorsToSchema = ({ query, ...validators }: { query?: unknown; body?: unknown; headers?: unknown }): FastifySchema => ({
-  ...(query ? { querystring: query } : {}),
+  ...(query !== undefined ? { querystring: query } : {}),
   ...validators,
 });`
               : ''
@@ -342,13 +291,7 @@ const validatorsToSchema = ({ query, ...validators }: { query?: unknown; body?: 
     }
 export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   const basePath = options.basePath ?? '';
-${
-  hasValidator
-    ? '  const transformerOptions: ClassTransformOptions = { enableCircularCheck: true, ...options.transformer };\n' +
-      '  const validatorOptions: ValidatorOptions = { validationError: { target: false }, ...options.validator };\n' +
-      '  const { plainToInstance = defaultPlainToInstance as NonNullable<FrourioOptions["plainToInstance"]>, validateOrReject = defaultValidateOrReject as NonNullable<FrourioOptions["validateOrReject"]> } = options;\n'
-    : ''
-}${consts}
+${consts}
 ${
   hasMultipart
     ? '  fastify.register(multipart, { attachFieldsToBody: true, limits: { fileSize: 1024 ** 3 }, ...options.multipart });\n\n'

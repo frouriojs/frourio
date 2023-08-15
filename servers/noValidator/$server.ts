@@ -1,19 +1,19 @@
-import type { FastifyMultipartAttachFieldsToBodyOptions, Multipart, MultipartFile } from '@fastify/multipart';
 import multipart from '@fastify/multipart';
+import type { FastifyMultipartAttachFieldsToBodyOptions, Multipart, MultipartFile } from '@fastify/multipart';
 import type { ReadStream } from 'fs';
 import type { HttpStatusOk, AspidaMethodParams } from 'aspida';
 import type { Schema } from 'fast-json-stringify';
 import type { z } from 'zod';
-import hooksFn0 from './api/hooks';
-import hooksFn1 from './api/users/hooks';
-import validatorsFn0 from './api/users/_userId@number/validators';
-import controllerFn0, { hooks as ctrlHooksFn0 } from './api/controller';
-import controllerFn1 from './api/empty/noEmpty/controller';
-import controllerFn2 from './api/multiForm/controller';
-import controllerFn3 from './api/texts/controller';
-import controllerFn4 from './api/texts/sample/controller';
-import controllerFn5, { hooks as ctrlHooksFn1 } from './api/users/controller';
-import controllerFn6 from './api/users/_userId@number/controller';
+import hooksFn_gx3glp from './api/hooks';
+import hooksFn_3zqb7e from './api/users/hooks';
+import validatorsFn_ia9y8g from './api/users/_userId@number/validators';
+import controllerFn_14i7wcv from './api/controller';
+import controllerFn_a01vkg from './api/empty/noEmpty/controller';
+import controllerFn_17nfdm3 from './api/multiForm/controller';
+import controllerFn_1gxm9v2 from './api/texts/controller';
+import controllerFn_1bjhajh from './api/texts/sample/controller';
+import controllerFn_g6e9u2 from './api/users/controller';
+import controllerFn_1y88f1f from './api/users/_userId@number/controller';
 import type { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, FastifySchema, FastifySchemaCompiler, RouteShorthandOptions, onRequestHookHandler, preParsingHookHandler, preHandlerHookHandler } from 'fastify';
 
 export type FrourioOptions = {
@@ -43,6 +43,14 @@ type ServerResponse<K extends AspidaMethodParams> =
       'body' | 'headers'
     >)
   | PartiallyPartial<BaseResponse<any, any, HttpStatusNoOk>, 'body' | 'headers'>;
+
+export type MultipartFileToBlob<T extends Record<string, unknown>> = {
+  [P in keyof T]: Required<T>[P] extends MultipartFile
+    ? Blob | ReadStream
+    : Required<T>[P] extends MultipartFile[]
+    ? (Blob | ReadStream)[]
+    : T[P];
+};
 
 type BlobToFile<T extends AspidaMethodParams> = T['reqFormat'] extends FormData
   ? {
@@ -136,7 +144,7 @@ const validatorCompiler: FastifySchemaCompiler<FastifySchema> = ({ schema }) => 
 };
 
 const validatorsToSchema = ({ query, ...validators }: { query?: unknown; body?: unknown; headers?: unknown }): FastifySchema => ({
-  ...(query ? { querystring: query } : {}),
+  ...(query !== undefined ? { querystring: query } : {}),
   ...validators,
 });
 
@@ -145,7 +153,7 @@ const methodToHandler = (
 ): RouteHandlerMethod => (req, reply) => {
   const data = methodCallback(req as any) as any;
 
-  if (data.headers) reply.headers(data.headers);
+  if (data.headers !== undefined) reply.headers(data.headers);
 
   reply.code(data.status).send(data.body);
 };
@@ -155,25 +163,23 @@ const asyncMethodToHandler = (
 ): RouteHandlerMethod => async (req, reply) => {
   const data = await methodCallback(req as any) as any;
 
-  if (data.headers) reply.headers(data.headers);
+  if (data.headers !== undefined) reply.headers(data.headers);
 
   reply.code(data.status).send(data.body);
 };
 
 export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   const basePath = options.basePath ?? '';
-  const hooks0 = hooksFn0(fastify);
-  const hooks1 = hooksFn1(fastify);
-  const ctrlHooks0 = ctrlHooksFn0(fastify);
-  const ctrlHooks1 = ctrlHooksFn1(fastify);
-  const validators0 = validatorsFn0(fastify);
-  const controller0 = controllerFn0(fastify);
-  const controller1 = controllerFn1(fastify);
-  const controller2 = controllerFn2(fastify);
-  const controller3 = controllerFn3(fastify);
-  const controller4 = controllerFn4(fastify);
-  const controller5 = controllerFn5(fastify);
-  const controller6 = controllerFn6(fastify);
+  const hooks_gx3glp = hooksFn_gx3glp(fastify);
+  const hooks_3zqb7e = hooksFn_3zqb7e(fastify);
+  const validators_ia9y8g = validatorsFn_ia9y8g(fastify);
+  const controller_14i7wcv = controllerFn_14i7wcv(fastify);
+  const controller_a01vkg = controllerFn_a01vkg(fastify);
+  const controller_17nfdm3 = controllerFn_17nfdm3(fastify);
+  const controller_1gxm9v2 = controllerFn_1gxm9v2(fastify);
+  const controller_1bjhajh = controllerFn_1bjhajh(fastify);
+  const controller_g6e9u2 = controllerFn_g6e9u2(fastify);
+  const controller_1y88f1f = controllerFn_1y88f1f(fastify);
 
   fastify.register(multipart, { attachFieldsToBody: true, limits: { fileSize: 1024 ** 3 }, ...options.multipart });
 
@@ -181,96 +187,94 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
     basePath || '/',
     {
       // @ts-expect-error
-      schema: validatorsToSchema(controller0.get.validators),
+      schema: validatorsToSchema(controller_14i7wcv.get.validators),
       validatorCompiler,
-      onRequest: [hooks0.onRequest, ctrlHooks0.onRequest],
+      onRequest: hooks_gx3glp.onRequest,
     },
     // @ts-expect-error
-    asyncMethodToHandler(controller0.get.handler),
+    asyncMethodToHandler(controller_14i7wcv.get.handler),
   );
 
   fastify.post(
     basePath || '/',
     {
-      onRequest: [hooks0.onRequest, ctrlHooks0.onRequest],
+      onRequest: hooks_gx3glp.onRequest,
       preValidation: formatMultipartData([]),
     },
     // @ts-expect-error
-    methodToHandler(controller0.post),
+    methodToHandler(controller_14i7wcv.post),
   );
 
   fastify.get(
     `${basePath}/empty/noEmpty`,
     {
-      onRequest: hooks0.onRequest,
+      onRequest: hooks_gx3glp.onRequest,
     },
-    methodToHandler(controller1.get),
+    methodToHandler(controller_a01vkg.get),
   );
 
   fastify.post(
     `${basePath}/multiForm`,
     {
-      onRequest: hooks0.onRequest,
+      onRequest: hooks_gx3glp.onRequest,
       preValidation: formatMultipartData([['empty', false], ['vals', false], ['files', false]]),
     },
-    methodToHandler(controller2.post),
+    methodToHandler(controller_17nfdm3.post),
   );
 
   fastify.get(
     `${basePath}/texts`,
     {
-      onRequest: hooks0.onRequest,
+      onRequest: hooks_gx3glp.onRequest,
     },
     // @ts-expect-error
-    methodToHandler(controller3.get),
+    methodToHandler(controller_1gxm9v2.get),
   );
 
   fastify.put(
     `${basePath}/texts`,
     {
-      onRequest: hooks0.onRequest,
+      onRequest: hooks_gx3glp.onRequest,
     },
     // @ts-expect-error
-    methodToHandler(controller3.put),
+    methodToHandler(controller_1gxm9v2.put),
   );
 
   fastify.put(
     `${basePath}/texts/sample`,
     {
-      onRequest: hooks0.onRequest,
+      onRequest: hooks_gx3glp.onRequest,
     },
-    methodToHandler(controller4.put),
+    methodToHandler(controller_1bjhajh.put),
   );
 
   fastify.get(
     `${basePath}/users`,
     {
-      onRequest: [hooks0.onRequest, hooks1.onRequest],
-      preHandler: ctrlHooks1.preHandler,
+      onRequest: [hooks_gx3glp.onRequest, hooks_3zqb7e.onRequest],
     } as RouteShorthandOptions,
-    asyncMethodToHandler(controller5.get),
+    asyncMethodToHandler(controller_g6e9u2.get),
   );
 
   fastify.post(
     `${basePath}/users`,
     {
-      onRequest: [hooks0.onRequest, hooks1.onRequest],
-      preHandler: ctrlHooks1.preHandler,
+      onRequest: [hooks_gx3glp.onRequest, hooks_3zqb7e.onRequest],
     } as RouteShorthandOptions,
-    methodToHandler(controller5.post.handler),
+    methodToHandler(controller_g6e9u2.post.handler),
   );
 
   fastify.get(
     `${basePath}/users/:userId`,
     {
       schema: {
-        params: validators0.params,
+        params: validators_ia9y8g.params,
       },
       validatorCompiler,
-      onRequest: [hooks0.onRequest, hooks1.onRequest],
+      onRequest: [hooks_gx3glp.onRequest, hooks_3zqb7e.onRequest],
       preValidation: createTypedParamsHandler(['userId']),
     } as RouteShorthandOptions,
-    methodToHandler(controller6.get),
+    methodToHandler(controller_1y88f1f.get),
   );
 
   return fastify;

@@ -1,11 +1,4 @@
-import { defineController, defineHooks } from './$relay';
-
-export const hooks = defineHooks(() => ({
-  onRequest: (req, _, done) => {
-    console.log('Controller level onRequest hook:', req.url);
-    done();
-  },
-}));
+import { defineController } from './$relay';
 
 export default defineController(() => ({
   get: async v => {

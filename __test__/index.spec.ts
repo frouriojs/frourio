@@ -2,8 +2,6 @@
 import aspida from '@aspida/axios';
 import aspidaFetch from '@aspida/node-fetch';
 import axios from 'axios';
-import { plainToInstance } from 'class-transformer';
-import { validateOrReject } from 'class-validator';
 import fastify, { FastifyInstance } from 'fastify';
 import FormData from 'form-data';
 import fs from 'fs';
@@ -20,27 +18,14 @@ const client = api(aspida(undefined, { baseURL }));
 const fetchClient = api(aspidaFetch(undefined, { baseURL: subBaseURL, throwHttpErrors: true }));
 let server: FastifyInstance;
 let subServer: FastifyInstance;
-let subServerPlainToInstanceCallCount = 0;
-let subServerValidateOrRejectCallCount = 0;
 
 beforeEach(() => {
   server = fastify();
   subServer = fastify();
-  subServerPlainToInstanceCallCount = 0;
-  subServerValidateOrRejectCallCount = 0;
+
   return Promise.all([
     frourio(server).listen({ port }),
-    frourio(subServer, {
-      basePath: subBasePath,
-      plainToInstance: (cls, object, options): object => {
-        subServerPlainToInstanceCallCount++;
-        return plainToInstance(cls, object, options);
-      },
-      validateOrReject: (instance, options): Promise<void> => {
-        subServerValidateOrRejectCallCount++;
-        return validateOrReject(instance, options);
-      },
-    }).listen({ port: subPort }),
+    frourio(subServer, { basePath: subBasePath }).listen({ port: subPort }),
   ]);
 });
 
@@ -160,9 +145,6 @@ test('PUT: JSON', async () => {
 });
 
 test('POST: formdata', async () => {
-  expect(subServerPlainToInstanceCallCount).toBe(0);
-  expect(subServerValidateOrRejectCallCount).toBe(0);
-
   const port = '3000';
   const fileName = 'tsconfig.json';
 
@@ -174,11 +156,9 @@ test('POST: formdata', async () => {
     params: { requiredNum: 0, id: '1', disable: 'true', bool: false },
     headers: form1.getHeaders(),
   });
+
   expect(res1.data.port).toBe(port);
   expect(res1.data.fileName).toBe(fileName);
-
-  expect(subServerPlainToInstanceCallCount).toBe(0);
-  expect(subServerValidateOrRejectCallCount).toBe(0);
 
   const form2 = new FormData();
   const fileST2 = fs.createReadStream(fileName);
@@ -190,10 +170,6 @@ test('POST: formdata', async () => {
   });
   expect(res2.data.port).toBe(port);
   expect(res2.data.fileName).toBe(fileName);
-
-  // 2 = query + body
-  expect(subServerPlainToInstanceCallCount).toBe(2);
-  expect(subServerValidateOrRejectCallCount).toBe(2);
 });
 
 test('PUT: zod validations', async () => {
@@ -273,12 +249,10 @@ test('POST: 400', async () => {
   const fileST = fs.createReadStream(fileName);
   form.append('name', 'sample');
   form.append('vals', 'dammy');
-  form.append('icon', fileST);
+  form.append('files', fileST);
 
   await expect(
-    axios.post(`${baseURL}/multiForm`, form, {
-      headers: form.getHeaders(),
-    })
+    axios.post(`${baseURL}/multiForm`, form, { headers: form.getHeaders() })
   ).rejects.toHaveProperty('response.status', 400);
 });
 
@@ -287,10 +261,7 @@ test('POST: nested validation', async () => {
     body: {
       id: 123,
       name: 'foo',
-      location: {
-        country: 'JP',
-        stateProvince: 'Tokyo',
-      },
+      location: { country: 'JP', stateProvince: 'Tokyo' },
     },
   });
   expect(res1.status).toBe(204);
@@ -303,10 +274,7 @@ test('POST: nested validation', async () => {
       location: {
         country: 'JP',
         stateProvince: 'Tokyo',
-        extra1: {
-          extra1a: 'bar',
-          extra1b: 'baz',
-        },
+        extra1: { extra1a: 'bar', extra1b: 'baz' },
       },
       extra2: 'qux',
     } as any,
@@ -321,10 +289,7 @@ test('POST: 400 (nested validation)', async () => {
       body: {
         id: '123',
         name: 'foo',
-        location: {
-          country: 'JP',
-          stateProvince: 'Tokyo',
-        },
+        location: { country: 'JP', stateProvince: 'Tokyo' },
       } as any,
     })
   ).rejects.toHaveProperty('response.status', 400);
@@ -342,10 +307,7 @@ test('POST: 400 (nested validation)', async () => {
       body: {
         id: 123,
         name: 'foo',
-        location: {
-          country: 'XX',
-          stateProvince: 'Tokyo',
-        },
+        location: { country: 'JPN', stateProvince: 'Tokyo' },
       } as any,
     })
   ).rejects.toHaveProperty('response.status', 400);
@@ -356,10 +318,7 @@ test('POST: 400 (nested validation)', async () => {
       body: {
         id: 123,
         name: 'foo',
-        location: {
-          country: 'JP',
-          stateProvince: 1234,
-        },
+        location: { country: 'JP', stateProvince: 1234 },
       } as any,
     })
   ).rejects.toHaveProperty('response.status', 400);
@@ -382,7 +341,7 @@ test('controller dependency injection', async () => {
     }))(server);
 
   await expect(
-    injectedController.get({
+    injectedController.get.handler({
       query: {
         id,
         requiredNum: 1,
