@@ -28,13 +28,14 @@ export default (input: string, project?: string) => {
   const headImports: string[] = [];
 
   if (hasMultipart) {
-    headImports.push(
-      "import type { FastifyMultipartAttachFieldsToBodyOptions, Multipart, MultipartFile } from '@fastify/multipart';",
-      "import multipart from '@fastify/multipart';"
-    );
-  } else {
-    headImports.push("import type { MultipartFile } from '@fastify/multipart';");
+    headImports.push("import multipart from '@fastify/multipart';");
   }
+
+  headImports.push(
+    `import type { FastifyMultipartAttachFieldsToBodyOptions, ${
+      hasMultipart ? 'Multipart, ' : ''
+    }MultipartFile } from '@fastify/multipart';`
+  );
 
   headImports.push(
     "import type { ReadStream } from 'fs';",
@@ -53,7 +54,8 @@ ${imports}import type { FastifyInstance, RouteHandlerMethod, preValidationHookHa
 
 export type FrourioOptions = {
   basePath?: string;
-${hasMultipart ? '  multipart?: FastifyMultipartAttachFieldsToBodyOptions;\n' : ''}};
+  multipart?: FastifyMultipartAttachFieldsToBodyOptions;
+};
 
 type HttpStatusNoOk = 301 | 302 | 400 | 401 | 402 | 403 | 404 | 405 | 406 | 409 | 500 | 501 | 502 | 503 | 504 | 505;
 
@@ -85,9 +87,7 @@ export type MultipartFileToBlob<T extends Record<string, unknown>> = {
     ? (Blob | ReadStream)[]
     : T[P];
 };
-${
-  hasMultipart
-    ? `
+
 type BlobToFile<T extends AspidaMethodParams> = T['reqFormat'] extends FormData
   ? {
       [P in keyof T['reqBody']]: Required<T['reqBody']>[P] extends Blob | ReadStream
@@ -97,12 +97,10 @@ type BlobToFile<T extends AspidaMethodParams> = T['reqFormat'] extends FormData
         : T['reqBody'][P];
     }
   : T['reqBody'];
-`
-    : ''
-}
+
 type RequestParams<T extends AspidaMethodParams> = Pick<{
   query: T['query'];
-  body: ${hasMultipart ? 'BlobToFile<T>' : "T['reqBody']"};
+  body: BlobToFile<T>;
   headers: T['reqHeaders'];
 }, {
   query: Required<T>['query'] extends {} | null ? 'query' : never;

@@ -75,13 +75,13 @@
     ]
   },
   "dependencies": {
+    "@fastify/multipart": "^7.7.3",
     "aspida": "^1.13.3",
     "velona": "^0.8.0"
   },
   "devDependencies": {
     "@aspida/axios": "^1.13.3",
     "@aspida/node-fetch": "^1.13.3",
-    "@fastify/multipart": "^7.7.3",
     "@types/busboy": "^1.5.0",
     "@types/jest": "^29.5.3",
     "@types/node-fetch": "^2.6.4",

@@ -1,4 +1,4 @@
-import type { MultipartFile } from '@fastify/multipart';
+import type { FastifyMultipartAttachFieldsToBodyOptions, MultipartFile } from '@fastify/multipart';
 import type { ReadStream } from 'fs';
 import type { HttpStatusOk, AspidaMethodParams } from 'aspida';
 import type { Schema } from 'fast-json-stringify';
@@ -8,6 +8,7 @@ import type { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, onR
 
 export type FrourioOptions = {
   basePath?: string;
+  multipart?: FastifyMultipartAttachFieldsToBodyOptions;
 };
 
 type HttpStatusNoOk = 301 | 302 | 400 | 401 | 402 | 403 | 404 | 405 | 406 | 409 | 500 | 501 | 502 | 503 | 504 | 505;
@@ -41,9 +42,19 @@ export type MultipartFileToBlob<T extends Record<string, unknown>> = {
     : T[P];
 };
 
+type BlobToFile<T extends AspidaMethodParams> = T['reqFormat'] extends FormData
+  ? {
+      [P in keyof T['reqBody']]: Required<T['reqBody']>[P] extends Blob | ReadStream
+        ? MultipartFile
+        : Required<T['reqBody']>[P] extends (Blob | ReadStream)[]
+        ? MultipartFile[]
+        : T['reqBody'][P];
+    }
+  : T['reqBody'];
+
 type RequestParams<T extends AspidaMethodParams> = Pick<{
   query: T['query'];
-  body: T['reqBody'];
+  body: BlobToFile<T>;
   headers: T['reqHeaders'];
 }, {
   query: Required<T>['query'] extends {} | null ? 'query' : never;
