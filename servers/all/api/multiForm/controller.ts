@@ -15,12 +15,18 @@ export default defineController(() => ({
         files: z.array(multipartFileValidator()),
       }),
     },
-    handler: ({ body }) => ({
-      status: 201,
-      body: Object.entries(body).reduce(
-        (p, [key, val]) => ({ ...p, [key]: Array.isArray(val) ? val.length : -1 }),
-        {} as Methods['post']['resBody']
-      ),
-    }),
+    handler: async ({ body }) => {
+      const res = {
+        status: 201 as const,
+        body: Object.entries(body).reduce(
+          (p, [key, val]) => ({ ...p, [key]: Array.isArray(val) ? val.length : -1 }),
+          {} as Methods['post']['resBody']
+        ),
+      };
+
+      await body.icon.toBuffer(); // for validator test
+
+      return res;
+    },
   },
 }));

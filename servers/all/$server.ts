@@ -350,7 +350,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
       preParsing: hooks_gx3glp.preParsing,
       preValidation: formatMultipartData([['requiredArr', false], ['optionalArr', true], ['empty', true], ['vals', false], ['files', false]]),
     },
-    methodToHandler(controller_17nfdm3.post.handler),
+    asyncMethodToHandler(controller_17nfdm3.post.handler),
   );
 
   fastify.get(

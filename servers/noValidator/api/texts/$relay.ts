@@ -24,13 +24,15 @@ export function defineController<M extends ServerMethods, T extends Record<strin
 }
 
 export const multipartFileValidator = (): z.ZodType<MultipartFile> =>
-  z.object({
-    type: z.literal('file'),
-    toBuffer: z.function().returns(z.promise(z.instanceof(Buffer))),
-    file: z.instanceof(Readable).and(z.object({ truncated: z.boolean(), bytesRead: z.number() })),
-    fieldname: z.string(),
-    filename: z.string(),
-    encoding: z.string(),
-    mimetype: z.string(),
-    fields: z.record(z.any()),
-  });
+  z
+    .object({
+      type: z.literal('file'),
+      toBuffer: z.function().returns(z.any()),
+      file: z.instanceof(Readable).and(z.object({ truncated: z.boolean(), bytesRead: z.number() }).passthrough()),
+      fieldname: z.string(),
+      filename: z.string(),
+      encoding: z.string(),
+      mimetype: z.string(),
+      fields: z.record(z.any()),
+    })
+    .passthrough();
