@@ -94,7 +94,7 @@ export type ServerMethodHandler<T extends AspidaMethodParams,  U extends Record<
   handler: ServerHandler<T, U> | ServerHandlerPromise<T, U>;
 };
 
-const formatMultipartData = (arrayTypeKeys: [string, boolean][]): preValidationHookHandler => (req, _, done) => {
+const formatMultipartData = (arrayTypeKeys: [string, boolean][], numberTypeKeys: [string, boolean, boolean][], booleanTypeKeys: [string, boolean, boolean][]): preValidationHookHandler => (req, reply, done) => {
   const body: any = req.body;
 
   for (const [key] of arrayTypeKeys) {
@@ -114,6 +114,58 @@ const formatMultipartData = (arrayTypeKeys: [string, boolean][]): preValidationH
 
   for (const [key, isOptional] of arrayTypeKeys) {
     if (!body[key].length && isOptional) delete body[key];
+  }
+
+  for (const [key, isOptional, isArray] of numberTypeKeys) {
+    const param = body[key];
+
+    if (isArray) {
+      if (!isOptional || param !== undefined) {
+        const vals = param.map(Number);
+
+        if (vals.some(isNaN)) {
+          reply.code(400).send();
+          return;
+        }
+
+        body[key] = vals
+      }
+    } else if (!isOptional || param !== undefined) {
+      const val = Number(param);
+
+      if (isNaN(val)) {
+        reply.code(400).send();
+        return;
+      }
+
+      body[key] = val
+    }
+  }
+
+  for (const [key, isOptional, isArray] of booleanTypeKeys) {
+    const param = body[key];
+
+    if (isArray) {
+      if (!isOptional || param !== undefined) {
+        const vals = param.map((p: string) => p === 'true' ? true : p === 'false' ? false : null);
+
+        if (vals.some((v: string | null) => v === null)) {
+          reply.code(400).send();
+          return;
+        }
+
+        body[key] = vals
+      }
+    } else if (!isOptional || param !== undefined) {
+      const val = param === 'true' ? true : param === 'false' ? false : null;
+
+      if (val === null) {
+        reply.code(400).send();
+        return;
+      }
+
+      body[key] = val
+    }
   }
 
   done();
@@ -165,7 +217,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
     basePath || '/',
     {
       onRequest: hooks_gx3glp.onRequest,
-      preValidation: formatMultipartData([]),
+      preValidation: formatMultipartData([], [], []),
     },
     // @ts-expect-error
     methodToHandler(controller_14i7wcv.post),
@@ -183,7 +235,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
     `${basePath}/multiForm`,
     {
       onRequest: hooks_gx3glp.onRequest,
-      preValidation: formatMultipartData([['empty', false], ['vals', false], ['files', false]]),
+      preValidation: formatMultipartData([['empty', false], ['vals', false], ['files', false]], [['empty', false, true]], []),
     },
     methodToHandler(controller_17nfdm3.post),
   );

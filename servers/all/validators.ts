@@ -18,6 +18,15 @@ export type Query = {
 export type Body = {
   port: string;
   file: File | ReadStream;
+  requiredNum: number;
+  optionalNum?: number | undefined;
+  optionalNumArr?: Array<number> | undefined;
+  emptyNum?: number | undefined;
+  requiredNumArr: number[];
+  bool: boolean;
+  optionalBool?: boolean | undefined;
+  boolArray: boolean[];
+  optionalBoolArray?: boolean[] | undefined;
 };
 
 export type UserInfo = {

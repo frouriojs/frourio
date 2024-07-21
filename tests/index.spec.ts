@@ -154,6 +154,14 @@ test('POST: formdata', async () => {
   const fileST1 = fs.createReadStream(fileName);
   form1.append('port', port);
   form1.append('file', fileST1);
+  form1.append('requiredNum', 2);
+  form1.append('emptyNum', 0);
+  form1.append('bool', 'false');
+  form1.append('optionalBool', 'true');
+  form1.append('optionalBoolArray', 'true');
+  form1.append('optionalBoolArray', 'false');
+  form1.append('optionalBoolArray', 'false');
+
   const res1 = await axios.post(baseURL, form1, {
     params: { requiredNum: 0, id: '1', disable: 'true', bool: false },
     headers: form1.getHeaders(),
@@ -166,6 +174,14 @@ test('POST: formdata', async () => {
   const fileST2 = fs.createReadStream(fileName);
   form2.append('port', port);
   form2.append('file', fileST2);
+  form2.append('requiredNum', 2);
+  form2.append('emptyNum', 0);
+  form2.append('bool', 'false');
+  form2.append('optionalBool', 'true');
+  form2.append('optionalBoolArray', 'true');
+  form2.append('optionalBoolArray', 'false');
+  form2.append('optionalBoolArray', 'false');
+
   const res2 = await axios.post(subBaseURL, form2, {
     params: { requiredNum: 0, id: '1', disable: 'true', bool: false },
     headers: form2.getHeaders(),

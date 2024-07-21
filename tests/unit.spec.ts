@@ -5,7 +5,9 @@ import { createDefaultFilesIfNotExists } from '../src/createDefaultFilesIfNotExi
 
 test('createDefaultFilesIfNotExists', () => {
   const dir = 'tmp';
-  fs.mkdirSync(dir);
+
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir);
+
   createDefaultFilesIfNotExists(dir, null);
 
   expect(fs.readFileSync(`${dir}/index.ts`, 'utf8'))
@@ -22,7 +24,7 @@ export type Methods = DefineMethods<{
     .toBe(`import { defineController } from './$relay';
 
 export default defineController(() => ({
-  get: () => ({ status: 200, body: 'Hello' }),
+  get: () => ({ status: 200, body: '' }),
 }));
 `);
 

@@ -26,8 +26,8 @@
   "scripts": {
     "dev": "npm run build && cd servers && aspida && node build.js",
     "build": "rimraf dist && tsc -p tsconfig.build.json",
-    "lint": "eslint --ext .js,.ts . && prettier --check \"./**/*.ts\" --ignore-path .eslintignore",
-    "lint:fix": "eslint --ext .js,.ts . --fix && prettier --write \"./**/*.ts\" --ignore-path .eslintignore",
+    "lint": "eslint --ext .js,.ts . && prettier --check \"./**/*.ts\"",
+    "lint:fix": "eslint --ext .js,.ts . --fix && prettier --write \"./**/*.ts\"",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
