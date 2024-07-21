@@ -1,5 +1,6 @@
 import fs from 'fs';
 import rimraf from 'rimraf';
+import { expect, test } from 'vitest';
 import { createDefaultFilesIfNotExists } from '../src/createDefaultFilesIfNotExists';
 
 test('createDefaultFilesIfNotExists', () => {

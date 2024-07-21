@@ -1,11 +1,12 @@
 import aspidaBuild from 'aspida/dist/cjs/buildTemplate';
 import fs from 'fs';
+import { expect, test, vi } from 'vitest';
 import { version } from '../package.json';
 import { run } from '../src';
 import build from '../src/buildServerFile';
 
 test('version command', () => {
-  const spyLog = jest.spyOn(console, 'log');
+  const spyLog = vi.spyOn(console, 'log');
   const args = ['--version'];
 
   run(args);

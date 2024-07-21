@@ -1,10 +1,10 @@
-/* eslint-disable jest/no-done-callback */
 import aspida from '@aspida/axios';
 import aspidaFetch from '@aspida/node-fetch';
 import axios from 'axios';
 import fastify, { FastifyInstance } from 'fastify';
 import FormData from 'form-data';
 import fs from 'fs';
+import { afterEach, beforeEach, expect, test } from 'vitest';
 import frourio from '../servers/all/$server';
 import api from '../servers/all/api/$api';
 import controller from '../servers/all/api/controller';
@@ -19,17 +19,19 @@ const fetchClient = api(aspidaFetch(undefined, { baseURL: subBaseURL, throwHttpE
 let server: FastifyInstance;
 let subServer: FastifyInstance;
 
-beforeEach(() => {
+beforeEach(async () => {
   server = fastify();
   subServer = fastify();
 
-  return Promise.all([
+  await Promise.all([
     frourio(server).listen({ port }),
     frourio(subServer, { basePath: subBasePath }).listen({ port: subPort }),
   ]);
 });
 
-afterEach(() => Promise.all([server.close(), subServer.close()]));
+afterEach(async () => {
+  await Promise.all([server.close(), subServer.close()]);
+});
 
 test('GET: 200', () =>
   Promise.all(

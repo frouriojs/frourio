@@ -17,6 +17,7 @@
     "sourceMap": true,
     "strict": true,
     "exactOptionalPropertyTypes": true,
+    "types": ["vitest/importMeta"],
     "target": "es5"
   }
 }
