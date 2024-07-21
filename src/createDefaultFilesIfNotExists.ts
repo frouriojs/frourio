@@ -5,7 +5,6 @@ export type Param = [string, string];
 
 export const createDefaultFilesIfNotExists = (dir: string, currentParam: Param | null) => {
   const isEmptyDir = fs.readdirSync(dir).length === 0;
-
   const indexFilePath = path.join(dir, 'index.ts');
 
   if (isEmptyDir && !fs.existsSync(indexFilePath)) {

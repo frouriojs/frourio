@@ -1,12 +1,13 @@
 import fs from 'fs';
-import rimraf from 'rimraf';
+import { rimrafSync } from 'rimraf';
 import { expect, test } from 'vitest';
 import { createDefaultFilesIfNotExists } from '../src/createDefaultFilesIfNotExists';
 
 test('createDefaultFilesIfNotExists', () => {
   const dir = 'tmp';
 
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir);
+  rimrafSync(dir);
+  fs.mkdirSync(dir);
 
   createDefaultFilesIfNotExists(dir, null);
 
@@ -44,12 +45,12 @@ export default defineHooks(() => ({
 }));
 `,
   );
-  rimraf.sync(dir);
 
+  rimrafSync(dir);
   fs.mkdirSync(dir);
   fs.writeFileSync(`${dir}/$test.ts`, '// test file');
   createDefaultFilesIfNotExists(dir, null);
   expect(fs.readdirSync(dir)).toEqual(['$test.ts']);
 
-  rimraf.sync(dir);
+  rimrafSync(dir);
 });
