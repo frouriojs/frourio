@@ -1,7 +1,8 @@
 import aspida from '@aspida/axios';
 import aspidaFetch from '@aspida/node-fetch';
 import axios from 'axios';
-import fastify, { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
+import fastify from 'fastify';
 import FormData from 'form-data';
 import fs from 'fs';
 import { afterEach, beforeEach, expect, test } from 'vitest';

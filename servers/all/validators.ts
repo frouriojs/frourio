@@ -1,4 +1,4 @@
-import { ReadStream } from 'fs';
+import type { ReadStream } from 'fs';
 import { z } from 'zod';
 
 export type Query = {

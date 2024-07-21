@@ -26,36 +26,10 @@
   "scripts": {
     "dev": "npm run build && cd servers && aspida && node build.js",
     "build": "rimraf dist && tsc -p tsconfig.build.json",
-    "lint": "eslint --ext .js,.ts . && prettier --check \"./**/*.ts\"",
-    "lint:fix": "eslint --ext .js,.ts . --fix && prettier --write \"./**/*.ts\"",
+    "lint": "eslint . && prettier --check \"./**/*.{ts,js}\"",
+    "lint:fix": "eslint . --fix && prettier --write \"./**/*.{ts,js}\"",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
-  },
-  "eslintConfig": {
-    "env": {
-      "es6": true,
-      "node": true,
-      "browser": true
-    },
-    "extends": [
-      "standard",
-      "plugin:@typescript-eslint/recommended",
-      "prettier"
-    ],
-    "parserOptions": {
-      "ecmaVersion": 2018,
-      "sourceType": "module"
-    },
-    "root": true,
-    "rules": {
-      "@typescript-eslint/explicit-function-return-type": "off",
-      "@typescript-eslint/ban-ts-comment": "off",
-      "@typescript-eslint/explicit-module-boundary-types": "off",
-      "@typescript-eslint/no-var-requires": "off",
-      "@typescript-eslint/ban-types": "off",
-      "@typescript-eslint/camelcase": "off",
-      "@typescript-eslint/no-explicit-any": "off"
-    }
   },
   "dependencies": {
     "aspida": "^1.14.0",
@@ -67,23 +41,18 @@
     "@fastify/multipart": "^8.3.0",
     "@types/busboy": "^1.5.4",
     "@types/node-fetch": "^2.6.11",
-    "@typescript-eslint/eslint-plugin": "^6.2.1",
-    "@typescript-eslint/parser": "^6.2.1",
     "axios": "^1.7.2",
     "eslint": "^8.57.0",
+    "eslint-config-flat-gitignore": "^0.1.8",
     "eslint-config-prettier": "^9.1.0",
-    "eslint-config-standard": "^17.1.0",
-    "eslint-plugin-import": "^2.29.1",
-    "eslint-plugin-n": "^16.6.2",
-    "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^6.5.1",
-    "eslint-plugin-standard": "^5.0.0",
     "fastify": "^4.28.1",
     "node-fetch": "^2.6.12",
     "prettier": "^3.3.3",
     "prettier-plugin-organize-imports": "^4.0.0",
     "rimraf": "^6.0.1",
     "typescript": "^5.5.3",
+    "typescript-eslint": "^7.16.1",
     "vite-tsconfig-paths": "^4.3.2",
     "vitest": "^2.0.3",
     "zod": "^3.23.8"

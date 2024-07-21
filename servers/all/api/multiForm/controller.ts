@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { Methods } from './';
+import type { Methods } from './';
 import { defineController, multipartFileValidator } from './$relay';
 
 export default defineController(() => ({

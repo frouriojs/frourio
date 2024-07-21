@@ -1,4 +1,4 @@
-import { Methods } from '.';
+import type { Methods } from '.';
 import { defineController } from './$relay';
 import { bodyValidator, queryValidator } from './validator';
 

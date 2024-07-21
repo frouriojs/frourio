@@ -1,4 +1,4 @@
-import { Methods } from './';
+import type { Methods } from './';
 import { defineController } from './$relay';
 
 export default defineController(() => ({
