@@ -1,6 +1,6 @@
 import { queryValidator } from 'validators';
 import { z } from 'zod';
-import { defineController } from '~/$relay';
+import { defineController, multipartFileValidator } from '~/$relay';
 
 export default defineController(
   {
@@ -16,10 +16,27 @@ export default defineController(
         return { status: 200, body: v.query && { ...v.query, id: await log(v.query.id) } };
       },
     },
-    post: v => ({
-      status: 201,
-      body: { id: +v.query.id, port: v.body.port, fileName: v.body.file.filename },
-    }),
+    post: {
+      validators: {
+        body: z.object({
+          port: z.string(),
+          file: multipartFileValidator(),
+          requiredNum: z.number(),
+          optionalNum: z.number().optional(),
+          optionalNumArr: z.array(z.number()).optional(),
+          emptyNum: z.number().optional(),
+          requiredNumArr: z.array(z.number()),
+          bool: z.boolean(),
+          optionalBool: z.boolean().optional(),
+          boolArray: z.array(z.boolean()),
+          optionalBoolArray: z.array(z.boolean()).optional(),
+        }),
+      },
+      handler: v => ({
+        status: 201,
+        body: { id: +v.query.id, port: v.body.port, fileName: v.body.file.filename },
+      }),
+    },
     put: {
       validators: {
         query: z.object({
@@ -57,5 +74,5 @@ export default defineController(
         body: { id: +v.query.id, port: v.body.port },
       }),
     },
-  })
+  }),
 );

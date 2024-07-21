@@ -1,5 +1,5 @@
 import type { DefineMethods } from 'aspida';
-import { UserId } from './validators';
+import type { UserId } from './validators';
 
 export type Methods = DefineMethods<{
   get: {

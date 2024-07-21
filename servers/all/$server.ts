@@ -196,7 +196,7 @@ const createTypedParamsHandler = (numberTypeParams: string[]): preValidationHook
   done();
 };
 
-const formatMultipartData = (arrayTypeKeys: [string, boolean][]): preValidationHookHandler => (req, _, done) => {
+const formatMultipartData = (arrayTypeKeys: [string, boolean][], numberTypeKeys: [string, boolean, boolean][], booleanTypeKeys: [string, boolean, boolean][]): preValidationHookHandler => (req, reply, done) => {
   const body: any = req.body;
 
   for (const [key] of arrayTypeKeys) {
@@ -216,6 +216,58 @@ const formatMultipartData = (arrayTypeKeys: [string, boolean][]): preValidationH
 
   for (const [key, isOptional] of arrayTypeKeys) {
     if (!body[key].length && isOptional) delete body[key];
+  }
+
+  for (const [key, isOptional, isArray] of numberTypeKeys) {
+    const param = body[key];
+
+    if (isArray) {
+      if (!isOptional || param !== undefined) {
+        const vals = param.map(Number);
+
+        if (vals.some(isNaN)) {
+          reply.code(400).send();
+          return;
+        }
+
+        body[key] = vals
+      }
+    } else if (!isOptional || param !== undefined) {
+      const val = Number(param);
+
+      if (isNaN(val)) {
+        reply.code(400).send();
+        return;
+      }
+
+      body[key] = val
+    }
+  }
+
+  for (const [key, isOptional, isArray] of booleanTypeKeys) {
+    const param = body[key];
+
+    if (isArray) {
+      if (!isOptional || param !== undefined) {
+        const vals = param.map((p: string) => p === 'true' ? true : p === 'false' ? false : null);
+
+        if (vals.some((v: string | null) => v === null)) {
+          reply.code(400).send();
+          return;
+        }
+
+        body[key] = vals
+      }
+    } else if (!isOptional || param !== undefined) {
+      const val = param === 'true' ? true : param === 'false' ? false : null;
+
+      if (val === null) {
+        reply.code(400).send();
+        return;
+      }
+
+      body[key] = val
+    }
   }
 
   done();
@@ -292,15 +344,17 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   fastify.post(
     basePath || '/',
     {
+      schema: validatorsToSchema(controller_14i7wcv.post.validators),
+      validatorCompiler,
       onRequest: hooks_gx3glp.onRequest,
       preParsing: hooks_gx3glp.preParsing,
       preValidation: [
         parseNumberTypeQueryParams([['requiredNum', false, false], ['optionalNum', true, false], ['optionalNumArr', true, true], ['emptyNum', true, false], ['requiredNumArr', false, true]]),
         parseBooleanTypeQueryParams([['bool', false, false], ['optionalBool', true, false], ['boolArray', false, true], ['optionalBoolArray', true, true]]),
-        formatMultipartData([]),
+        formatMultipartData([['optionalNumArr', true], ['requiredNumArr', false], ['boolArray', false], ['optionalBoolArray', true]], [['requiredNum', false, false], ['optionalNum', true, false], ['optionalNumArr', true, true], ['emptyNum', true, false], ['requiredNumArr', false, true]], [['bool', false, false], ['optionalBool', true, false], ['boolArray', false, true], ['optionalBoolArray', true, true]]),
       ],
     },
-    methodToHandler(controller_14i7wcv.post),
+    methodToHandler(controller_14i7wcv.post.handler),
   );
 
   fastify.put(
@@ -348,7 +402,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
       validatorCompiler,
       onRequest: hooks_gx3glp.onRequest,
       preParsing: hooks_gx3glp.preParsing,
-      preValidation: formatMultipartData([['requiredArr', false], ['optionalArr', true], ['empty', true], ['vals', false], ['files', false]]),
+      preValidation: formatMultipartData([['requiredArr', false], ['optionalArr', true], ['empty', true], ['vals', false], ['files', false]], [['empty', true, true]], []),
     },
     asyncMethodToHandler(controller_17nfdm3.post.handler),
   );
@@ -483,7 +537,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
       validatorCompiler,
       onRequest: hooks_gx3glp.onRequest,
       preParsing: hooks_gx3glp.preParsing,
-      preValidation: formatMultipartData([['requiredArr', false], ['vals', false], ['files', false], ['optionalArr', true], ['empty', true]]),
+      preValidation: formatMultipartData([['requiredArr', false], ['vals', false], ['files', false], ['optionalArr', true], ['empty', true]], [['vals', false, true], ['empty', true, true]], []),
     },
     methodToHandler(controller_iyk7j5.put.handler),
   );

@@ -1,10 +1,14 @@
 import fs from 'fs';
-import rimraf from 'rimraf';
+import { rimrafSync } from 'rimraf';
+import { expect, test } from 'vitest';
 import { createDefaultFilesIfNotExists } from '../src/createDefaultFilesIfNotExists';
 
 test('createDefaultFilesIfNotExists', () => {
   const dir = 'tmp';
+
+  rimrafSync(dir);
   fs.mkdirSync(dir);
+
   createDefaultFilesIfNotExists(dir, null);
 
   expect(fs.readFileSync(`${dir}/index.ts`, 'utf8'))
@@ -21,7 +25,7 @@ export type Methods = DefineMethods<{
     .toBe(`import { defineController } from './$relay';
 
 export default defineController(() => ({
-  get: () => ({ status: 200, body: 'Hello' }),
+  get: () => ({ status: 200, body: '' }),
 }));
 `);
 
@@ -39,14 +43,14 @@ export default defineHooks(() => ({
     done();
   },
 }));
-`
+`,
   );
-  rimraf.sync(dir);
 
+  rimrafSync(dir);
   fs.mkdirSync(dir);
   fs.writeFileSync(`${dir}/$test.ts`, '// test file');
   createDefaultFilesIfNotExists(dir, null);
   expect(fs.readdirSync(dir)).toEqual(['$test.ts']);
 
-  rimraf.sync(dir);
+  rimrafSync(dir);
 });

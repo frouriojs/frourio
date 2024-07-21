@@ -5,7 +5,6 @@ export type Param = [string, string];
 
 export const createDefaultFilesIfNotExists = (dir: string, currentParam: Param | null) => {
   const isEmptyDir = fs.readdirSync(dir).length === 0;
-
   const indexFilePath = path.join(dir, 'index.ts');
 
   if (isEmptyDir && !fs.existsSync(indexFilePath)) {
@@ -19,7 +18,7 @@ export type Methods = DefineMethods<{
   };
 }>;
 `,
-      'utf8'
+      'utf8',
     );
   }
 
@@ -31,10 +30,10 @@ export type Methods = DefineMethods<{
       `import { defineController } from './$relay';
 
 export default defineController(() => ({
-  get: () => ({ status: 200, body: 'Hello' }),
+  get: () => ({ status: 200, body: '' }),
 }));
 `,
-      'utf8'
+      'utf8',
     );
   }
 
@@ -52,7 +51,7 @@ export default defineHooks(() => ({
   },
 }));
 `,
-      'utf8'
+      'utf8',
     );
   }
 
@@ -68,7 +67,7 @@ export default defineValidators(() => ({
   params: z.object({ ${currentParam[0]}: z.${currentParam[1]}() }),
 }));
 `,
-      'utf8'
+      'utf8',
     );
   }
 };

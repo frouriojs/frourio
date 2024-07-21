@@ -1,4 +1,4 @@
-import { DefineMethods } from 'aspida';
+import type { DefineMethods } from 'aspida';
 
 export type Methods = DefineMethods<{
   put: {
