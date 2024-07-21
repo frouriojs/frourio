@@ -59,8 +59,8 @@ test('GET: 200', () =>
       Promise.all([
         expect(client.$get({ query })).resolves.toEqual(query),
         expect(fetchClient.$get({ query })).resolves.toEqual(query),
-      ])
-    )
+      ]),
+    ),
   ));
 
 test('GET: string', async () => {
@@ -87,7 +87,7 @@ test('GET: 400 params.userId and name', async () => {
     client.users
       ._userId('aaa' as any)
       ._name(111)
-      .get()
+      .get(),
   ).rejects.toHaveProperty('response.status', 400);
 });
 
@@ -132,8 +132,8 @@ test('GET: 400', () =>
         expect(client.get({ query })).rejects.toHaveProperty('response.status', 400),
         // @ts-expect-error
         expect(fetchClient.get({ query })).rejects.toHaveProperty('response.status', 400),
-      ])
-    )
+      ]),
+    ),
   ));
 
 test('GET: 500', async () => {
@@ -205,7 +205,7 @@ test('PUT: zod validations', async () => {
           boolArray: [],
         },
         body: { port: 3000 as any },
-      })
+      }),
     ).rejects.toHaveProperty('response.status', 400),
     expect(
       fetchClient.put({
@@ -218,7 +218,7 @@ test('PUT: zod validations', async () => {
           boolArray: [],
         },
         body: { port },
-      })
+      }),
     ).rejects.toHaveProperty('response.status', 400),
   ]);
 
@@ -233,7 +233,7 @@ test('PUT: zod validations', async () => {
         boolArray: [],
       },
       body: { port },
-    })
+    }),
   ).resolves.toHaveProperty('status', 201);
 });
 
@@ -270,7 +270,7 @@ test('POST: 400', async () => {
   form.append('files', fileST);
 
   await expect(
-    axios.post(`${baseURL}/multiForm`, form, { headers: form.getHeaders() })
+    axios.post(`${baseURL}/multiForm`, form, { headers: form.getHeaders() }),
   ).rejects.toHaveProperty('response.status', 400);
 });
 
@@ -309,14 +309,14 @@ test('POST: 400 (nested validation)', async () => {
         name: 'foo',
         location: { country: 'JP', stateProvince: 'Tokyo' },
       } as any,
-    })
+    }),
   ).rejects.toHaveProperty('response.status', 400);
 
   // location is missing
   await expect(
     client.users.post({
       body: { id: 123, name: 'foo' } as any,
-    })
+    }),
   ).rejects.toHaveProperty('response.status', 400);
 
   // country is not a valid 2-letter country code
@@ -327,7 +327,7 @@ test('POST: 400 (nested validation)', async () => {
         name: 'foo',
         location: { country: 'JPN', stateProvince: 'Tokyo' },
       } as any,
-    })
+    }),
   ).rejects.toHaveProperty('response.status', 400);
 
   // stateProvince is not a string
@@ -338,7 +338,7 @@ test('POST: 400 (nested validation)', async () => {
         name: 'foo',
         location: { country: 'JP', stateProvince: 1234 },
       } as any,
-    })
+    }),
   ).rejects.toHaveProperty('response.status', 400);
 });
 
@@ -368,7 +368,7 @@ test('controller dependency injection', async () => {
         bool: false,
         boolArray: [],
       },
-    })
+    }),
   ).resolves.toHaveProperty('body.id', `${+id * 2}`);
   expect(val).toBe(+id * 2);
 });

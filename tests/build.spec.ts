@@ -27,7 +27,7 @@ test('build', () => {
         fs
           .readFileSync(result.filePath, 'utf8')
           .replace(/\r/g, '')
-          .replace(/\n +\/\/ @ts-expect-error/g, '')
+          .replace(/\n +\/\/ @ts-expect-error/g, ''),
       );
 
       const [target] = aspidaBuild({

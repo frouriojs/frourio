@@ -34,12 +34,12 @@ export default (input: string, project?: string) => {
   headImports.push(
     `import type { FastifyMultipartAttachFieldsToBodyOptions, ${
       hasMultipart ? 'Multipart, ' : ''
-    }MultipartFile } from '@fastify/multipart';`
+    }MultipartFile } from '@fastify/multipart';`,
   );
 
   headImports.push(
     "import type { ReadStream } from 'fs';",
-    "import type { HttpStatusOk, AspidaMethodParams } from 'aspida';"
+    "import type { HttpStatusOk, AspidaMethodParams } from 'aspida';",
   );
 
   return {

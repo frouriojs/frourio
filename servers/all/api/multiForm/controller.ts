@@ -20,7 +20,7 @@ export default defineController(() => ({
         status: 201 as const,
         body: Object.entries(body).reduce(
           (p, [key, val]) => ({ ...p, [key]: Array.isArray(val) ? val.length : -1 }),
-          {} as Methods['post']['resBody']
+          {} as Methods['post']['resBody'],
         ),
       };
 

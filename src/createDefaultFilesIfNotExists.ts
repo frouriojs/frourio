@@ -19,7 +19,7 @@ export type Methods = DefineMethods<{
   };
 }>;
 `,
-      'utf8'
+      'utf8',
     );
   }
 
@@ -34,7 +34,7 @@ export default defineController(() => ({
   get: () => ({ status: 200, body: '' }),
 }));
 `,
-      'utf8'
+      'utf8',
     );
   }
 
@@ -52,7 +52,7 @@ export default defineHooks(() => ({
   },
 }));
 `,
-      'utf8'
+      'utf8',
     );
   }
 
@@ -68,7 +68,7 @@ export default defineValidators(() => ({
   params: z.object({ ${currentParam[0]}: z.${currentParam[1]}() }),
 }));
 `,
-      'utf8'
+      'utf8',
     );
   }
 };

@@ -74,5 +74,5 @@ export default defineController(
         body: { id: +v.query.id, port: v.body.port },
       }),
     },
-  })
+  }),
 );
