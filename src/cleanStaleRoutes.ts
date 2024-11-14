@@ -14,7 +14,7 @@ export const isStaleRouteDir = (routeDir: string): boolean => {
       if (!isManagedJSTSFile(p.name)) return false;
     }
     return true;
-  } catch (e: unknown) {
+  } catch (_e: unknown) {
     return false;
   }
 };
@@ -29,7 +29,7 @@ export const cleanStaleRouteDir = (routeDir: string) => {
       fs.unlinkSync(path.resolve(routeDir, p.name));
     }
     fs.rmdirSync(routeDir);
-  } catch (e: unknown) {}
+  } catch (_e: unknown) {}
 };
 
 export default (dir: string, event: string, file: string): void => {

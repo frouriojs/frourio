@@ -8,6 +8,7 @@ export default defineController(() => ({
   get: {
     hooks: {
       preHandler: (req, _, done) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         !req.name && done();
       },
     },
