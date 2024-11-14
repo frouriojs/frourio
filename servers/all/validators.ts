@@ -8,6 +8,8 @@ export type Query = {
   emptyNum?: number | undefined;
   requiredNumArr: number[];
   id: string;
+  strArray: string[];
+  optionalStrArray?: string[] | undefined;
   disable: string;
   bool: boolean;
   optionalBool?: boolean | undefined;
@@ -55,6 +57,8 @@ export const queryValidator: z.ZodType<Query> = z.object({
   emptyNum: z.number().optional(),
   requiredNumArr: z.array(z.number()),
   id: z.string().regex(/^\d+$/),
+  strArray: z.array(z.string()),
+  optionalStrArray: z.array(z.string()).optional(),
   disable: z.enum(['true', 'false']),
   bool: z.boolean(),
   optionalBool: z.boolean().optional(),

@@ -46,6 +46,8 @@ export default defineController(
           emptyNum: z.number().optional(),
           requiredNumArr: z.array(z.number()),
           id: z.string(),
+          strArray: z.array(z.string()),
+          optionalStrArray: z.array(z.string()).optional(),
           disable: z.string(),
           bool: z.boolean(),
           optionalBool: z.boolean().optional(),

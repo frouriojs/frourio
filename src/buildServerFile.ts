@@ -15,6 +15,7 @@ const ${isAsync ? 'asyncM' : 'm'}ethodToHandler = (
 
 export default (input: string, project?: string) => {
   const { imports, consts, controllers } = createControllersText(`${input}/api`, project ?? input);
+  const hasStringArrayTypeQuery = controllers.includes('parseStringArrayTypeQueryParams(');
   const hasNumberTypeQuery = controllers.includes('parseNumberTypeQueryParams(');
   const hasBooleanTypeQuery = controllers.includes('parseBooleanTypeQueryParams(');
   const hasOptionalQuery = controllers.includes(' callParserIfExistsQuery(');
@@ -132,8 +133,32 @@ export type ServerMethodHandler<T extends AspidaMethodParams,  U extends Record<
   handler: ServerHandler<T, U> | ServerHandlerPromise<T, U>;
 };
 ${
-  hasNumberTypeQuery
+  hasStringArrayTypeQuery
     ? `
+const parseStringArrayTypeQueryParams = (stringArrayTypeParams: [string, boolean][]): preValidationHookHandler => (req, reply, done) => {
+  const query: any = req.query;
+
+  for (const [key, isOptional] of stringArrayTypeParams) {
+    const param = query[\`\${key}[]\`] ?? query[key];
+
+    if (!isOptional && param === undefined) {
+      query[key] = [];
+    } else if (!isOptional || param !== undefined) {
+      const vals = (Array.isArray(param) ? param : [param]);
+
+      query[key] = vals;
+    }
+
+    delete query[\`\${key}[]\`];
+  }
+
+  done();
+};
+`
+    : ''
+}${
+      hasNumberTypeQuery
+        ? `
 const parseNumberTypeQueryParams = (numberTypeParams: [string, boolean, boolean][]): preValidationHookHandler => (req, reply, done) => {
   const query: any = req.query;
 
@@ -151,7 +176,7 @@ const parseNumberTypeQueryParams = (numberTypeParams: [string, boolean, boolean]
           return;
         }
 
-        query[key] = vals as any;
+        query[key] = vals;
       }
 
       delete query[\`\${key}[]\`];
@@ -163,15 +188,15 @@ const parseNumberTypeQueryParams = (numberTypeParams: [string, boolean, boolean]
         return;
       }
 
-      query[key] = val as any;
+      query[key] = val;
     }
   }
 
   done();
 };
 `
-    : ''
-}${
+        : ''
+    }${
       hasBooleanTypeQuery
         ? `
 const parseBooleanTypeQueryParams = (booleanTypeParams: [string, boolean, boolean][]): preValidationHookHandler => (req, reply, done) => {
@@ -191,7 +216,7 @@ const parseBooleanTypeQueryParams = (booleanTypeParams: [string, boolean, boolea
           return;
         }
 
-        query[key] = vals as any;
+        query[key] = vals;
       }
 
       delete query[\`\${key}[]\`];
@@ -203,7 +228,7 @@ const parseBooleanTypeQueryParams = (booleanTypeParams: [string, boolean, boolea
         return;
       }
 
-      query[key] = val as any;
+      query[key] = val;
     }
   }
 
