@@ -27,6 +27,8 @@ export type Methods = DefineMethods<{
       emptyNum?: number | undefined;
       requiredNumArr: number[];
       id: string;
+      strArray: string[];
+      optionalStrArray?: string[] | undefined;
       disable: string;
       bool: boolean;
       optionalBool?: boolean | undefined;

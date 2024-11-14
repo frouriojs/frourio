@@ -458,6 +458,12 @@ export default (appDir: string, project: string) => {
                 ? checker.getTypeOfSymbolAtLocation(m, m.valueDeclaration).getProperties()
                 : [];
               const query = props.find(p => p.name === 'query');
+              const stringArrayTypeQueryParams =
+                query &&
+                getSomeTypeParams('string', query)
+                  ?.filter(params => params !== null)
+                  .filter(params => params.endsWith(', true]'))
+                  .map(params => params.replace(', true]', ']'));
               const numberTypeQueryParams = query && getSomeTypeParams('number', query);
               const booleanTypeQueryParams = query && getSomeTypeParams('boolean', query);
               const reqFormat = props.find(p => p.name === 'reqFormat');
@@ -476,6 +482,15 @@ export default (appDir: string, project: string) => {
                 .map(key => {
                   if (key === 'preValidation') {
                     const texts = [
+                      stringArrayTypeQueryParams?.length
+                        ? query?.declarations?.some(
+                            d => d.getChildAt(1).kind === ts.SyntaxKind.QuestionToken,
+                          )
+                          ? `callParserIfExistsQuery(parseStringArrayTypeQueryParams([${stringArrayTypeQueryParams.join(
+                              ', ',
+                            )}]))`
+                          : `parseStringArrayTypeQueryParams([${stringArrayTypeQueryParams.join(', ')}])`
+                        : '',
                       numberTypeQueryParams?.length
                         ? query?.declarations?.some(
                             d => d.getChildAt(1).kind === ts.SyntaxKind.QuestionToken,

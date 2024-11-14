@@ -104,6 +104,26 @@ export type ServerMethodHandler<T extends AspidaMethodParams,  U extends Record<
   handler: ServerHandler<T, U> | ServerHandlerPromise<T, U>;
 };
 
+const parseStringArrayTypeQueryParams = (stringArrayTypeParams: [string, boolean][]): preValidationHookHandler => (req, reply, done) => {
+  const query: any = req.query;
+
+  for (const [key, isOptional] of stringArrayTypeParams) {
+    const param = query[`${key}[]`] ?? query[key];
+
+    if (!isOptional && param === undefined) {
+      query[key] = [];
+    } else if (!isOptional || param !== undefined) {
+      const vals = (Array.isArray(param) ? param : [param]);
+
+      query[key] = vals;
+    }
+
+    delete query[`${key}[]`];
+  }
+
+  done();
+};
+
 const parseNumberTypeQueryParams = (numberTypeParams: [string, boolean, boolean][]): preValidationHookHandler => (req, reply, done) => {
   const query: any = req.query;
 
@@ -121,7 +141,7 @@ const parseNumberTypeQueryParams = (numberTypeParams: [string, boolean, boolean]
           return;
         }
 
-        query[key] = vals as any;
+        query[key] = vals;
       }
 
       delete query[`${key}[]`];
@@ -133,7 +153,7 @@ const parseNumberTypeQueryParams = (numberTypeParams: [string, boolean, boolean]
         return;
       }
 
-      query[key] = val as any;
+      query[key] = val;
     }
   }
 
@@ -157,7 +177,7 @@ const parseBooleanTypeQueryParams = (booleanTypeParams: [string, boolean, boolea
           return;
         }
 
-        query[key] = vals as any;
+        query[key] = vals;
       }
 
       delete query[`${key}[]`];
@@ -169,7 +189,7 @@ const parseBooleanTypeQueryParams = (booleanTypeParams: [string, boolean, boolea
         return;
       }
 
-      query[key] = val as any;
+      query[key] = val;
     }
   }
 
@@ -334,6 +354,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
       onRequest: hooks_gx3glp.onRequest,
       preParsing: hooks_gx3glp.preParsing,
       preValidation: [
+        callParserIfExistsQuery(parseStringArrayTypeQueryParams([['strArray', false], ['optionalStrArray', true]])),
         callParserIfExistsQuery(parseNumberTypeQueryParams([['requiredNum', false, false], ['optionalNum', true, false], ['optionalNumArr', true, true], ['emptyNum', true, false], ['requiredNumArr', false, true]])),
         callParserIfExistsQuery(parseBooleanTypeQueryParams([['bool', false, false], ['optionalBool', true, false], ['boolArray', false, true], ['optionalBoolArray', true, true]])),
       ],
@@ -349,6 +370,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
       onRequest: hooks_gx3glp.onRequest,
       preParsing: hooks_gx3glp.preParsing,
       preValidation: [
+        parseStringArrayTypeQueryParams([['strArray', false], ['optionalStrArray', true]]),
         parseNumberTypeQueryParams([['requiredNum', false, false], ['optionalNum', true, false], ['optionalNumArr', true, true], ['emptyNum', true, false], ['requiredNumArr', false, true]]),
         parseBooleanTypeQueryParams([['bool', false, false], ['optionalBool', true, false], ['boolArray', false, true], ['optionalBoolArray', true, true]]),
         formatMultipartData([['optionalNumArr', true], ['requiredNumArr', false], ['boolArray', false], ['optionalBoolArray', true]], [['requiredNum', false, false], ['optionalNum', true, false], ['optionalNumArr', true, true], ['emptyNum', true, false], ['requiredNumArr', false, true]], [['bool', false, false], ['optionalBool', true, false], ['boolArray', false, true], ['optionalBoolArray', true, true]]),
@@ -368,6 +390,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
       onRequest: hooks_gx3glp.onRequest,
       preParsing: hooks_gx3glp.preParsing,
       preValidation: [
+        parseStringArrayTypeQueryParams([['strArray', false], ['optionalStrArray', true]]),
         parseNumberTypeQueryParams([['requiredNum', false, false], ['optionalNum', true, false], ['optionalNumArr', true, true], ['emptyNum', true, false], ['requiredNumArr', false, true]]),
         parseBooleanTypeQueryParams([['bool', false, false], ['optionalBool', true, false], ['boolArray', false, true], ['optionalBoolArray', true, true]]),
         ...controller_14i7wcv.put.hooks.preValidation,
