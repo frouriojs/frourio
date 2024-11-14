@@ -215,12 +215,12 @@ test('PUT: zod validations', async () => {
       fetchClient.put({
         query: {
           requiredNum: 0,
-          requiredNumArr: [],
+          requiredNumArr: [1],
           id: '1',
           strArray: [],
           disable: 'true',
           bool: 1 as any,
-          boolArray: [],
+          boolArray: [true],
         },
         body: { port },
       }),

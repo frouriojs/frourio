@@ -144,9 +144,7 @@ const parseStringArrayTypeQueryParams = (stringArrayTypeParams: [string, boolean
     if (!isOptional && param === undefined) {
       query[key] = [];
     } else if (!isOptional || param !== undefined) {
-      const vals = (Array.isArray(param) ? param : [param]);
-
-      query[key] = vals;
+      query[key] = Array.isArray(param) ? param : [param];
     }
 
     delete query[\`\${key}[]\`];
