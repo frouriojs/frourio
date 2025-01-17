@@ -16,7 +16,7 @@ import type { FastifyInstance, RouteHandlerMethod, preValidationHookHandler, Rou
 
 export type FrourioOptions = {
   basePath?: string;
-  multipart?: FastifyMultipartAttachFieldsToBodyOptions;
+  multipart?: Omit<FastifyMultipartAttachFieldsToBodyOptions, 'attachFieldsToBody'>;
 };
 
 type HttpStatusNoOk = 301 | 302 | 400 | 401 | 402 | 403 | 404 | 405 | 406 | 409 | 500 | 501 | 502 | 503 | 504 | 505;
@@ -202,7 +202,7 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
   const controller_1bjhajh = controllerFn_1bjhajh(fastify);
   const controller_g6e9u2 = controllerFn_g6e9u2(fastify);
 
-  fastify.register(multipart, { attachFieldsToBody: true, limits: { fileSize: 1024 ** 3 }, ...options.multipart });
+  fastify.register(multipart, { limits: { fileSize: 1024 ** 3 }, ...options.multipart, attachFieldsToBody: true });
 
   fastify.get(
     basePath || '/',
