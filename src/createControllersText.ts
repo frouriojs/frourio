@@ -4,6 +4,7 @@ import ts from 'typescript';
 import type { Param } from './createDefaultFilesIfNotExists';
 import { createDefaultFilesIfNotExists } from './createDefaultFilesIfNotExists';
 import { createHash } from './createHash';
+import { getArrayElementType } from './getArrayElementType';
 
 type HooksEvent = 'onRequest' | 'preParsing' | 'preValidation' | 'preHandler';
 
@@ -432,20 +433,23 @@ export default (appDir: string, project: string) => {
           const queryDeclaration = dict.valueDeclaration ?? dict.declarations?.[0];
           const type =
             queryDeclaration && checker.getTypeOfSymbolAtLocation(dict, queryDeclaration);
-          const targetType = type?.isUnion()
-            ? type.types.find(t => checker.typeToString(t) !== 'undefined')
-            : type;
 
-          return targetType
-            ?.getProperties()
+          if (!type) return;
+
+          return checker
+            .getNonNullableType(type)
+            .getProperties()
             .map(p => {
               const declaration = p.valueDeclaration ?? p.declarations?.[0];
               const type = declaration && checker.getTypeOfSymbolAtLocation(p, declaration);
-              const typeString = type && checker.typeToString(type).replace(' | undefined', '');
-              const isArray = typeString === `${typeName}[]`;
 
-              return typeString === typeName || isArray
-                ? `['${p.name}', ${(p.flags & ts.SymbolFlags.Optional) !== 0}, ${isArray}]`
+              if (!type) return null;
+
+              const nonNullableType = checker.getNonNullableType(type);
+              const arrayElementType = getArrayElementType(nonNullableType);
+
+              return checker.typeToString(arrayElementType ?? nonNullableType) === typeName
+                ? `['${p.name}', ${(p.flags & ts.SymbolFlags.Optional) !== 0}, ${!!arrayElementType}]`
                 : null;
             })
             .filter(Boolean);
@@ -548,6 +552,7 @@ export default (appDir: string, project: string) => {
                   }
 
                   const texts = genHookTexts(key, m.name).filter(Boolean);
+
                   return texts.length
                     ? `${key}: ${
                         texts.length === 1 ? texts[0].replace('...', '') : `[${texts.join(', ')}]`
@@ -596,6 +601,7 @@ export default (appDir: string, project: string) => {
                   ...(validatorsText || paramsValidatorsText ? ['validatorCompiler'] : []),
                   ...hooksTexts,
                 ];
+
                 return vals.length > 0
                   ? `\n    {\n      ${vals.join(',\n      ')},\n    }${
                       fs.readFileSync(`${input}/$relay.ts`, 'utf8').includes('AdditionalRequest')
