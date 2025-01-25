@@ -5,9 +5,9 @@ const symbolBrand = Symbol();
 
 export type SymbolId = string & { [symbolBrand]: unknown };
 
-export type ZodId = string & z.BRAND<'ZodId'>;
+export type ZodId = number & z.BRAND<'ZodId'>;
 
-export type MaybeId = ZodId | (string & z.BRAND<'maybe'>);
+export type MaybeId = ZodId | (number & z.BRAND<'maybe'>);
 
 export type Query = {
   requiredNum: number;
@@ -76,8 +76,8 @@ export const queryValidator: z.ZodType<Query> = z.object({
   boolArray: z.array(z.boolean()),
   optionalBoolArray: z.array(z.boolean()).optional(),
   symbolIds: z.custom<SymbolId[]>(val => z.array(z.string()).safeParse(val).success),
-  optionalZodIds: z.custom<ZodId[]>(val => z.array(z.string()).safeParse(val).success).optional(),
-  maybeIds: z.custom<MaybeId[]>(val => z.array(z.string()).safeParse(val).success),
+  optionalZodIds: z.custom<ZodId[]>(val => z.array(z.number()).safeParse(val).success).optional(),
+  maybeIds: z.custom<MaybeId[]>(val => z.array(z.number()).safeParse(val).success),
 });
 
 export const userInfoValidator: z.ZodType<UserInfo> = z.object({
