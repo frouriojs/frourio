@@ -320,16 +320,16 @@ export default (appDir: string, project: string) => {
                           t.valueDeclaration &&
                           checker.getTypeOfSymbolAtLocation(t, t.valueDeclaration);
 
-                        if (!type) return undefined;
+                        if (!type) return null;
 
                         const typeNode =
                           t.valueDeclaration && checker.typeToTypeNode(type, undefined, undefined);
 
-                        if (!typeNode) return undefined;
+                        if (!typeNode) return null;
 
                         return cb(t, typeNode, type);
                       })
-                      .filter((n): n is T => !!n),
+                      .filter(n => n !== null),
                 ),
             ) || [];
 
@@ -415,7 +415,7 @@ export default (appDir: string, project: string) => {
 
         const controllerPath = nameToPath('controller');
 
-        const genHookTexts = (event: HooksEvent, methodName: string) => [
+        const genHookTexts = (event: HooksEvent, methodName: string): string[] => [
           ...hooks.reduce<string[]>((prev, h) => {
             const ev = h.events.find(e => e.type === event);
 
@@ -436,7 +436,7 @@ export default (appDir: string, project: string) => {
             : []),
         ];
 
-        const getSomeTypeParams = (typeName: string, dict: ts.Symbol) => {
+        const getSomeTypeParams = (typeName: string, dict: ts.Symbol): string[] | undefined => {
           const queryDeclaration = dict.valueDeclaration ?? dict.declarations?.[0];
           const type =
             queryDeclaration && checker.getTypeOfSymbolAtLocation(dict, queryDeclaration);
@@ -470,7 +470,7 @@ export default (appDir: string, project: string) => {
                   ? (targetType.types.map(returnResult).find(t => t !== null) ?? null)
                   : returnResult(targetType);
             })
-            .filter(Boolean);
+            .filter(t => t !== null);
         };
 
         results.push(
@@ -483,8 +483,7 @@ export default (appDir: string, project: string) => {
               const stringArrayTypeQueryParams =
                 query &&
                 getSomeTypeParams('string', query)
-                  ?.filter(params => params !== null)
-                  .filter(params => params.endsWith(', true]'))
+                  ?.filter(params => params.endsWith(', true]'))
                   .map(params => params.replace(', true]', ']'));
               const numberTypeQueryParams = query && getSomeTypeParams('number', query);
               const booleanTypeQueryParams = query && getSomeTypeParams('boolean', query);
@@ -498,12 +497,12 @@ export default (appDir: string, project: string) => {
               // Todo
               // const isURLSearchParams = reqFormatTypeString === 'URLSearchParams';
               const reqBody = props.find(p => p.name === 'reqBody');
-              const hooksTexts = (
+              const hooksTexts: string[] = (
                 ['onRequest', 'preParsing', 'preValidation', 'preHandler'] as const
               )
                 .map(key => {
                   if (key === 'preValidation') {
-                    const texts = [
+                    const texts: string[] = [
                       stringArrayTypeQueryParams?.length
                         ? query?.declarations?.some(
                             d => d.getChildAt(1).kind === ts.SyntaxKind.QuestionToken,
@@ -512,7 +511,7 @@ export default (appDir: string, project: string) => {
                               ', ',
                             )}]))`
                           : `parseStringArrayTypeQueryParams([${stringArrayTypeQueryParams.join(', ')}])`
-                        : '',
+                        : null,
                       numberTypeQueryParams?.length
                         ? query?.declarations?.some(
                             d => d.getChildAt(1).kind === ts.SyntaxKind.QuestionToken,
@@ -521,7 +520,7 @@ export default (appDir: string, project: string) => {
                               ', ',
                             )}]))`
                           : `parseNumberTypeQueryParams([${numberTypeQueryParams.join(', ')}])`
-                        : '',
+                        : null,
                       booleanTypeQueryParams?.length
                         ? query?.declarations?.some(
                             d => d.getChildAt(1).kind === ts.SyntaxKind.QuestionToken,
@@ -530,7 +529,7 @@ export default (appDir: string, project: string) => {
                               ', ',
                             )}]))`
                           : `parseBooleanTypeQueryParams([${booleanTypeQueryParams.join(', ')}])`
-                        : '',
+                        : null,
                       isFormData && reqBody?.valueDeclaration
                         ? `formatMultipartData([${checker
                             .getTypeOfSymbolAtLocation(reqBody, reqBody.valueDeclaration)
@@ -545,11 +544,11 @@ export default (appDir: string, project: string) => {
                                 ? `['${p.name}', ${(p.flags & ts.SymbolFlags.Optional) !== 0}]`
                                 : undefined;
                             })
-                            .filter(Boolean)
+                            .filter(t => t !== undefined)
                             .join(', ')}], [${getSomeTypeParams('number', reqBody)?.join(
                             ', ',
                           )}], [${getSomeTypeParams('boolean', reqBody)?.join(', ')}])`
-                        : '',
+                        : null,
                       ...genHookTexts('preValidation', m.name),
                       dirPath.includes('@number')
                         ? `createTypedParamsHandler(['${dirPath
@@ -557,8 +556,8 @@ export default (appDir: string, project: string) => {
                             .filter(p => p.includes('@number'))
                             .map(p => p.split('@')[0].slice(1))
                             .join("', '")}'])`
-                        : '',
-                    ].filter(Boolean);
+                        : null,
+                    ].filter(t => t !== null);
 
                     return texts.length
                       ? `${key}: ${
@@ -566,18 +565,18 @@ export default (appDir: string, project: string) => {
                             ? texts[0].replace(/^\.+/, '')
                             : `[\n        ${texts.join(',\n        ')},\n      ]`
                         }`
-                      : '';
+                      : null;
                   }
 
-                  const texts = genHookTexts(key, m.name).filter(Boolean);
+                  const texts = genHookTexts(key, m.name);
 
                   return texts.length
                     ? `${key}: ${
                         texts.length === 1 ? texts[0].replace('...', '') : `[${texts.join(', ')}]`
                       }`
-                    : '';
+                    : null;
                 })
-                .filter(Boolean);
+                .filter(t => t !== null);
 
               return `  fastify.${m.name}(${hooksTexts.length > 0 ? '\n    ' : ''}${
                 dirPath
@@ -612,7 +611,7 @@ export default (appDir: string, project: string) => {
                               schemasText,
                               paramsValidatorsText,
                             ]
-                              .filter(Boolean)
+                              .filter(t => t !== null)
                               .join(',\n        ')},\n      }`,
                           ]
                         : []),
