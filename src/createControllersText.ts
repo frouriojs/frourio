@@ -4,6 +4,7 @@ import ts from 'typescript';
 import type { Param } from './createDefaultFilesIfNotExists';
 import { createDefaultFilesIfNotExists } from './createDefaultFilesIfNotExists';
 import { createHash } from './createHash';
+import { getArrayElementType } from './getArrayElementType';
 
 type HooksEvent = 'onRequest' | 'preParsing' | 'preValidation' | 'preHandler';
 
@@ -210,16 +211,19 @@ export default (appDir: string, project: string) => {
     const nameToPath = (fileType: string): PathItem => {
       const path = `${input}/${fileType}`.replace(appDir, './api');
       const hash = createHash(path);
+
       return { importName: `${fileType}Fn_${hash}`, name: `${fileType}_${hash}`, path };
     };
 
     const validatorsFilePath = path.join(input, 'validators.ts');
     if (fs.existsSync(validatorsFilePath)) {
       const validatorPath = nameToPath('validators');
+
       paramsValidators = [
         ...cascadingValidators,
         { name: validatorPath.name, isNumber: dirPath.split('@')[1] === 'number' },
       ];
+
       validatorsPaths.push(validatorPath);
     }
 
@@ -276,6 +280,7 @@ export default (appDir: string, project: string) => {
 
         if (events) {
           const hooksPath = nameToPath('hooks');
+
           hooks = [...cascadingHooks, { name: hooksPath.name, events }];
           hooksPaths.push(hooksPath);
         }
@@ -314,15 +319,17 @@ export default (appDir: string, project: string) => {
                         const type =
                           t.valueDeclaration &&
                           checker.getTypeOfSymbolAtLocation(t, t.valueDeclaration);
-                        if (!type) return undefined;
+
+                        if (!type) return null;
 
                         const typeNode =
                           t.valueDeclaration && checker.typeToTypeNode(type, undefined, undefined);
-                        if (!typeNode) return undefined;
+
+                        if (!typeNode) return null;
 
                         return cb(t, typeNode, type);
                       })
-                      .filter((n): n is T => !!n),
+                      .filter(n => n !== null),
                 ),
             ) || [];
 
@@ -408,9 +415,10 @@ export default (appDir: string, project: string) => {
 
         const controllerPath = nameToPath('controller');
 
-        const genHookTexts = (event: HooksEvent, methodName: string) => [
+        const genHookTexts = (event: HooksEvent, methodName: string): string[] => [
           ...hooks.reduce<string[]>((prev, h) => {
             const ev = h.events.find(e => e.type === event);
+
             return ev ? [...prev, `${ev.isArray ? '...' : ''}${h.name}.${event}`] : prev;
           }, []),
           ...(hasHooksMethods.some(
@@ -428,27 +436,41 @@ export default (appDir: string, project: string) => {
             : []),
         ];
 
-        const getSomeTypeParams = (typeName: string, dict: ts.Symbol) => {
+        const getSomeTypeParams = (typeName: string, dict: ts.Symbol): string[] | undefined => {
           const queryDeclaration = dict.valueDeclaration ?? dict.declarations?.[0];
           const type =
             queryDeclaration && checker.getTypeOfSymbolAtLocation(dict, queryDeclaration);
-          const targetType = type?.isUnion()
-            ? type.types.find(t => checker.typeToString(t) !== 'undefined')
-            : type;
 
-          return targetType
-            ?.getProperties()
+          if (!type) return;
+
+          return checker
+            .getNonNullableType(type)
+            .getProperties()
             .map(p => {
               const declaration = p.valueDeclaration ?? p.declarations?.[0];
               const type = declaration && checker.getTypeOfSymbolAtLocation(p, declaration);
-              const typeString = type && checker.typeToString(type).replace(' | undefined', '');
-              const isArray = typeString === `${typeName}[]`;
 
-              return typeString === typeName || isArray
-                ? `['${p.name}', ${(p.flags & ts.SymbolFlags.Optional) !== 0}, ${isArray}]`
-                : null;
+              if (!type) return null;
+
+              const nonNullableType = checker.getNonNullableType(type);
+              const arrayElementType = getArrayElementType(nonNullableType);
+              const targetType = arrayElementType ?? nonNullableType;
+              const returnResult = (type: ts.Type) =>
+                (
+                  type.isIntersection()
+                    ? type.types.some(t => checker.typeToString(t) === typeName)
+                    : checker.typeToString(type) === typeName
+                )
+                  ? `['${p.name}', ${(p.flags & ts.SymbolFlags.Optional) !== 0}, ${!!arrayElementType}]`
+                  : null;
+
+              return checker.typeToString(targetType) === typeName
+                ? returnResult(targetType)
+                : targetType.isUnion()
+                  ? (targetType.types.map(returnResult).find(t => t !== null) ?? null)
+                  : returnResult(targetType);
             })
-            .filter(Boolean);
+            .filter(t => t !== null);
         };
 
         results.push(
@@ -461,8 +483,7 @@ export default (appDir: string, project: string) => {
               const stringArrayTypeQueryParams =
                 query &&
                 getSomeTypeParams('string', query)
-                  ?.filter(params => params !== null)
-                  .filter(params => params.endsWith(', true]'))
+                  ?.filter(params => params.endsWith(', true]'))
                   .map(params => params.replace(', true]', ']'));
               const numberTypeQueryParams = query && getSomeTypeParams('number', query);
               const booleanTypeQueryParams = query && getSomeTypeParams('boolean', query);
@@ -476,12 +497,12 @@ export default (appDir: string, project: string) => {
               // Todo
               // const isURLSearchParams = reqFormatTypeString === 'URLSearchParams';
               const reqBody = props.find(p => p.name === 'reqBody');
-              const hooksTexts = (
+              const hooksTexts: string[] = (
                 ['onRequest', 'preParsing', 'preValidation', 'preHandler'] as const
               )
                 .map(key => {
                   if (key === 'preValidation') {
-                    const texts = [
+                    const texts: string[] = [
                       stringArrayTypeQueryParams?.length
                         ? query?.declarations?.some(
                             d => d.getChildAt(1).kind === ts.SyntaxKind.QuestionToken,
@@ -490,7 +511,7 @@ export default (appDir: string, project: string) => {
                               ', ',
                             )}]))`
                           : `parseStringArrayTypeQueryParams([${stringArrayTypeQueryParams.join(', ')}])`
-                        : '',
+                        : null,
                       numberTypeQueryParams?.length
                         ? query?.declarations?.some(
                             d => d.getChildAt(1).kind === ts.SyntaxKind.QuestionToken,
@@ -499,7 +520,7 @@ export default (appDir: string, project: string) => {
                               ', ',
                             )}]))`
                           : `parseNumberTypeQueryParams([${numberTypeQueryParams.join(', ')}])`
-                        : '',
+                        : null,
                       booleanTypeQueryParams?.length
                         ? query?.declarations?.some(
                             d => d.getChildAt(1).kind === ts.SyntaxKind.QuestionToken,
@@ -508,7 +529,7 @@ export default (appDir: string, project: string) => {
                               ', ',
                             )}]))`
                           : `parseBooleanTypeQueryParams([${booleanTypeQueryParams.join(', ')}])`
-                        : '',
+                        : null,
                       isFormData && reqBody?.valueDeclaration
                         ? `formatMultipartData([${checker
                             .getTypeOfSymbolAtLocation(reqBody, reqBody.valueDeclaration)
@@ -523,11 +544,11 @@ export default (appDir: string, project: string) => {
                                 ? `['${p.name}', ${(p.flags & ts.SymbolFlags.Optional) !== 0}]`
                                 : undefined;
                             })
-                            .filter(Boolean)
+                            .filter(t => t !== undefined)
                             .join(', ')}], [${getSomeTypeParams('number', reqBody)?.join(
                             ', ',
                           )}], [${getSomeTypeParams('boolean', reqBody)?.join(', ')}])`
-                        : '',
+                        : null,
                       ...genHookTexts('preValidation', m.name),
                       dirPath.includes('@number')
                         ? `createTypedParamsHandler(['${dirPath
@@ -535,8 +556,8 @@ export default (appDir: string, project: string) => {
                             .filter(p => p.includes('@number'))
                             .map(p => p.split('@')[0].slice(1))
                             .join("', '")}'])`
-                        : '',
-                    ].filter(Boolean);
+                        : null,
+                    ].filter(t => t !== null);
 
                     return texts.length
                       ? `${key}: ${
@@ -544,17 +565,18 @@ export default (appDir: string, project: string) => {
                             ? texts[0].replace(/^\.+/, '')
                             : `[\n        ${texts.join(',\n        ')},\n      ]`
                         }`
-                      : '';
+                      : null;
                   }
 
-                  const texts = genHookTexts(key, m.name).filter(Boolean);
+                  const texts = genHookTexts(key, m.name);
+
                   return texts.length
                     ? `${key}: ${
                         texts.length === 1 ? texts[0].replace('...', '') : `[${texts.join(', ')}]`
                       }`
-                    : '';
+                    : null;
                 })
-                .filter(Boolean);
+                .filter(t => t !== null);
 
               return `  fastify.${m.name}(${hooksTexts.length > 0 ? '\n    ' : ''}${
                 dirPath
@@ -589,13 +611,14 @@ export default (appDir: string, project: string) => {
                               schemasText,
                               paramsValidatorsText,
                             ]
-                              .filter(Boolean)
+                              .filter(t => t !== null)
                               .join(',\n        ')},\n      }`,
                           ]
                         : []),
                   ...(validatorsText || paramsValidatorsText ? ['validatorCompiler'] : []),
                   ...hooksTexts,
                 ];
+
                 return vals.length > 0
                   ? `\n    {\n      ${vals.join(',\n      ')},\n    }${
                       fs.readFileSync(`${input}/$relay.ts`, 'utf8').includes('AdditionalRequest')
