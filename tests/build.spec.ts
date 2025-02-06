@@ -22,10 +22,18 @@ test('build', () => {
     .filter(d => d.isDirectory())
     .map(d => `${inputDir}/${d.name}`)
     .forEach(input => {
-      const result = build(input);
-      expect(result.text).toBe(
+      const result1 = build(input);
+      const result2 = build(`./${input}`);
+      const result3 = build(input.replace('/', '\\'));
+      const result4 = build(`.\\${input.replace('/', '\\')}`);
+
+      expect(result1).toEqual(result2);
+      expect(result2).toEqual(result3);
+      expect(result3).toEqual(result4);
+
+      expect(result1.text).toBe(
         fs
-          .readFileSync(result.filePath, 'utf8')
+          .readFileSync(result1.filePath, 'utf8')
           .replace(/\r/g, '')
           .replace(/\n +\/\/ @ts-expect-error/g, ''),
       );
