@@ -352,8 +352,8 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
       onRequest: hooks_gx3glp.onRequest,
       preParsing: hooks_gx3glp.preParsing,
       preValidation: [
-        callParserIfExistsQuery(parseStringArrayTypeQueryParams([['strArray', false], ['optionalStrArray', true], ['symbolIds', false], ['optionalZodIds', true], ['maybeIds', false]])),
-        callParserIfExistsQuery(parseNumberTypeQueryParams([['requiredNum', false, false], ['optionalNum', true, false], ['optionalNumArr', true, true], ['emptyNum', true, false], ['requiredNumArr', false, true]])),
+        callParserIfExistsQuery(parseStringArrayTypeQueryParams([['strArray', false], ['optionalStrArray', true], ['symbolIds', false]])),
+        callParserIfExistsQuery(parseNumberTypeQueryParams([['requiredNum', false, false], ['optionalNum', true, false], ['optionalNumArr', true, true], ['emptyNum', true, false], ['requiredNumArr', false, true], ['optionalZodIds', true, true], ['maybeIds', false, true]])),
         callParserIfExistsQuery(parseBooleanTypeQueryParams([['bool', false, false], ['optionalBool', true, false], ['boolArray', false, true], ['optionalBoolArray', true, true]])),
       ],
     },
@@ -368,8 +368,8 @@ export default (fastify: FastifyInstance, options: FrourioOptions = {}) => {
       onRequest: hooks_gx3glp.onRequest,
       preParsing: hooks_gx3glp.preParsing,
       preValidation: [
-        parseStringArrayTypeQueryParams([['strArray', false], ['optionalStrArray', true], ['symbolIds', false], ['optionalZodIds', true], ['maybeIds', false]]),
-        parseNumberTypeQueryParams([['requiredNum', false, false], ['optionalNum', true, false], ['optionalNumArr', true, true], ['emptyNum', true, false], ['requiredNumArr', false, true]]),
+        parseStringArrayTypeQueryParams([['strArray', false], ['optionalStrArray', true], ['symbolIds', false]]),
+        parseNumberTypeQueryParams([['requiredNum', false, false], ['optionalNum', true, false], ['optionalNumArr', true, true], ['emptyNum', true, false], ['requiredNumArr', false, true], ['optionalZodIds', true, true], ['maybeIds', false, true]]),
         parseBooleanTypeQueryParams([['bool', false, false], ['optionalBool', true, false], ['boolArray', false, true], ['optionalBoolArray', true, true]]),
         formatMultipartData([['optionalNumArr', true], ['requiredNumArr', false], ['boolArray', false], ['optionalBoolArray', true]], [['requiredNum', false, false], ['optionalNum', true, false], ['optionalNumArr', true, true], ['emptyNum', true, false], ['requiredNumArr', false, true]], [['bool', false, false], ['optionalBool', true, false], ['boolArray', false, true], ['optionalBoolArray', true, true]]),
       ],

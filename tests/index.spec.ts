@@ -47,8 +47,8 @@ test('GET: 200', () =>
         bool: true,
         boolArray: [false, true],
         symbolIds: ['aaa' as SymbolId],
-        optionalZodIds: ['bbb' as ZodId],
-        maybeIds: ['ccc' as MaybeId],
+        optionalZodIds: [1 as ZodId],
+        maybeIds: [0 as MaybeId],
       } satisfies Query,
       {
         requiredNum: 2,
@@ -387,8 +387,8 @@ test('controller dependency injection', async () => {
         bool: false,
         boolArray: [],
         symbolIds: ['aaa' as SymbolId],
-        optionalZodIds: ['bbb' as ZodId],
-        maybeIds: ['ccc' as MaybeId],
+        optionalZodIds: [0 as ZodId],
+        maybeIds: [1 as MaybeId],
       },
     }),
   ).resolves.toHaveProperty('body.id', `${+id * 2}`);

@@ -209,10 +209,10 @@ export default (appDir: string, project: string) => {
     let paramsValidators = cascadingValidators;
 
     const nameToPath = (fileType: string): PathItem => {
-      const path = `${input}/${fileType}`.replace(appDir, './api');
-      const hash = createHash(path);
+      const val = `./${path.posix.join('api', dirPath, fileType)}`;
+      const hash = createHash(val);
 
-      return { importName: `${fileType}Fn_${hash}`, name: `${fileType}_${hash}`, path };
+      return { importName: `${fileType}Fn_${hash}`, name: `${fileType}_${hash}`, path: val };
     };
 
     const validatorsFilePath = path.join(input, 'validators.ts');
